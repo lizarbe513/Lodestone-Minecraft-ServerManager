@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Minecraft Server GUI</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script type="module" src="/main.js" defer></script>
+    </head>
+
+    <body>
+        <main class="app-shell">
+            <header class="hero">
+                <div>
+                    <p class="eyebrow">Panel local</p>
+                    <h1>Minecraft Server GUI</h1>
+                    <p class="subtitle">
+                        Crea, abre y administra servidores de Minecraft desde
+                        una interfaz por páginas.
+                    </p>
+                </div>
+                <div class="status-card">
+                    <span class="status-label">Estado</span>
+                    <span
+                        id="server-status"
+                        class="status-badge"
+                        data-status="offline"
+                        >Apagado</span
+                    >
+                </div>
+            </header>
+
+            <p
+                id="app-feedback"
+                class="feedback global-feedback"
+                data-type="info"
+            >
+                Selecciona una opción para comenzar.
+            </p>
+
+            <section id="page-home" class="page-section">
+                <div class="panel home-panel centered-panel">
+                    <h2>Bienvenido</h2>
+                    <p class="hint home-copy">
+                        Elige si quieres crear un servidor nuevo o abrir un
+                        servidor existente.
+                    </p>
+                    <div class="stack-actions">
+                        <button id="btn-home-create" type="button">
+                            Crear nuevo servidor
+                        </button>
+                        <button
+                            id="btn-home-open-existing"
+                            type="button"
+                            class="secondary"
+                        >
+                            Abrir servidor existente
+                        </button>
+                        <button
+                            id="btn-home-open-last"
+                            type="button"
+                            class="secondary"
+                            hidden
+                        >
+                            Abrir último servidor encendido
+                        </button>
+                    </div>
+                    <p id="home-session-hint" class="hint" hidden></p>
+                </div>
+            </section>
+
+            <section id="page-create" class="page-section" hidden>
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Crear nuevo servidor</h2>
+                            <p class="hint">
+                                Configura el software del servidor, la carpeta,
+                                Java y la RAM antes de crearlo.
+                            </p>
+                        </div>
+                        <button
+                            id="btn-create-back"
+                            type="button"
+                            class="secondary"
+                        >
+                            Volver
+                        </button>
+                    </div>
+
+                    <div class="grid-form">
+                        <div class="field-group full-width">
+                            <label for="server-jar-path"
+                                >Software del servidor (.jar)</label
+                            >
+                            <div class="row responsive-row">
+                                <input
+                                    id="server-jar-path"
+                                    type="text"
+                                    placeholder="Aún no has seleccionado un archivo .jar"
+                                    readonly
+                                />
+                                <button
+                                    id="btn-select-server-jar"
+                                    type="button"
+                                >
+                                    Seleccionar .jar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="field-group full-width">
+                            <label for="server-parent-dir"
+                                >Directorio donde se creará la carpeta del
+                                servidor</label
+                            >
+                            <div class="row responsive-row">
+                                <input
+                                    id="server-parent-dir"
+                                    type="text"
+                                    placeholder="Aún no has seleccionado un directorio"
+                                    readonly
+                                />
+                                <button
+                                    id="btn-select-server-parent-dir"
+                                    type="button"
+                                >
+                                    Seleccionar directorio
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="server-name">Nombre del servidor</label>
+                            <input
+                                id="server-name"
+                                type="text"
+                                placeholder="Ejemplo: survival-vanilla"
+                                autocomplete="off"
+                            />
+                        </div>
+
+                        <div class="field-group">
+                            <label for="java-version">Versión de Java</label>
+                            <select id="java-version"></select>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="memory-gb">RAM asignada (GB)</label>
+                            <input
+                                id="memory-gb"
+                                type="number"
+                                min="1"
+                                step="1"
+                                value="4"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="row action-row top-space">
+                        <button id="btn-create-server" type="button">
+                            Crear servidor
+                        </button>
+                        <button
+                            id="btn-create-accept-eula"
+                            type="button"
+                            class="warning"
+                            hidden
+                        >
+                            Aceptar EULA y reiniciar
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-control" class="page-section" hidden>
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Control de servidor</h2>
+                            <p class="hint">
+                                Gestiona el servidor, revisa la terminal y envía
+                                comandos desde aquí.
+                            </p>
+                        </div>
+                        <button
+                            id="btn-control-back"
+                            type="button"
+                            class="secondary"
+                        >
+                            Volver al inicio
+                        </button>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div>
+                            <span class="summary-label">Servidor</span>
+                            <strong id="summary-server-name">—</strong>
+                        </div>
+                        <div>
+                            <span class="summary-label">Carpeta</span>
+                            <strong id="summary-server-dir">—</strong>
+                        </div>
+                        <div>
+                            <span class="summary-label">Software</span>
+                            <strong id="summary-jar-file">—</strong>
+                        </div>
+                        <div>
+                            <span class="summary-label">Java</span>
+                            <strong id="summary-java-path">—</strong>
+                        </div>
+                        <div>
+                            <span class="summary-label">RAM</span>
+                            <strong id="summary-memory">—</strong>
+                        </div>
+                    </div>
+
+                    <div class="row action-row">
+                        <button id="btn-control-start" type="button">
+                            Iniciar servidor
+                        </button>
+                        <button
+                            id="btn-control-stop"
+                            type="button"
+                            class="secondary"
+                        >
+                            Detener servidor
+                        </button>
+                        <button
+                            id="btn-control-accept-eula"
+                            type="button"
+                            class="warning"
+                            hidden
+                        >
+                            Aceptar EULA y reiniciar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Terminal del servidor</h2>
+                            <p class="hint">
+                                La terminal solo se muestra en esta página.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row responsive-row">
+                        <input
+                            id="input-command"
+                            type="text"
+                            placeholder="Escribe un comando para la consola del servidor"
+                            autocomplete="off"
+                        />
+                        <button id="btn-send-command" type="button">
+                            Enviar comando
+                        </button>
+                    </div>
+
+                    <div
+                        id="log-output"
+                        class="log-output top-space"
+                        aria-live="polite"
+                    ></div>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>
