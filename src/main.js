@@ -37,6 +37,7 @@ let btnControlBackEl;
 let btnControlStartEl;
 let btnControlStopEl;
 let btnControlAcceptEulaEl;
+let btnToggleConfigPanelEl;
 let btnSendCommandEl;
 let serverJarPathEl;
 let serverParentDirEl;
@@ -49,6 +50,14 @@ let summaryServerDirEl;
 let summaryJarFileEl;
 let summaryJavaPathEl;
 let summaryMemoryEl;
+let controlServerNameEl;
+let controlServerJarPathEl;
+let controlJavaVersionEl;
+let controlMemoryGbEl;
+let configPanelEl;
+let btnControlSelectJarEl;
+let btnControlSaveConfigEl;
+let configPanelVisible = false;
 
 let lastRenderedSessionDir = null;
 
@@ -123,36 +132,52 @@ function renderHomeHint() {
   homeSessionHintEl.textContent = `Último servidor guardado: ${appState.activeSession.server_name}`;
 }
 
-function renderJavaOptions(selectedPath = null) {
-  const rememberedPath = selectedPath || javaVersionEl.value || "";
-  javaVersionEl.innerHTML = "";
+function renderJavaOptions(selectedPath = null, targetSelect = null) {
+  const select = targetSelect || javaVersionEl;
+  const rememberedPath = selectedPath || select.value || "";
+  select.innerHTML = "";
 
   if (appState.javaVersions.length === 0) {
     const option = document.createElement("option");
     option.textContent = "No se detectaron versiones de Java";
     option.value = "";
-    javaVersionEl.appendChild(option);
-    javaVersionEl.disabled = true;
+    select.appendChild(option);
+    select.disabled = true;
     return;
   }
 
-  javaVersionEl.disabled = false;
+  select.disabled = false;
 
   for (const javaVersion of appState.javaVersions) {
     const option = document.createElement("option");
     option.value = javaVersion.path;
-    option.textContent = `${javaVersion.label} — ${javaVersion.path}`;
-    javaVersionEl.appendChild(option);
+    option.textContent = javaVersion.label;
+    select.appendChild(option);
   }
 
   if (
     rememberedPath &&
     appState.javaVersions.some((option) => option.path === rememberedPath)
   ) {
-    javaVersionEl.value = rememberedPath;
+    select.value = rememberedPath;
   } else {
-    javaVersionEl.selectedIndex = 0;
+    select.selectedIndex = 0;
   }
+}
+
+function syncControlConfigForm() {
+  if (!appState.activeSession) {
+    controlServerNameEl.value = "";
+    controlServerJarPathEl.value = "";
+    controlMemoryGbEl.value = "4";
+    renderJavaOptions(null, controlJavaVersionEl);
+    return;
+  }
+
+  controlServerNameEl.value = appState.activeSession.server_name;
+  controlServerJarPathEl.value = appState.activeSession.jar_file_name;
+  controlMemoryGbEl.value = `${appState.activeSession.memory_gb}`;
+  renderJavaOptions(appState.activeSession.java_path, controlJavaVersionEl);
 }
 
 function renderActiveSession() {
@@ -181,6 +206,27 @@ function renderActiveSession() {
   }
 
   renderHomeHint();
+  syncControlConfigForm();
+}
+
+function updateConfigPanelVisibility() {
+  const blocked = appState.status === "starting" || appState.status === "running";
+  const hasSession = Boolean(appState.activeSession);
+
+  if (blocked) {
+    configPanelVisible = false;
+  }
+
+  if (configPanelEl) {
+    configPanelEl.hidden = !configPanelVisible || blocked;
+  }
+
+  if (btnToggleConfigPanelEl) {
+    btnToggleConfigPanelEl.hidden = !hasSession || blocked;
+    btnToggleConfigPanelEl.textContent = configPanelVisible
+      ? "Ocultar configuración"
+      : "Configuración de arranque";
+  }
 }
 
 function setStatus(status) {
@@ -188,16 +234,20 @@ function setStatus(status) {
 
   serverStatusEl.textContent = statusLabels[status] ?? status;
   serverStatusEl.dataset.status = status;
+  updateConfigPanelVisibility();
   updateControls();
 }
 
 function formIsValid() {
+  const memoryGb = Number.parseInt(memoryGbEl.value, 10);
+
   return (
     serverJarPathEl.value.trim() !== "" &&
     serverParentDirEl.value.trim() !== "" &&
     serverNameEl.value.trim() !== "" &&
     javaVersionEl.value.trim() !== "" &&
-    Number(memoryGbEl.value) > 0
+    Number.isFinite(memoryGb) &&
+    memoryGb > 0
   );
 }
 
@@ -233,7 +283,7 @@ function collectNewServerPayload() {
   const memoryGb = Number.parseInt(memoryGbEl.value, 10);
 
   if (!Number.isFinite(memoryGb) || memoryGb <= 0) {
-    throw new Error("La RAM debe ser un número entero mayor que cero.");
+    throw new Error("La RAM debe ser un valor en GB mayor que cero.");
   }
 
   return {
@@ -254,7 +304,7 @@ function resetNewServerForm() {
   updateControls();
 }
 
-async function browseServerJar() {
+async function browseServerJar(targetInput = null) {
   const selectedPath = await open({
     directory: false,
     multiple: false,
@@ -263,6 +313,11 @@ async function browseServerJar() {
   });
 
   if (!selectedPath || Array.isArray(selectedPath)) {
+    return;
+  }
+
+  if (targetInput === "control") {
+    controlServerJarPathEl.value = selectedPath;
     return;
   }
 
@@ -357,6 +412,39 @@ async function continueAfterEulaAcceptance() {
   }
 }
 
+async function saveServerConfig() {
+  if (!appState.activeSession) {
+    showFeedback("No hay un servidor activo para configurar.", "info");
+    return;
+  }
+
+  const memoryGb = Number.parseInt(controlMemoryGbEl.value, 10);
+  if (!Number.isFinite(memoryGb) || memoryGb <= 0) {
+    showFeedback("La RAM debe ser un valor en GB mayor que cero.", "error");
+    return;
+  }
+
+  const jarSelectionValue = controlServerJarPathEl.value.trim();
+  const jarSelection =
+    jarSelectionValue &&
+    (jarSelectionValue.includes("/") || jarSelectionValue.includes("\\"))
+      ? jarSelectionValue
+      : "";
+
+  const payload = {
+    server_name: controlServerNameEl.value.trim(),
+    server_jar_path: jarSelection,
+    java_path: controlJavaVersionEl.value.trim(),
+    memory_gb: memoryGb,
+  };
+
+  const snapshot = await invoke("actualizar_configuracion_servidor", {
+    request: payload,
+  });
+  applySnapshot(snapshot);
+  showFeedback("Configuración guardada correctamente.", "success");
+}
+
 async function acceptEulaAndRestart() {
   if (!appState.eulaPending) {
     showFeedback("No hay un EULA pendiente por aceptar.", "info");
@@ -449,6 +537,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   btnControlStartEl = document.querySelector("#btn-control-start");
   btnControlStopEl = document.querySelector("#btn-control-stop");
   btnControlAcceptEulaEl = document.querySelector("#btn-control-accept-eula");
+  btnToggleConfigPanelEl = document.querySelector("#btn-toggle-config-panel");
   btnSendCommandEl = document.querySelector("#btn-send-command");
   serverJarPathEl = document.querySelector("#server-jar-path");
   serverParentDirEl = document.querySelector("#server-parent-dir");
@@ -461,6 +550,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   summaryJarFileEl = document.querySelector("#summary-jar-file");
   summaryJavaPathEl = document.querySelector("#summary-java-path");
   summaryMemoryEl = document.querySelector("#summary-memory");
+  controlServerNameEl = document.querySelector("#control-server-name");
+  controlServerJarPathEl = document.querySelector("#control-server-jar-path");
+  controlJavaVersionEl = document.querySelector("#control-java-version");
+  controlMemoryGbEl = document.querySelector("#control-memory-gb");
+  configPanelEl = document.querySelector("#config-panel");
+  btnControlSelectJarEl = document.querySelector("#btn-control-select-jar");
+  btnControlSaveConfigEl = document.querySelector("#btn-control-save-config");
 
   btnHomeCreateEl.addEventListener("click", () => {
     resetNewServerForm();
@@ -548,6 +644,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     showFeedback("Volviste a la pantalla principal.", "info");
   });
 
+  btnToggleConfigPanelEl.addEventListener("click", () => {
+    if (appState.status === "starting" || appState.status === "running") {
+      return;
+    }
+
+    configPanelVisible = !configPanelVisible;
+    updateConfigPanelVisibility();
+  });
+
   btnControlStartEl.addEventListener("click", async () => {
     try {
       await startCurrentServer();
@@ -570,6 +675,26 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   btnControlAcceptEulaEl.addEventListener("click", async () => {
     await acceptEulaAndRestart();
+  });
+
+  btnControlSelectJarEl.addEventListener("click", async () => {
+    try {
+      await browseServerJar("control");
+    } catch (error) {
+      const message = normalizeError(error);
+      showFeedback(message, "error");
+      appendLog("stderr", message);
+    }
+  });
+
+  btnControlSaveConfigEl.addEventListener("click", async () => {
+    try {
+      await saveServerConfig();
+    } catch (error) {
+      const message = normalizeError(error);
+      showFeedback(message, "error");
+      appendLog("stderr", message);
+    }
   });
 
   btnSendCommandEl.addEventListener("click", async () => {
@@ -601,6 +726,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   serverNameEl.addEventListener("input", updateControls);
   javaVersionEl.addEventListener("change", updateControls);
   memoryGbEl.addEventListener("input", updateControls);
+  controlServerNameEl.addEventListener("input", () => {});
+  controlJavaVersionEl.addEventListener("change", () => {});
+  controlMemoryGbEl.addEventListener("input", () => {});
+
+  configPanelVisible = false;
+  updateConfigPanelVisibility();
 
   try {
     await registerEvents();

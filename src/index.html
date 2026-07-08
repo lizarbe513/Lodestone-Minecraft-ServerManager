@@ -167,7 +167,7 @@
                             class="warning"
                             hidden
                         >
-                            Aceptar EULA y reiniciar
+                            Aceptar EULA de Minecraft
                         </button>
                     </div>
                 </div>
@@ -183,13 +183,22 @@
                                 comandos desde aquí.
                             </p>
                         </div>
-                        <button
-                            id="btn-control-back"
-                            type="button"
-                            class="secondary"
-                        >
-                            Volver al inicio
-                        </button>
+                        <div class="row responsive-row">
+                            <button
+                                id="btn-toggle-config-panel"
+                                type="button"
+                                class="secondary"
+                            >
+                                Configuración de arranque
+                            </button>
+                            <button
+                                id="btn-control-back"
+                                type="button"
+                                class="secondary"
+                            >
+                                Volver al inicio
+                            </button>
+                        </div>
                     </div>
 
                     <div class="summary-grid">
@@ -233,6 +242,66 @@
                             hidden
                         >
                             Aceptar EULA y reiniciar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="config-panel" class="panel" hidden>
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Configuración de arranque</h2>
+                            <p class="hint">
+                                Ajusta el nombre, el .jar, Java y la RAM del servidor sin salir de esta vista.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid-form">
+                        <div class="field-group">
+                            <label for="control-server-name">Nombre del servidor</label>
+                            <input
+                                id="control-server-name"
+                                type="text"
+                                placeholder="Nombre del servidor"
+                                autocomplete="off"
+                            />
+                        </div>
+
+                        <div class="field-group">
+                            <label for="control-java-version">Versión de Java</label>
+                            <select id="control-java-version"></select>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="control-memory-gb">RAM asignada (GB)</label>
+                            <input
+                                id="control-memory-gb"
+                                type="number"
+                                min="1"
+                                step="1"
+                                value="4"
+                            />
+                        </div>
+
+                        <div class="field-group full-width">
+                            <label for="control-server-jar-path">Software del servidor (.jar)</label>
+                            <div class="row responsive-row">
+                                <input
+                                    id="control-server-jar-path"
+                                    type="text"
+                                    placeholder="Selecciona un archivo .jar"
+                                    readonly
+                                />
+                                <button id="btn-control-select-jar" type="button">
+                                    Seleccionar .jar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row action-row top-space">
+                        <button id="btn-control-save-config" type="button">
+                            Guardar configuración
                         </button>
                     </div>
                 </div>
