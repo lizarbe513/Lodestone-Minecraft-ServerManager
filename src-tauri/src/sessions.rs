@@ -291,9 +291,26 @@ pub fn update_server_session_config(
     let java_path = validate_java_path(&request.java_path)?;
     let memory_gb = validate_memory_gb(request.memory_gb)?;
 
-    let server_dir = PathBuf::from(&session.server_dir);
+    let mut server_dir = PathBuf::from(&session.server_dir);
     if !server_dir.is_dir() {
         return Err("La carpeta de la sesión guardada ya no existe.".into());
+    }
+
+    if server_name != session.server_name {
+        let parent_dir = server_dir.parent().ok_or_else(|| "No se pudo obtener la carpeta principal del servidor.".to_string())?;
+        let new_server_dir = parent_dir.join(&server_name);
+        
+        if new_server_dir.exists() {
+            return Err(format!(
+                "La carpeta `{}` ya existe. Elige otro nombre para el servidor.",
+                server_name
+            ));
+        }
+
+        std::fs::rename(&server_dir, &new_server_dir)
+            .map_err(|e| format!("No se pudo renombrar la carpeta del servidor: {e}"))?;
+        
+        server_dir = new_server_dir;
     }
 
     let jar_file_name = if request.server_jar_path.trim().is_empty() {
@@ -410,10 +427,12 @@ mod tests {
 
     #[test]
     fn update_server_session_config_rewrites_startup_settings() {
-        let server_dir = temp_test_dir("server-config-update");
+        let parent_test_dir = temp_test_dir("parent-config-update");
+        let server_dir = parent_test_dir.join("demo");
         fs::create_dir_all(&server_dir).unwrap();
 
-        let source_jar = server_dir.join("source.jar");
+        let source_jar = temp_test_dir("source").join("source.jar");
+        fs::create_dir_all(source_jar.parent().unwrap()).unwrap();
         fs::write(&source_jar, b"jar").unwrap();
 
         let session = ServerSession {
@@ -439,6 +458,6 @@ mod tests {
         assert_eq!(updated.server_name, "demo-v2");
         assert_eq!(updated.jar_file_name, "source.jar");
         assert_eq!(updated.memory_gb, 8);
-        assert!(server_dir.join("source.jar").is_file());
+        assert!(PathBuf::from(&updated.server_dir).join("source.jar").is_file());
     }
 }

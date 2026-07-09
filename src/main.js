@@ -55,10 +55,10 @@ let controlServerNameEl;
 let controlServerJarPathEl;
 let controlJavaVersionEl;
 let controlMemoryGbEl;
-let configPanelEl;
+let pageConfigEl;
+let btnConfigBackEl;
 let btnControlSelectJarEl;
 let btnControlSaveConfigEl;
-let configPanelVisible = false;
 
 let pagePropertiesEl;
 let btnOpenPropertiesEl;
@@ -136,6 +136,7 @@ function navigateTo(page) {
   pageCreateEl.hidden = page !== "create";
   pageControlEl.hidden = page !== "control";
   if (pagePropertiesEl) pagePropertiesEl.hidden = page !== "properties";
+  if (pageConfigEl) pageConfigEl.hidden = page !== "config";
   updateControls();
 }
 
@@ -233,32 +234,11 @@ function renderActiveSession() {
   syncControlConfigForm();
 }
 
-function updateConfigPanelVisibility() {
-  const blocked = appState.status === "starting" || appState.status === "running";
-  const hasSession = Boolean(appState.activeSession);
-
-  if (blocked) {
-    configPanelVisible = false;
-  }
-
-  if (configPanelEl) {
-    configPanelEl.hidden = !configPanelVisible || blocked;
-  }
-
-  if (btnToggleConfigPanelEl) {
-    btnToggleConfigPanelEl.hidden = !hasSession || blocked;
-    btnToggleConfigPanelEl.textContent = configPanelVisible
-      ? "Ocultar configuración"
-      : "Configuración de arranque";
-  }
-}
-
 function setStatus(status) {
   appState.status = status;
 
   serverStatusEl.textContent = statusLabels[status] ?? status;
   serverStatusEl.dataset.status = status;
-  updateConfigPanelVisibility();
   updateControls();
 }
 
@@ -298,6 +278,7 @@ function updateControls() {
     appState.status === "starting" || appState.status === "running"
   );
   btnControlOpenFolderEl.disabled = !hasSession;
+  if (btnToggleConfigPanelEl) btnToggleConfigPanelEl.disabled = !hasSession || busy;
   if (btnOpenPropertiesEl) btnOpenPropertiesEl.disabled = !hasSession || busy;
   btnControlAcceptEulaEl.hidden = !waitingEula || appState.pendingCreateFlow;
   btnControlAcceptEulaEl.disabled = !waitingEula;
@@ -468,6 +449,7 @@ async function saveServerConfig() {
     request: payload,
   });
   applySnapshot(snapshot);
+  navigateTo("control");
   showFeedback("Configuración guardada correctamente.", "success");
 }
 
@@ -762,6 +744,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   pageCreateEl = document.querySelector("#page-create");
   pageControlEl = document.querySelector("#page-control");
   pagePropertiesEl = document.querySelector("#page-properties");
+  pageConfigEl = document.querySelector("#page-config");
   homeSessionHintEl = document.querySelector("#home-session-hint");
   serverStatusEl = document.querySelector("#server-status");
   feedbackEl = document.querySelector("#app-feedback");
@@ -802,7 +785,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   controlServerJarPathEl = document.querySelector("#control-server-jar-path");
   controlJavaVersionEl = document.querySelector("#control-java-version");
   controlMemoryGbEl = document.querySelector("#control-memory-gb");
-  configPanelEl = document.querySelector("#config-panel");
+  btnConfigBackEl = document.querySelector("#btn-config-back");
   btnControlSelectJarEl = document.querySelector("#btn-control-select-jar");
   btnControlSaveConfigEl = document.querySelector("#btn-control-save-config");
 
@@ -896,10 +879,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (appState.status === "starting" || appState.status === "running") {
       return;
     }
-
-    configPanelVisible = !configPanelVisible;
-    updateConfigPanelVisibility();
+    navigateTo("config");
   });
+
+  if (btnConfigBackEl) {
+    btnConfigBackEl.addEventListener("click", () => {
+      navigateTo("control");
+    });
+  }
 
   btnControlStartEl.addEventListener("click", async () => {
     try {
@@ -1026,9 +1013,6 @@ window.addEventListener("DOMContentLoaded", async () => {
       navigateTo("control");
     });
   }
-
-  configPanelVisible = false;
-  updateConfigPanelVisibility();
 
   try {
     await registerEvents();

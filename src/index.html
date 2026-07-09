@@ -259,14 +259,47 @@
                         </button>
                     </div>
                 </div>
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Terminal del servidor</h2>
+                            <p class="hint">
+                                La terminal solo se muestra en esta página.
+                            </p>
+                        </div>
+                    </div>
 
-                <div id="config-panel" class="panel" hidden>
+                    <div class="row responsive-row">
+                        <input
+                            id="input-command"
+                            type="text"
+                            placeholder="Escribe un comando para la consola del servidor"
+                            autocomplete="off"
+                        />
+                        <button id="btn-send-command" type="button">
+                            Enviar comando
+                        </button>
+                    </div>
+
+                    <div
+                        id="log-output"
+                        class="log-output top-space"
+                        aria-live="polite"
+                    ></div>
+                </div>
+            </section>
+
+            <section id="page-config" class="page-section" hidden>
+                <div class="panel">
                     <div class="panel-heading">
                         <div>
                             <h2>Configuración de arranque</h2>
                             <p class="hint">
-                                Ajusta el nombre, el .jar, Java y la RAM del servidor sin salir de esta vista.
+                                Ajusta el nombre, el .jar, Java y la RAM del servidor.
                             </p>
+                        </div>
+                        <div class="row responsive-row">
+                            <button id="btn-config-back" type="button" class="secondary">Volver al control</button>
                         </div>
                     </div>
 
@@ -318,35 +351,6 @@
                             Guardar configuración
                         </button>
                     </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Terminal del servidor</h2>
-                            <p class="hint">
-                                La terminal solo se muestra en esta página.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="row responsive-row">
-                        <input
-                            id="input-command"
-                            type="text"
-                            placeholder="Escribe un comando para la consola del servidor"
-                            autocomplete="off"
-                        />
-                        <button id="btn-send-command" type="button">
-                            Enviar comando
-                        </button>
-                    </div>
-
-                    <div
-                        id="log-output"
-                        class="log-output top-space"
-                        aria-live="polite"
-                    ></div>
                 </div>
             </section>
 
