@@ -192,6 +192,13 @@
                                 Configuración de arranque
                             </button>
                             <button
+                                id="btn-open-properties"
+                                type="button"
+                                class="secondary"
+                            >
+                                Propiedades del servidor
+                            </button>
+                            <button
                                 id="btn-control-back"
                                 type="button"
                                 class="secondary"
@@ -340,6 +347,25 @@
                         class="log-output top-space"
                         aria-live="polite"
                     ></div>
+                </div>
+            </section>
+
+            <section id="page-properties" class="page-section" hidden>
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Propiedades del servidor</h2>
+                            <p class="hint">Gestiona la configuración del mundo, reglas y opciones avanzadas (server.properties).</p>
+                        </div>
+                        <div class="row responsive-row">
+                            <button id="btn-properties-save" type="button">Guardar cambios</button>
+                            <button id="btn-properties-back" type="button" class="secondary">Volver al control</button>
+                        </div>
+                    </div>
+                    
+                    <div id="properties-container" style="display: flex; flex-direction: column; gap: 24px;">
+                        <!-- Groups injected by JS -->
+                    </div>
                 </div>
             </section>
         </main>

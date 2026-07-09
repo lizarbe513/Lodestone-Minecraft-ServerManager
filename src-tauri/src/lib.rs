@@ -205,6 +205,24 @@ fn actualizar_configuracion_servidor(
     Ok(build_snapshot(&runtime_guard))
 }
 
+#[tauri::command]
+fn leer_server_properties(state: tauri::State<AppState>) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir).join("server.properties");
+    if path.exists() {
+        std::fs::read_to_string(path).map_err(|e| format!("No se pudo leer server.properties: {}", e))
+    } else {
+        Ok(String::new())
+    }
+}
+
+#[tauri::command]
+fn guardar_server_properties(state: tauri::State<AppState>, contenido: String) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir).join("server.properties");
+    std::fs::write(path, contenido).map_err(|e| format!("No se pudo guardar server.properties: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -222,7 +240,9 @@ pub fn run() {
             enviar_comando,
             detener_servidor,
             abrir_carpeta_servidor,
-            actualizar_configuracion_servidor
+            actualizar_configuracion_servidor,
+            leer_server_properties,
+            guardar_server_properties
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

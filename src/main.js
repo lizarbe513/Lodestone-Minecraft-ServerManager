@@ -60,6 +60,30 @@ let btnControlSelectJarEl;
 let btnControlSaveConfigEl;
 let configPanelVisible = false;
 
+let pagePropertiesEl;
+let btnOpenPropertiesEl;
+let btnPropertiesSaveEl;
+let btnPropertiesBackEl;
+let propertiesContainerEl;
+
+let parsedProperties = {};
+let rawPropertiesLines = [];
+
+const EXCLUDED_PROPERTIES = [
+  "generator-settings", "initial-disabled-packs", "initial-enabled-packs", "level-name", "level-seed", "level-type",
+  "management-server-allowed-origins", "management-server-enabled", "management-server-host", "management-server-port",
+  "management-server-secret", "management-server-tls-enabled", "management-server-tls-keystore", "management-server-tls-keystore-password",
+  "require-resource-pack", "resource-pack", "resource-pack-id", "resource-pack-prompt", "resource-pack-sha1"
+];
+
+const PROPERTY_GROUPS = {
+  "Mundo y Generación": ["motd", "max-players", "max-world-size", "view-distance", "simulation-distance", "max-build-height", "allow-nether", "generate-structures"],
+  "Reglas del Juego": ["gamemode", "difficulty", "hardcore", "pvp", "allow-flight", "force-gamemode"],
+  "Generación de Entidades": ["spawn-monsters", "spawn-animals", "spawn-npcs"],
+  "Seguridad y Accesos": ["enforce-whitelist", "white-list", "online-mode", "function-permission-level", "op-permission-level", "hide-online-players", "prevent-proxy-connections"],
+  "Avanzado / Red": ["server-ip", "server-port", "network-compression-threshold", "entity-broadcast-range-percentage", "enable-command-block", "enable-rcon", "enable-query", "rate-limit", "player-idle-timeout", "sync-chunk-writes", "enable-status"]
+};
+
 let lastRenderedSessionDir = null;
 
 function showFeedback(message, type = "info") {
@@ -113,6 +137,7 @@ function navigateTo(page) {
   pageHomeEl.hidden = page !== "home";
   pageCreateEl.hidden = page !== "create";
   pageControlEl.hidden = page !== "control";
+  if (pagePropertiesEl) pagePropertiesEl.hidden = page !== "properties";
   updateControls();
 }
 
@@ -275,6 +300,7 @@ function updateControls() {
     appState.status === "starting" || appState.status === "running"
   );
   btnControlOpenFolderEl.disabled = !hasSession;
+  if (btnOpenPropertiesEl) btnOpenPropertiesEl.disabled = !hasSession || busy;
   btnControlAcceptEulaEl.hidden = !waitingEula || appState.pendingCreateFlow;
   btnControlAcceptEulaEl.disabled = !waitingEula;
   inputCommandEl.disabled = appState.status !== "running";
@@ -517,10 +543,227 @@ async function registerEvents() {
   });
 }
 
+// --- Properties Management Logic ---
+
+function parsePropertiesContent(content) {
+  rawPropertiesLines = content.split('\n');
+  parsedProperties = {};
+  
+  for (let i = 0; i < rawPropertiesLines.length; i++) {
+    const line = rawPropertiesLines[i].trim();
+    if (!line || line.startsWith('#')) continue;
+    
+    const eqIdx = line.indexOf('=');
+    if (eqIdx !== -1) {
+      const key = line.substring(0, eqIdx).trim();
+      const val = line.substring(eqIdx + 1).trim();
+      parsedProperties[key] = { value: val, lineIndex: i };
+    }
+  }
+}
+
+function buildPropertiesPayload() {
+  const newLines = [...rawPropertiesLines];
+  
+  for (const key of Object.keys(parsedProperties)) {
+    const prop = parsedProperties[key];
+    const newLine = `${key}=${prop.value}`;
+    if (prop.lineIndex !== -1) {
+      newLines[prop.lineIndex] = newLine;
+    } else {
+      newLines.push(newLine);
+    }
+  }
+  
+  return newLines.join('\n');
+}
+
+function renderPropertiesUI() {
+  propertiesContainerEl.innerHTML = '';
+  
+  const groupsToRender = Object.assign({}, PROPERTY_GROUPS);
+  const renderedKeys = new Set();
+  
+  for (const [groupName, keys] of Object.entries(groupsToRender)) {
+    const validKeys = keys.filter(k => !EXCLUDED_PROPERTIES.includes(k));
+    if (validKeys.length === 0) continue;
+    
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+    panel.style.marginBottom = '0';
+    
+    const heading = document.createElement('h3');
+    heading.textContent = groupName;
+    heading.style.marginTop = '0';
+    panel.appendChild(heading);
+    
+    const formGrid = document.createElement('div');
+    formGrid.className = 'grid-form';
+    panel.appendChild(formGrid);
+    
+    for (const key of validKeys) {
+      const val = parsedProperties[key] ? parsedProperties[key].value : "";
+      const field = createPropertyField(key, val);
+      if (field) {
+        formGrid.appendChild(field);
+      }
+      renderedKeys.add(key);
+    }
+    
+    propertiesContainerEl.appendChild(panel);
+  }
+  
+  // Render remaining properties that are not excluded and not in groups
+  const otherKeys = Object.keys(parsedProperties).filter(k => !EXCLUDED_PROPERTIES.includes(k) && !renderedKeys.has(k));
+  if (otherKeys.length > 0) {
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+    panel.style.marginBottom = '0';
+    const heading = document.createElement('h3');
+    heading.textContent = 'Otras configuraciones';
+    heading.style.marginTop = '0';
+    panel.appendChild(heading);
+    
+    const formGrid = document.createElement('div');
+    formGrid.className = 'grid-form';
+    panel.appendChild(formGrid);
+    
+    for (const key of otherKeys) {
+      const val = parsedProperties[key].value;
+      const field = createPropertyField(key, val);
+      if (field) {
+        formGrid.appendChild(field);
+      }
+    }
+    propertiesContainerEl.appendChild(panel);
+  }
+}
+
+function createPropertyField(key, initialValue) {
+  const container = document.createElement('div');
+  container.className = 'field-group';
+  
+  const label = document.createElement('label');
+  label.textContent = key;
+  
+  if (initialValue === 'true' || initialValue === 'false' || key === 'hardcore' || key === 'pvp' || key === 'allow-flight' || key === 'allow-nether' || key === 'spawn-monsters' || key === 'spawn-animals' || key === 'spawn-npcs' || key === 'enforce-whitelist' || key === 'online-mode' || key === 'hide-online-players' || key === 'enable-command-block' || key === 'enable-rcon' || key === 'enable-query' || key === 'sync-chunk-writes' || key === 'enable-status' || key === 'generate-structures') {
+    container.className = 'switch-label-wrapper';
+    const wrapperLabel = document.createElement('label');
+    wrapperLabel.textContent = key;
+    
+    const labelSwitch = document.createElement('label');
+    labelSwitch.className = 'switch';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = initialValue === 'true';
+    checkbox.addEventListener('change', () => {
+      if (!parsedProperties[key]) parsedProperties[key] = { value: "", lineIndex: -1 };
+      parsedProperties[key].value = checkbox.checked ? 'true' : 'false';
+    });
+    
+    const slider = document.createElement('span');
+    slider.className = 'slider';
+    
+    labelSwitch.appendChild(checkbox);
+    labelSwitch.appendChild(slider);
+    
+    container.appendChild(wrapperLabel);
+    container.appendChild(labelSwitch);
+    return container;
+  }
+  
+  if (key === 'difficulty') {
+    const select = document.createElement('select');
+    ['peaceful', 'easy', 'normal', 'hard'].forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt;
+      o.textContent = opt;
+      if (initialValue === opt) o.selected = true;
+      select.appendChild(o);
+    });
+    select.addEventListener('change', () => {
+      if (!parsedProperties[key]) parsedProperties[key] = { value: "", lineIndex: -1 };
+      parsedProperties[key].value = select.value;
+    });
+    container.appendChild(label);
+    container.appendChild(select);
+    return container;
+  }
+  
+  if (key === 'gamemode') {
+    const select = document.createElement('select');
+    ['survival', 'creative', 'adventure', 'spectator'].forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt;
+      o.textContent = opt;
+      if (initialValue === opt) o.selected = true;
+      select.appendChild(o);
+    });
+    select.addEventListener('change', () => {
+      if (!parsedProperties[key]) parsedProperties[key] = { value: "", lineIndex: -1 };
+      parsedProperties[key].value = select.value;
+    });
+    container.appendChild(label);
+    container.appendChild(select);
+    return container;
+  }
+  
+  if (key === 'function-permission-level' || key === 'op-permission-level') {
+    const select = document.createElement('select');
+    const levels = [
+      {val: '1', text: 'Moderador (=1)'},
+      {val: '2', text: 'Default (=2)'},
+      {val: '3', text: 'Administrador (=3)'},
+      {val: '4', text: 'Dueño (=4)'}
+    ];
+    levels.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.val;
+      o.textContent = opt.text;
+      if (initialValue === opt.val) o.selected = true;
+      select.appendChild(o);
+    });
+    select.addEventListener('change', () => {
+      if (!parsedProperties[key]) parsedProperties[key] = { value: "", lineIndex: -1 };
+      parsedProperties[key].value = select.value;
+    });
+    container.appendChild(label);
+    container.appendChild(select);
+    return container;
+  }
+  
+  if (key === 'entity-broadcast-range-percentage') {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.step = '10';
+    input.value = initialValue || '100';
+    input.addEventListener('input', () => {
+      if (!parsedProperties[key]) parsedProperties[key] = { value: "", lineIndex: -1 };
+      parsedProperties[key].value = input.value;
+    });
+    container.appendChild(label);
+    container.appendChild(input);
+    return container;
+  }
+  
+  const isNumber = !isNaN(Number(initialValue)) && initialValue !== "";
+  const input = document.createElement('input');
+  input.type = isNumber && key !== 'motd' && key !== 'server-ip' ? 'number' : 'text';
+  input.value = initialValue;
+  input.addEventListener('input', () => {
+      if (!parsedProperties[key]) parsedProperties[key] = { value: "", lineIndex: -1 };
+      parsedProperties[key].value = input.value;
+  });
+  container.appendChild(label);
+  container.appendChild(input);
+  return container;
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   pageHomeEl = document.querySelector("#page-home");
   pageCreateEl = document.querySelector("#page-create");
   pageControlEl = document.querySelector("#page-control");
+  pagePropertiesEl = document.querySelector("#page-properties");
   homeSessionHintEl = document.querySelector("#home-session-hint");
   serverStatusEl = document.querySelector("#server-status");
   feedbackEl = document.querySelector("#app-feedback");
@@ -539,6 +782,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   btnControlStartEl = document.querySelector("#btn-control-start");
   btnControlStopEl = document.querySelector("#btn-control-stop");
   btnControlOpenFolderEl = document.querySelector("#btn-control-open-folder");
+  btnOpenPropertiesEl = document.querySelector("#btn-open-properties");
+  btnPropertiesSaveEl = document.querySelector("#btn-properties-save");
+  btnPropertiesBackEl = document.querySelector("#btn-properties-back");
+  propertiesContainerEl = document.querySelector("#properties-container");
   btnControlAcceptEulaEl = document.querySelector("#btn-control-accept-eula");
   btnToggleConfigPanelEl = document.querySelector("#btn-toggle-config-panel");
   btnSendCommandEl = document.querySelector("#btn-send-command");
@@ -742,6 +989,45 @@ window.addEventListener("DOMContentLoaded", async () => {
   controlServerNameEl.addEventListener("input", () => {});
   controlJavaVersionEl.addEventListener("change", () => {});
   controlMemoryGbEl.addEventListener("input", () => {});
+
+  if (btnOpenPropertiesEl) {
+    btnOpenPropertiesEl.addEventListener("click", async () => {
+      try {
+        showFeedback("Cargando propiedades...", "info");
+        const content = await invoke("leer_server_properties");
+        parsePropertiesContent(content);
+        renderPropertiesUI();
+        navigateTo("properties");
+        showFeedback("Propiedades cargadas.", "success");
+      } catch (error) {
+        const message = normalizeError(error);
+        showFeedback(message, "error");
+        appendLog("stderr", message);
+      }
+    });
+  }
+
+  if (btnPropertiesSaveEl) {
+    btnPropertiesSaveEl.addEventListener("click", async () => {
+      try {
+        showFeedback("Guardando propiedades...", "info");
+        const newContent = buildPropertiesPayload();
+        await invoke("guardar_server_properties", { contenido: newContent });
+        navigateTo("control");
+        showFeedback("Propiedades guardadas correctamente.", "success");
+      } catch (error) {
+        const message = normalizeError(error);
+        showFeedback(message, "error");
+        appendLog("stderr", message);
+      }
+    });
+  }
+
+  if (btnPropertiesBackEl) {
+    btnPropertiesBackEl.addEventListener("click", () => {
+      navigateTo("control");
+    });
+  }
 
   configPanelVisible = false;
   updateConfigPanelVisibility();
