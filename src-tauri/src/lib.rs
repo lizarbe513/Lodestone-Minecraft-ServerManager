@@ -150,6 +150,39 @@ fn detener_servidor(state: tauri::State<AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn abrir_carpeta_servidor(state: tauri::State<AppState>) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    if !path.is_dir() {
+        return Err("La carpeta del servidor no existe o no es válida.".into());
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("No se pudo abrir la carpeta en Windows: {}", e))?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("No se pudo abrir la carpeta en macOS: {}", e))?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("No se pudo abrir la carpeta en Linux: {}", e))?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
 fn actualizar_configuracion_servidor(
     app_handle: tauri::AppHandle,
     state: tauri::State<AppState>,
@@ -188,6 +221,7 @@ pub fn run() {
             aceptar_eula_y_reiniciar,
             enviar_comando,
             detener_servidor,
+            abrir_carpeta_servidor,
             actualizar_configuracion_servidor
         ])
         .run(tauri::generate_context!())

@@ -36,6 +36,7 @@ let btnCreateAcceptEulaEl;
 let btnControlBackEl;
 let btnControlStartEl;
 let btnControlStopEl;
+let btnControlOpenFolderEl;
 let btnControlAcceptEulaEl;
 let btnToggleConfigPanelEl;
 let btnSendCommandEl;
@@ -273,6 +274,7 @@ function updateControls() {
   btnControlStopEl.disabled = !(
     appState.status === "starting" || appState.status === "running"
   );
+  btnControlOpenFolderEl.disabled = !hasSession;
   btnControlAcceptEulaEl.hidden = !waitingEula || appState.pendingCreateFlow;
   btnControlAcceptEulaEl.disabled = !waitingEula;
   inputCommandEl.disabled = appState.status !== "running";
@@ -536,6 +538,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   btnControlBackEl = document.querySelector("#btn-control-back");
   btnControlStartEl = document.querySelector("#btn-control-start");
   btnControlStopEl = document.querySelector("#btn-control-stop");
+  btnControlOpenFolderEl = document.querySelector("#btn-control-open-folder");
   btnControlAcceptEulaEl = document.querySelector("#btn-control-accept-eula");
   btnToggleConfigPanelEl = document.querySelector("#btn-toggle-config-panel");
   btnSendCommandEl = document.querySelector("#btn-send-command");
@@ -666,6 +669,16 @@ window.addEventListener("DOMContentLoaded", async () => {
   btnControlStopEl.addEventListener("click", async () => {
     try {
       await stopServer();
+    } catch (error) {
+      const message = normalizeError(error);
+      showFeedback(message, "error");
+      appendLog("stderr", message);
+    }
+  });
+
+  btnControlOpenFolderEl.addEventListener("click", async () => {
+    try {
+      await invoke("abrir_carpeta_servidor");
     } catch (error) {
       const message = normalizeError(error);
       showFeedback(message, "error");
