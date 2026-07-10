@@ -224,6 +224,31 @@ fn guardar_server_properties(state: tauri::State<AppState>, contenido: String) -
 }
 
 #[tauri::command]
+fn leer_archivo_servidor(state: tauri::State<AppState>, archivo: String) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    // Basic sanitization
+    if archivo.contains("..") || archivo.contains('/') || archivo.contains('\\') {
+        return Err("Nombre de archivo inválido".into());
+    }
+    let path = PathBuf::from(&session.server_dir).join(&archivo);
+    if path.exists() {
+        std::fs::read_to_string(path).map_err(|e| format!("No se pudo leer {}: {}", archivo, e))
+    } else {
+        Ok(String::new()) // Return empty if it doesn't exist
+    }
+}
+
+#[tauri::command]
+fn guardar_archivo_servidor(state: tauri::State<AppState>, archivo: String, contenido: String) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    if archivo.contains("..") || archivo.contains('/') || archivo.contains('\\') {
+        return Err("Nombre de archivo inválido".into());
+    }
+    let path = PathBuf::from(&session.server_dir).join(&archivo);
+    std::fs::write(path, contenido).map_err(|e| format!("No se pudo guardar {}: {}", archivo, e))
+}
+
+#[tauri::command]
 fn obtener_estadisticas_servidor(state: tauri::State<AppState>) -> Result<ServerStatsPayload, String> {
     let (cpu, ram_bytes) = crate::runtime::get_server_stats(&state.runtime);
     Ok(ServerStatsPayload {
@@ -252,6 +277,8 @@ pub fn run() {
             actualizar_configuracion_servidor,
             leer_server_properties,
             guardar_server_properties,
+            leer_archivo_servidor,
+            guardar_archivo_servidor,
             obtener_estadisticas_servidor
         ])
         .run(tauri::generate_context!())

@@ -66,6 +66,16 @@ let btnPropertiesSaveEl;
 let btnPropertiesBackEl;
 let propertiesContainerEl;
 
+let pagePlayersEl;
+let btnOpenPlayersEl;
+let btnPlayersBackEl;
+let listOpsEl, listWhitelistEl, listBannedPlayersEl, listBannedIpsEl;
+let inputAddOpEl, btnAddOpEl;
+let inputAddWhitelistEl, btnAddWhitelistEl;
+let inputAddBannedPlayerEl, btnAddBannedPlayerEl;
+let inputAddBannedIpEl, btnAddBannedIpEl;
+let whitelistStatusBadgeEl;
+
 let statRamEl;
 let statCpuEl;
 let statsInterval = null;
@@ -151,6 +161,7 @@ function navigateTo(page) {
   pageControlEl.hidden = page !== "control";
   if (pagePropertiesEl) pagePropertiesEl.hidden = page !== "properties";
   if (pageConfigEl) pageConfigEl.hidden = page !== "config";
+  if (pagePlayersEl) pagePlayersEl.hidden = page !== "players";
   updateControls();
 }
 
@@ -340,14 +351,17 @@ function requestConfirm(title, message, command) {
 }
 
 function handleServerLogLine(message) {
-    const text = normalizeMessage(message);
-    const joinMatch = text.match(/\] \[Server thread\/INFO\]:\s+([\w]+)\s+joined the game/i);
+    let text = normalizeMessage(message);
+    // Strip ANSI escape codes that might interfere with regex
+    text = text.replace(/\x1b\[[0-9;]*m/g, "");
+    
+    const joinMatch = text.match(/INFO\]:\s+([a-zA-Z0-9_]{1,16})\s+joined the game/i);
     if (joinMatch) {
         connectedPlayers.add(joinMatch[1]);
         renderPlayersList();
         return;
     }
-    const leaveMatch = text.match(/\] \[Server thread\/INFO\]:\s+([\w]+)\s+left the game/i);
+    const leaveMatch = text.match(/INFO\]:\s+([a-zA-Z0-9_]{1,16})\s+left the game/i);
     if (leaveMatch) {
         connectedPlayers.delete(leaveMatch[1]);
         renderPlayersList();
@@ -853,12 +867,137 @@ function createPropertyField(key, initialValue) {
   return container;
 }
 
+async function checkWhitelistStatus() {
+    try {
+        const content = await invoke("leer_server_properties");
+        if (!content) return;
+        const match = content.match(/^white-list\s*=\s*(true|false)/m);
+        if (match && match[1] === "false") {
+            if (inputAddWhitelistEl) inputAddWhitelistEl.disabled = true;
+            if (btnAddWhitelistEl) btnAddWhitelistEl.disabled = true;
+            if (whitelistStatusBadgeEl) whitelistStatusBadgeEl.textContent = "(Desactivada en server.properties)";
+            
+            // Disable remove buttons in list if disabled
+            const removeBtns = listWhitelistEl.querySelectorAll("button");
+            removeBtns.forEach(btn => btn.disabled = true);
+        } else {
+            if (inputAddWhitelistEl) inputAddWhitelistEl.disabled = false;
+            if (btnAddWhitelistEl) btnAddWhitelistEl.disabled = false;
+            if (whitelistStatusBadgeEl) whitelistStatusBadgeEl.textContent = "";
+        }
+    } catch (e) {
+        // Fallback to active if error
+    }
+}
+
+async function loadAllPlayerLists() {
+    await loadPlayerList("ops.json", listOpsEl, handleRemoveOp);
+    await loadPlayerList("whitelist.json", listWhitelistEl, handleRemoveWhitelist);
+    await loadPlayerList("banned-players.json", listBannedPlayersEl, handleRemoveBannedPlayer);
+    await loadPlayerList("banned-ips.json", listBannedIpsEl, handleRemoveBannedIp);
+    await checkWhitelistStatus();
+}
+
+async function loadPlayerList(filename, containerEl, removeHandler) {
+    if (!containerEl) return;
+    try {
+        const content = await invoke("leer_archivo_servidor", { archivo: filename });
+        containerEl.innerHTML = "";
+        if (!content) {
+            containerEl.innerHTML = '<p class="hint" style="font-size: 0.9rem;">No hay registros.</p>';
+            return;
+        }
+        
+        let arr = [];
+        try { arr = JSON.parse(content); } catch (e) { arr = []; }
+        
+        if (!Array.isArray(arr) || arr.length === 0) {
+            containerEl.innerHTML = '<p class="hint" style="font-size: 0.9rem;">No hay registros.</p>';
+            return;
+        }
+        
+        arr.forEach(item => {
+            const div = document.createElement("div");
+            div.style = "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border-color);";
+            
+            const nameEl = document.createElement("strong");
+            nameEl.style.fontSize = "0.95rem";
+            nameEl.textContent = item.name || item.ip || "Desconocido";
+            
+            const btnRemove = document.createElement("button");
+            btnRemove.className = "secondary";
+            btnRemove.style.padding = "4px 8px";
+            btnRemove.style.fontSize = "0.8rem";
+            btnRemove.textContent = "Eliminar";
+            btnRemove.onclick = () => removeHandler(item);
+            
+            div.appendChild(nameEl);
+            div.appendChild(btnRemove);
+            containerEl.appendChild(div);
+        });
+    } catch (err) {
+        containerEl.innerHTML = `<p class="hint" style="color: var(--error);">Error: ${err}</p>`;
+    }
+}
+
+async function addItemToList(filename, itemTemplate, containerEl, removeHandler) {
+    try {
+        const content = await invoke("leer_archivo_servidor", { archivo: filename });
+        let arr = [];
+        if (content) {
+            try { arr = JSON.parse(content); } catch (e) { arr = []; }
+        }
+        if (!Array.isArray(arr)) arr = [];
+        
+        arr.push(itemTemplate);
+        
+        await invoke("guardar_archivo_servidor", { 
+            archivo: filename, 
+            contenido: JSON.stringify(arr, null, 2)
+        });
+        
+        showFeedback("Lista actualizada correctamente.", "success");
+        await loadPlayerList(filename, containerEl, removeHandler);
+    } catch (err) {
+        showFeedback(`Error al guardar: ${err}`, "error");
+    }
+}
+
+async function removeItemFromList(filename, matchFn, containerEl, removeHandler) {
+    try {
+        const content = await invoke("leer_archivo_servidor", { archivo: filename });
+        if (!content) return;
+        
+        let arr = [];
+        try { arr = JSON.parse(content); } catch (e) { return; }
+        if (!Array.isArray(arr)) return;
+        
+        arr = arr.filter(item => !matchFn(item));
+        
+        await invoke("guardar_archivo_servidor", { 
+            archivo: filename, 
+            contenido: JSON.stringify(arr, null, 2)
+        });
+        
+        showFeedback("Elemento eliminado de la lista.", "success");
+        await loadPlayerList(filename, containerEl, removeHandler);
+    } catch (err) {
+        showFeedback(`Error al guardar: ${err}`, "error");
+    }
+}
+
+function handleRemoveOp(item) { removeItemFromList("ops.json", i => i.name === item.name, listOpsEl, handleRemoveOp); }
+function handleRemoveWhitelist(item) { removeItemFromList("whitelist.json", i => i.name === item.name, listWhitelistEl, handleRemoveWhitelist); }
+function handleRemoveBannedPlayer(item) { removeItemFromList("banned-players.json", i => i.name === item.name, listBannedPlayersEl, handleRemoveBannedPlayer); }
+function handleRemoveBannedIp(item) { removeItemFromList("banned-ips.json", i => i.ip === item.ip, listBannedIpsEl, handleRemoveBannedIp); }
+
 window.addEventListener("DOMContentLoaded", async () => {
   pageHomeEl = document.querySelector("#page-home");
   pageCreateEl = document.querySelector("#page-create");
   pageControlEl = document.querySelector("#page-control");
   pagePropertiesEl = document.querySelector("#page-properties");
   pageConfigEl = document.querySelector("#page-config");
+  pagePlayersEl = document.querySelector("#page-players");
   homeSessionHintEl = document.querySelector("#home-session-hint");
   serverStatusEl = document.querySelector("#server-status");
   feedbackEl = document.querySelector("#app-feedback");
@@ -906,6 +1045,23 @@ window.addEventListener("DOMContentLoaded", async () => {
   statCpuEl = document.querySelector("#stat-cpu");
   playersCountEl = document.querySelector("#players-count");
   playersListEl = document.querySelector("#players-list");
+  
+  btnOpenPlayersEl = document.querySelector("#btn-open-players");
+  btnPlayersBackEl = document.querySelector("#btn-players-back");
+  listOpsEl = document.querySelector("#list-ops");
+  listWhitelistEl = document.querySelector("#list-whitelist");
+  listBannedPlayersEl = document.querySelector("#list-banned-players");
+  listBannedIpsEl = document.querySelector("#list-banned-ips");
+  inputAddOpEl = document.querySelector("#input-add-op");
+  btnAddOpEl = document.querySelector("#btn-add-op");
+  inputAddWhitelistEl = document.querySelector("#input-add-whitelist");
+  btnAddWhitelistEl = document.querySelector("#btn-add-whitelist");
+  inputAddBannedPlayerEl = document.querySelector("#input-add-banned-player");
+  btnAddBannedPlayerEl = document.querySelector("#btn-add-banned-player");
+  inputAddBannedIpEl = document.querySelector("#input-add-banned-ip");
+  btnAddBannedIpEl = document.querySelector("#btn-add-banned-ip");
+  whitelistStatusBadgeEl = document.querySelector("#whitelist-status-badge");
+
   confirmDialogEl = document.querySelector("#confirm-dialog");
   confirmTitleEl = document.querySelector("#confirm-title");
   confirmMessageEl = document.querySelector("#confirm-message");
@@ -926,6 +1082,59 @@ window.addEventListener("DOMContentLoaded", async () => {
               pendingConfirmAction = null;
           }
           confirmDialogEl.close();
+      });
+  }
+
+  if (btnOpenPlayersEl) {
+      btnOpenPlayersEl.addEventListener("click", () => {
+          navigateTo("players");
+          showFeedback("Gestión avanzada de jugadores (Archivos locales).", "info");
+          loadAllPlayerLists();
+      });
+  }
+
+  if (btnPlayersBackEl) {
+      btnPlayersBackEl.addEventListener("click", () => {
+          navigateTo("control");
+          showFeedback("Panel de control del servidor.", "info");
+      });
+  }
+
+  if (btnAddOpEl) {
+      btnAddOpEl.addEventListener("click", () => {
+          const name = inputAddOpEl.value.trim();
+          if (!name) return;
+          addItemToList("ops.json", { uuid: "", name: name, level: 4, bypassesPlayerLimit: false }, listOpsEl, handleRemoveOp);
+          inputAddOpEl.value = "";
+      });
+  }
+
+  if (btnAddWhitelistEl) {
+      btnAddWhitelistEl.addEventListener("click", () => {
+          const name = inputAddWhitelistEl.value.trim();
+          if (!name) return;
+          addItemToList("whitelist.json", { uuid: "", name: name }, listWhitelistEl, handleRemoveWhitelist);
+          inputAddWhitelistEl.value = "";
+      });
+  }
+
+  if (btnAddBannedPlayerEl) {
+      btnAddBannedPlayerEl.addEventListener("click", () => {
+          const name = inputAddBannedPlayerEl.value.trim();
+          if (!name) return;
+          const formatter = new Date();
+          addItemToList("banned-players.json", { uuid: "", name: name, created: formatter.toISOString().split('T')[0] + " 00:00:00 +0000", source: "Server", expires: "forever", reason: "Banned by an operator." }, listBannedPlayersEl, handleRemoveBannedPlayer);
+          inputAddBannedPlayerEl.value = "";
+      });
+  }
+
+  if (btnAddBannedIpEl) {
+      btnAddBannedIpEl.addEventListener("click", () => {
+          const ip = inputAddBannedIpEl.value.trim();
+          if (!ip) return;
+          const formatter = new Date();
+          addItemToList("banned-ips.json", { ip: ip, created: formatter.toISOString().split('T')[0] + " 00:00:00 +0000", source: "Server", expires: "forever", reason: "Banned by an operator." }, listBannedIpsEl, handleRemoveBannedIp);
+          inputAddBannedIpEl.value = "";
       });
   }
 
