@@ -16,6 +16,7 @@ use tauri_plugin_shell::{
     process::{CommandChild, CommandEvent},
     ShellExt,
 };
+use sysinfo::{System, Pid};
 
 pub struct AppState {
     pub runtime: Arc<Mutex<ServerRuntime>>,
@@ -26,6 +27,7 @@ pub struct ServerRuntime {
     pub status: ServerStatus,
     pub active_session: Option<ServerSession>,
     pub eula_pending: bool,
+    pub system: System,
 }
 
 impl Default for ServerRuntime {
@@ -35,6 +37,7 @@ impl Default for ServerRuntime {
             status: ServerStatus::Offline,
             active_session: None,
             eula_pending: false,
+            system: System::new_all(),
         }
     }
 }
@@ -381,5 +384,31 @@ pub fn spawn_server_process(
 
             Err(format!("No se pudo iniciar el servidor: {error}"))
         }
+    }
+}
+
+pub fn get_server_stats(runtime: &Arc<Mutex<ServerRuntime>>) -> (f32, u64) {
+    let mut runtime_guard = match runtime.lock() {
+        Ok(guard) => guard,
+        Err(_) => return (0.0, 0),
+    };
+
+    let bash_pid_raw = match &runtime_guard.child {
+        Some(child) => child.pid(),
+        None => return (0.0, 0),
+    };
+
+    let bash_pid = Pid::from_u32(bash_pid_raw);
+    
+    runtime_guard.system.refresh_all();
+
+    let java_proc = runtime_guard.system.processes().values().find(|p| {
+        p.parent() == Some(bash_pid) || p.pid() == bash_pid
+    });
+
+    if let Some(p) = java_proc {
+        (p.cpu_usage(), p.memory())
+    } else {
+        (0.0, 0)
     }
 }

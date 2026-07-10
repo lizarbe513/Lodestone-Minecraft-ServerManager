@@ -8,7 +8,7 @@ mod sessions;
 
 use crate::{
     events::emit_log,
-    models::{AppSnapshot, LogKind, NewServerRequest, UpdateServerConfigRequest},
+    models::{AppSnapshot, LogKind, NewServerRequest, UpdateServerConfigRequest, ServerStatsPayload},
     runtime::{
         build_snapshot, current_session, ensure_server_is_idle, pending_eula_session,
         send_console_command, spawn_server_process, stop_server, sync_runtime_from_saved_config,
@@ -223,6 +223,15 @@ fn guardar_server_properties(state: tauri::State<AppState>, contenido: String) -
     std::fs::write(path, contenido).map_err(|e| format!("No se pudo guardar server.properties: {}", e))
 }
 
+#[tauri::command]
+fn obtener_estadisticas_servidor(state: tauri::State<AppState>) -> Result<ServerStatsPayload, String> {
+    let (cpu, ram_bytes) = crate::runtime::get_server_stats(&state.runtime);
+    Ok(ServerStatsPayload {
+        cpu,
+        ram_mb: ram_bytes / 1024 / 1024,
+    })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -242,7 +251,8 @@ pub fn run() {
             abrir_carpeta_servidor,
             actualizar_configuracion_servidor,
             leer_server_properties,
-            guardar_server_properties
+            guardar_server_properties,
+            obtener_estadisticas_servidor
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

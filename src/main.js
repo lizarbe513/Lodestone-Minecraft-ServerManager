@@ -66,6 +66,20 @@ let btnPropertiesSaveEl;
 let btnPropertiesBackEl;
 let propertiesContainerEl;
 
+let statRamEl;
+let statCpuEl;
+let statsInterval = null;
+
+let connectedPlayers = new Set();
+let playersCountEl;
+let playersListEl;
+let confirmDialogEl;
+let confirmTitleEl;
+let confirmMessageEl;
+let btnConfirmCancelEl;
+let btnConfirmAcceptEl;
+let pendingConfirmAction = null;
+
 let parsedProperties = {};
 let rawPropertiesLines = [];
 
@@ -240,6 +254,105 @@ function setStatus(status) {
   serverStatusEl.textContent = statusLabels[status] ?? status;
   serverStatusEl.dataset.status = status;
   updateControls();
+
+  if (status === "running") {
+    if (!statsInterval) {
+      statsInterval = setInterval(async () => {
+        try {
+          const stats = await invoke("obtener_estadisticas_servidor");
+          if (statRamEl) statRamEl.textContent = `${stats.ram_mb} MB`;
+          if (statCpuEl) statCpuEl.textContent = `${stats.cpu.toFixed(1)}%`;
+        } catch (e) {
+          console.error(e);
+        }
+      }, 2000);
+    }
+  } else {
+    if (statsInterval) {
+      clearInterval(statsInterval);
+      statsInterval = null;
+    }
+    if (statRamEl) statRamEl.textContent = "--";
+    if (statCpuEl) statCpuEl.textContent = "--";
+    
+    if (status === "offline" || status === "starting") {
+        connectedPlayers.clear();
+        renderPlayersList();
+    }
+  }
+}
+
+function renderPlayersList() {
+    if (!playersCountEl || !playersListEl) return;
+    
+    playersCountEl.textContent = connectedPlayers.size;
+    playersListEl.innerHTML = "";
+    if (connectedPlayers.size === 0) {
+        playersListEl.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No hay jugadores conectados.</p>';
+        return;
+    }
+    
+    for (const player of connectedPlayers) {
+        const item = document.createElement('div');
+        item.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-hover);";
+        
+        const name = document.createElement('strong');
+        name.style.fontSize = "1rem";
+        name.textContent = player;
+        
+        const row = document.createElement('div');
+        row.className = "row";
+        row.style.gap = "8px";
+        
+        const btnKick = document.createElement('button');
+        btnKick.className = "secondary";
+        btnKick.style = "padding: 4px 12px; font-size: 0.85rem;";
+        btnKick.textContent = "Expulsar";
+        btnKick.onclick = () => { invoke("enviar_comando", { comando: `kick ${player}` }); };
+        
+        const btnOp = document.createElement('button');
+        btnOp.className = "secondary";
+        btnOp.style = "padding: 4px 12px; font-size: 0.85rem;";
+        btnOp.textContent = "Convertir en OP";
+        btnOp.onclick = () => requestConfirm(`Convertir en OP a ${player}`, `¿Estás seguro de que quieres darle permisos de operador a ${player}?`, `op ${player}`);
+        
+        const btnBan = document.createElement('button');
+        btnBan.className = "warning";
+        btnBan.style = "padding: 4px 12px; font-size: 0.85rem;";
+        btnBan.textContent = "Banear";
+        btnBan.onclick = () => requestConfirm(`Banear a ${player}`, `¿Estás seguro de que quieres banear a ${player} del servidor?`, `ban ${player}`);
+        
+        row.appendChild(btnKick);
+        row.appendChild(btnOp);
+        row.appendChild(btnBan);
+        item.appendChild(name);
+        item.appendChild(row);
+        playersListEl.appendChild(item);
+    }
+}
+
+function requestConfirm(title, message, command) {
+    if (!confirmDialogEl) return;
+    confirmTitleEl.textContent = title;
+    confirmMessageEl.textContent = message;
+    pendingConfirmAction = command;
+    confirmDialogEl.showModal();
+}
+
+function handleServerLogLine(message) {
+    const text = normalizeMessage(message);
+    const joinMatch = text.match(/\] \[Server thread\/INFO\]:\s+([\w]+)\s+joined the game/i);
+    if (joinMatch) {
+        connectedPlayers.add(joinMatch[1]);
+        renderPlayersList();
+        return;
+    }
+    const leaveMatch = text.match(/\] \[Server thread\/INFO\]:\s+([\w]+)\s+left the game/i);
+    if (leaveMatch) {
+        connectedPlayers.delete(leaveMatch[1]);
+        renderPlayersList();
+        return;
+    }
 }
 
 function formIsValid() {
@@ -520,6 +633,7 @@ async function registerEvents() {
 
   await listen("server-log", (event) => {
     appendLog(event.payload.kind, event.payload.message);
+    handleServerLogLine(event.payload.message);
   });
 }
 
@@ -788,6 +902,32 @@ window.addEventListener("DOMContentLoaded", async () => {
   btnConfigBackEl = document.querySelector("#btn-config-back");
   btnControlSelectJarEl = document.querySelector("#btn-control-select-jar");
   btnControlSaveConfigEl = document.querySelector("#btn-control-save-config");
+  statRamEl = document.querySelector("#stat-ram");
+  statCpuEl = document.querySelector("#stat-cpu");
+  playersCountEl = document.querySelector("#players-count");
+  playersListEl = document.querySelector("#players-list");
+  confirmDialogEl = document.querySelector("#confirm-dialog");
+  confirmTitleEl = document.querySelector("#confirm-title");
+  confirmMessageEl = document.querySelector("#confirm-message");
+  btnConfirmCancelEl = document.querySelector("#btn-confirm-cancel");
+  btnConfirmAcceptEl = document.querySelector("#btn-confirm-accept");
+
+  if (btnConfirmCancelEl) {
+      btnConfirmCancelEl.addEventListener("click", () => {
+          pendingConfirmAction = null;
+          confirmDialogEl.close();
+      });
+  }
+
+  if (btnConfirmAcceptEl) {
+      btnConfirmAcceptEl.addEventListener("click", () => {
+          if (pendingConfirmAction) {
+              invoke("enviar_comando", { comando: pendingConfirmAction });
+              pendingConfirmAction = null;
+          }
+          confirmDialogEl.close();
+      });
+  }
 
   btnHomeCreateEl.addEventListener("click", () => {
     resetNewServerForm();

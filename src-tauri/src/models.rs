@@ -112,3 +112,9 @@ pub struct ServerLogPayload {
     pub kind: LogKind,
     pub message: String,
 }
+
+#[derive(Debug, Serialize, Clone)]
+pub struct ServerStatsPayload {
+    pub cpu: f32,
+    pub ram_mb: u64,
+}
