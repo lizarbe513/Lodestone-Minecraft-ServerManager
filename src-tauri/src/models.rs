@@ -121,3 +121,14 @@ pub struct ServerStatsPayload {
     pub cpu: f32,
     pub ram_mb: u64,
 }
+
+#[derive(Debug, Serialize, Clone)]
+pub struct ExtensionInfo {
+    pub name: String,
+    pub version: String,
+    pub file_name: String,
+    pub extension_type: String, // "plugin" o "mod"
+    pub description: Option<String>,
+    pub enabled: bool,
+}
+

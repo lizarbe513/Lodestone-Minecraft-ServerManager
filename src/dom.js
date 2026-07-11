@@ -93,4 +93,26 @@ export function initDom() {
   els.confirmMessage = document.querySelector("#confirm-message");
   els.btnConfirmCancel = document.querySelector("#btn-confirm-cancel");
   els.btnConfirmAccept = document.querySelector("#btn-confirm-accept");
+
+  els.btnOpenExtensions = document.querySelector("#btn-open-extensions");
+  els.btnExtensionsBack = document.querySelector("#btn-extensions-back");
+  els.pageExtensions = document.querySelector("#page-extensions");
+  els.extensionsEngineHint = document.querySelector("#extensions-engine-hint");
+  els.tabCategoryPlugins = document.querySelector("#tab-category-plugins");
+  els.tabCategoryMods = document.querySelector("#tab-category-mods");
+  els.tabCategoryDatapacks = document.querySelector("#tab-category-datapacks");
+  els.tabViewInstalled = document.querySelector("#tab-view-installed");
+  els.tabViewSearch = document.querySelector("#tab-view-search");
+  els.sectionInstalledExtensions = document.querySelector("#section-installed-extensions");
+  els.sectionSearchExtensions = document.querySelector("#section-search-extensions");
+  els.listInstalledExtensions = document.querySelector("#list-installed-extensions");
+  els.inputSearchExtension = document.querySelector("#input-search-extension");
+  els.btnSearchExtension = document.querySelector("#btn-search-extension");
+  els.listSearchResults = document.querySelector("#list-search-results");
+  els.extensionVersionsDialog = document.querySelector("#extension-versions-dialog");
+  els.extDialogTitle = document.querySelector("#ext-dialog-title");
+  els.extDialogDesc = document.querySelector("#ext-dialog-desc");
+  els.extVersionsList = document.querySelector("#ext-versions-list");
+  els.btnExtDialogClose = document.querySelector("#btn-ext-dialog-close");
+  els.extensionsCategories = document.querySelector("#extensions-categories");
 }

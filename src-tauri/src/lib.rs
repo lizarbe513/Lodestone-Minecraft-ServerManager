@@ -1,5 +1,6 @@
 mod constants;
 mod events;
+mod extensions;
 mod java;
 mod models;
 mod runtime;
@@ -9,7 +10,7 @@ mod worlds;
 
 use crate::{
     events::emit_log,
-    models::{AppSnapshot, LogKind, NewServerRequest, UpdateServerConfigRequest, ServerStatsPayload},
+    models::{AppSnapshot, LogKind, NewServerRequest, UpdateServerConfigRequest, ServerStatsPayload, ExtensionInfo},
     runtime::{
         build_snapshot, current_session, ensure_server_is_idle, pending_eula_session,
         send_console_command, spawn_server_process, stop_server, sync_runtime_from_saved_config,
@@ -462,6 +463,50 @@ fn importar_mundo_zip(
     Ok(())
 }
 
+#[tauri::command]
+fn listar_extensiones(state: tauri::State<AppState>) -> Result<Vec<ExtensionInfo>, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::extensions::get_extensions(&path)
+}
+
+#[tauri::command]
+fn eliminar_extension(
+    state: tauri::State<AppState>,
+    file_name: String,
+    extension_type: String,
+) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::extensions::delete_extension(&path, &file_name, &extension_type)
+}
+
+#[tauri::command]
+async fn instalar_extension(
+    state: tauri::State<'_, AppState>,
+    download_url: String,
+    file_name: String,
+    extension_type: String,
+) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::extensions::install_extension(&path, &download_url, &file_name, &extension_type).await
+}
+
+#[tauri::command]
+fn detectar_motor_servidor(state: tauri::State<AppState>) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    Ok(crate::extensions::detect_server_engine(&path, &session.jar_file_name))
+}
+
+#[tauri::command]
+fn detectar_version_minecraft(state: tauri::State<AppState>) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    Ok(crate::extensions::detect_minecraft_version(&path, &session.jar_file_name))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -495,7 +540,12 @@ pub fn run() {
             renombrar_mundo,
             crear_mundo_nuevo,
             importar_mundo_zip,
-            remover_servidor_guardado
+            remover_servidor_guardado,
+            listar_extensiones,
+            eliminar_extension,
+            instalar_extension,
+            detectar_motor_servidor,
+            detectar_version_minecraft
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

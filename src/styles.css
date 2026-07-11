@@ -1,4 +1,9 @@
 :root {
+    color-scheme: dark;
+    --bg-panel: #121a24;
+    --border-color: rgba(160, 188, 221, 0.14);
+    --text-primary: #e8eef7;
+    --text-secondary: #aeb9c8;
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
     color: #e8eef7;
     background:
@@ -74,6 +79,12 @@ select {
     color: #f2f6fb;
     background: #121a24;
     outline: none;
+    color-scheme: dark;
+}
+
+select option {
+    background-color: #121a24;
+    color: #f2f6fb;
 }
 
 input:focus,

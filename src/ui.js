@@ -13,6 +13,7 @@ export function navigateTo(page) {
   if (els.pagePlayers) els.pagePlayers.hidden = page !== "players";
   if (els.pageWorlds) els.pageWorlds.hidden = page !== "worlds";
   if (els.pageEula) els.pageEula.hidden = page !== "eula";
+  if (els.pageExtensions) els.pageExtensions.hidden = page !== "extensions";
   updateControls();
 }
 
@@ -250,6 +251,7 @@ export function updateControls() {
   els.btnControlOpenFolder.disabled = !hasSession;
   if (els.btnToggleConfigPanel) els.btnToggleConfigPanel.disabled = !hasSession || busy;
   if (els.btnOpenProperties) els.btnOpenProperties.disabled = !hasSession || busy;
+  if (els.btnOpenExtensions) els.btnOpenExtensions.disabled = !hasSession || busy;
   if (els.btnControlEula) {
     els.btnControlEula.hidden = !waitingEula;
     els.btnControlEula.disabled = !waitingEula;

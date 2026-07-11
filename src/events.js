@@ -7,6 +7,7 @@ import { handleServerLogLine, resetNewServerForm, browseServerJar, browseServerP
 import { parsePropertiesContent, renderPropertiesUI, buildPropertiesPayload } from "./properties.js";
 import { loadAllPlayerLists, addItemToList, handleRemoveOp, handleRemoveWhitelist, handleRemoveBannedPlayer, handleRemoveBannedIp } from "./players.js";
 import { loadWorlds } from "./worlds.js";
+import { loadInstalledExtensions, searchModrinth, initExtensionsPage, setActiveCategory, setActiveSubTab, activeCategory, activeSubTab } from "./extensions.js";
 
 export async function registerTauriEvents() {
   await listen("server-status", async (event) => {
@@ -502,6 +503,121 @@ export function setupEvents() {
   if (els.btnPropertiesBack) {
     els.btnPropertiesBack.addEventListener("click", () => {
       navigateTo("control");
+    });
+  }
+
+  const refreshExtensionsList = () => {
+    if (activeSubTab === "installed") {
+      loadInstalledExtensions();
+    } else {
+      searchModrinth(els.inputSearchExtension.value);
+    }
+  };
+
+  const selectCategoryTab = (activeButton) => {
+    const buttons = [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks];
+    buttons.forEach(btn => {
+      if (!btn) return;
+      if (btn === activeButton) {
+        btn.classList.add("active");
+        btn.classList.remove("secondary");
+      } else {
+        btn.classList.remove("active");
+        btn.classList.add("secondary");
+      }
+    });
+  };
+
+  const selectSubTab = (activeButton) => {
+    const buttons = [els.tabViewInstalled, els.tabViewSearch];
+    buttons.forEach(btn => {
+      if (!btn) return;
+      if (btn === activeButton) {
+        btn.classList.add("active");
+        btn.classList.remove("secondary");
+      } else {
+        btn.classList.remove("active");
+        btn.classList.add("secondary");
+      }
+    });
+  };
+
+  if (els.btnOpenExtensions) {
+    els.btnOpenExtensions.addEventListener("click", async () => {
+      navigateTo("extensions");
+      await initExtensionsPage();
+    });
+  }
+
+  if (els.btnExtensionsBack) {
+    els.btnExtensionsBack.addEventListener("click", () => {
+      navigateTo("control");
+      showFeedback("Panel de control del servidor.", "info");
+    });
+  }
+
+  if (els.tabCategoryPlugins) {
+    els.tabCategoryPlugins.addEventListener("click", () => {
+      setActiveCategory("plugin");
+      selectCategoryTab(els.tabCategoryPlugins);
+      refreshExtensionsList();
+    });
+  }
+
+  if (els.tabCategoryMods) {
+    els.tabCategoryMods.addEventListener("click", () => {
+      setActiveCategory("mod");
+      selectCategoryTab(els.tabCategoryMods);
+      refreshExtensionsList();
+    });
+  }
+
+  if (els.tabCategoryDatapacks) {
+    els.tabCategoryDatapacks.addEventListener("click", () => {
+      setActiveCategory("datapack");
+      selectCategoryTab(els.tabCategoryDatapacks);
+      refreshExtensionsList();
+    });
+  }
+
+  if (els.tabViewInstalled) {
+    els.tabViewInstalled.addEventListener("click", () => {
+      setActiveSubTab("installed");
+      selectSubTab(els.tabViewInstalled);
+      if (els.sectionInstalledExtensions) els.sectionInstalledExtensions.hidden = false;
+      if (els.sectionSearchExtensions) els.sectionSearchExtensions.hidden = true;
+      loadInstalledExtensions();
+    });
+  }
+
+  if (els.tabViewSearch) {
+    els.tabViewSearch.addEventListener("click", () => {
+      setActiveSubTab("search");
+      selectSubTab(els.tabViewSearch);
+      if (els.sectionInstalledExtensions) els.sectionInstalledExtensions.hidden = true;
+      if (els.sectionSearchExtensions) els.sectionSearchExtensions.hidden = false;
+      searchModrinth(els.inputSearchExtension.value);
+    });
+  }
+
+  if (els.btnSearchExtension) {
+    els.btnSearchExtension.addEventListener("click", () => {
+      searchModrinth(els.inputSearchExtension.value);
+    });
+  }
+
+  if (els.inputSearchExtension) {
+    els.inputSearchExtension.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        searchModrinth(els.inputSearchExtension.value);
+      }
+    });
+  }
+
+  if (els.btnExtDialogClose) {
+    els.btnExtDialogClose.addEventListener("click", () => {
+      els.extensionVersionsDialog.close();
     });
   }
 }
