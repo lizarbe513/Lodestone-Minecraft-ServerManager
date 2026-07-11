@@ -32,7 +32,6 @@ let btnCreateBackEl;
 let btnSelectServerJarEl;
 let btnSelectServerParentDirEl;
 let btnCreateServerEl;
-let btnCreateAcceptEulaEl;
 let btnControlBackEl;
 let btnControlStartEl;
 let btnControlStopEl;
@@ -410,8 +409,6 @@ function updateControls() {
   btnSelectServerJarEl.disabled = busy || waitingEula;
   btnSelectServerParentDirEl.disabled = busy || waitingEula;
   btnCreateServerEl.disabled = busy || waitingEula || !formIsValid();
-  btnCreateAcceptEulaEl.hidden = !waitingEula || !appState.pendingCreateFlow;
-  btnCreateAcceptEulaEl.disabled = !waitingEula;
 
   btnControlBackEl.disabled = !canNavigateBack;
   btnControlStartEl.disabled = !hasSession || busy || waitingEula;
@@ -421,7 +418,7 @@ function updateControls() {
   btnControlOpenFolderEl.disabled = !hasSession;
   if (btnToggleConfigPanelEl) btnToggleConfigPanelEl.disabled = !hasSession || busy;
   if (btnOpenPropertiesEl) btnOpenPropertiesEl.disabled = !hasSession || busy;
-  btnControlAcceptEulaEl.hidden = !waitingEula || appState.pendingCreateFlow;
+  btnControlAcceptEulaEl.hidden = !waitingEula;
   btnControlAcceptEulaEl.disabled = !waitingEula;
   inputCommandEl.disabled = appState.status !== "running";
   btnSendCommandEl.disabled = appState.status !== "running";
@@ -520,10 +517,12 @@ async function openExistingServer() {
 }
 
 async function getPaperDownloadUrl(version) {
-    const res = await fetch(`https://api.papermc.io/v2/projects/paper/versions/${version}`);
+    const res = await fetch(`https://fill.papermc.io/v3/projects/paper/versions/${version}`);
     const data = await res.json();
-    const build = data.builds[data.builds.length - 1];
-    return `https://api.papermc.io/v2/projects/paper/versions/${version}/builds/${build}/downloads/paper-${version}-${build}.jar`;
+    const build = data.builds[0];
+    const buildRes = await fetch(`https://fill.papermc.io/v3/projects/paper/versions/${version}/builds/${build}`);
+    const buildData = await buildRes.json();
+    return buildData.downloads["server:default"].url;
 }
 
 async function getVanillaDownloadUrl(versionId) {
@@ -575,24 +574,13 @@ async function createServer() {
   }
 
   showFeedback("Creando servidor y ejecutando el arranque inicial...", "info");
-  try {
-      const snapshot = await invoke("crear_e_iniciar_servidor", {
-        request: payload,
-      });
-      applySnapshot(snapshot);
-  } finally {
-      // Intento de borrar el archivo temporal si existe y era descarga
-      if (isDownload && payload.server_jar_path.includes("temp_")) {
-          // No necesitamos bloquear ni mostrar error si falla el borrado
-          try {
-              // Aquí usaríamos una API de fs si la tuviéramos, 
-              // pero como tauri-plugin-fs no está, el archivo temporal se quedará en parent_dir.
-              // Como es la carpeta padre y no la del server, es aceptable, 
-              // o podríamos modificar Rust para que use un temp dir real,
-              // pero esto funciona bien de momento.
-          } catch(e) {}
-      }
-  }
+  const snapshot = await invoke("crear_e_iniciar_servidor", {
+    request: payload,
+  });
+  applySnapshot(snapshot);
+  appState.pendingCreateFlow = false;
+  navigateTo("control");
+  showFeedback("Servidor creado. Revisa la terminal para ver el progreso de inicio.", "success");
 }
 
 async function startCurrentServer() {
@@ -623,11 +611,6 @@ async function continueAfterEulaAcceptance() {
   showFeedback("Aceptando EULA y reiniciando servidor...", "info");
   const snapshot = await invoke("aceptar_eula_y_reiniciar");
   applySnapshot(snapshot);
-
-  if (appState.pendingCreateFlow) {
-    appState.pendingCreateFlow = false;
-    navigateTo("control");
-  }
 }
 
 async function saveServerConfig() {
@@ -1095,7 +1078,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     "#btn-select-server-parent-dir",
   );
   btnCreateServerEl = document.querySelector("#btn-create-server");
-  btnCreateAcceptEulaEl = document.querySelector("#btn-create-accept-eula");
   btnControlBackEl = document.querySelector("#btn-control-back");
   btnControlStartEl = document.querySelector("#btn-control-start");
   btnControlStopEl = document.querySelector("#btn-control-stop");
@@ -1270,9 +1252,9 @@ window.addEventListener("DOMContentLoaded", async () => {
       const type = selectDownloadTypeEl.value;
       try {
           if (type === "paper") {
-              const res = await fetch("https://api.papermc.io/v2/projects/paper");
+              const res = await fetch("https://fill.papermc.io/v3/projects/paper");
               const data = await res.json();
-              const versions = data.versions.reverse(); // Newest first
+              const versions = Object.values(data.versions).flat();
               
               selectDownloadVersionEl.innerHTML = "";
               versions.forEach(v => {
@@ -1366,10 +1348,6 @@ window.addEventListener("DOMContentLoaded", async () => {
       showFeedback(message, "error");
       appendLog("stderr", message);
     }
-  });
-
-  btnCreateAcceptEulaEl.addEventListener("click", async () => {
-    await acceptEulaAndRestart();
   });
 
   btnControlBackEl.addEventListener("click", () => {

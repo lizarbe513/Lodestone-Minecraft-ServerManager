@@ -264,14 +264,23 @@ pub fn create_server_session(request: NewServerRequest) -> Result<ServerSession,
         .ok_or_else(|| "No se pudo leer el nombre del archivo `.jar`.".to_string())?
         .to_string();
 
-    let destination_jar = server_dir.join(&jar_file_name);
+    let mut final_jar_name = jar_file_name.clone();
+    if jar_file_name.starts_with("temp_") {
+        final_jar_name = jar_file_name.replacen("temp_", "", 1);
+    }
+
+    let destination_jar = server_dir.join(&final_jar_name);
     fs::copy(&server_jar_path, &destination_jar)
         .map_err(|e| format!("No se pudo copiar el archivo del servidor: {e}"))?;
+
+    if jar_file_name.starts_with("temp_") {
+        let _ = fs::remove_file(&server_jar_path);
+    }
 
     let session = ServerSession {
         server_name,
         server_dir: server_dir.to_string_lossy().to_string(),
-        jar_file_name,
+        jar_file_name: final_jar_name,
         java_path,
         memory_gb,
         managed_by_app: true,
