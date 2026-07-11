@@ -121,6 +121,27 @@ Este documento explica, archivo por archivo, cada función y los bloques de cód
     - En `Terminated`: si `eula_needs_acceptance` es `true`, establece estado `WaitingEula` y emite un mensaje indicando que hay que aceptar EULA; si no, setea `Offline` e informa el código de salida.
   - Maneja errores de spawn devolviendo `Err` y reseteando el runtime a `Offline`.
 
+### `src-tauri/src/worlds.rs`
+- Módulo encargado de gestionar todas las operaciones de archivos relacionadas con los mundos de Minecraft.
+- `is_world_directory(path: &Path) -> bool`:
+  - Retorna `true` si la carpeta contiene un archivo `level.dat` o si está completamente vacía (lo cual indica un mundo creado recientemente pero aún no inicializado por el servidor).
+- `get_worlds(server_dir: &Path) -> Result<Vec<String>, String>`:
+  - Escanea el directorio del servidor buscando subcarpetas que cumplan con `is_world_directory` y retorna la lista de nombres.
+- `get_active_world(server_dir: &Path) -> String`:
+  - Lee el archivo `server.properties` y busca el valor de la propiedad `level-name` (que define cuál es el mundo activo). Si no la encuentra, asume `"world"` como valor por defecto.
+- `set_active_world(server_dir: &Path, world_name: &str) -> Result<(), String>`:
+  - Actualiza la propiedad `level-name` en el archivo `server.properties` con el nombre del nuevo mundo. Si la propiedad no existe, la añade.
+- `delete_world(server_dir: &Path, world_name: &str) -> Result<(), String>`:
+  - Elimina recursivamente la carpeta completa del mundo seleccionado.
+- `rename_world(server_dir: &Path, old_name: &str, new_name: &str) -> Result<(), String>`:
+  - Cambia el nombre de la carpeta del mundo. Si el mundo que se renombra es el que estaba activo en `server.properties`, actualiza la configuración para que apunte al nuevo nombre automáticamente.
+- `create_new_world(server_dir: &Path, world_name: &str) -> Result<(), String>`:
+  - Crea una nueva carpeta vacía en el servidor que será catalogada como mundo.
+- `backup_world(server_dir: &Path, world_name: &str) -> Result<String, String>`:
+  - Crea un archivo `.zip` comprimiendo todo el directorio del mundo y lo guarda en la carpeta `backups/` del servidor con una marca de tiempo.
+- `import_world_zip(server_dir: &Path, zip_path_str: &str, world_name: &str) -> Result<(), String>`:
+  - Descomprime un archivo `.zip` local elegido por el usuario y coloca los archivos en una nueva carpeta de mundo dentro del servidor.
+
 ---
 
 ## Frontend (JavaScript / HTML / CSS)
@@ -149,6 +170,7 @@ Este documento explica, archivo por archivo, cada función y los bloques de cód
 - Render / navegación:
   - `navigateTo(page)`: cambia `appState.currentPage` y alterna `hidden` en secciones.
   - `renderHomeHint()`, `renderJavaOptions(selectedPath)`, `renderActiveSession()`, `setStatus(status)` — funciones que actualizan la UI a partir del `appState`.
+  - `renderSavedServers()`: genera tarjetas dinámicas para cada servidor guardado en el archivo de estado de la aplicación.
 
 - Validaciones y formularios:
   - `formIsValid()`: valida que campos de creación no estén vacíos.
@@ -163,6 +185,7 @@ Este documento explica, archivo por archivo, cada función y los bloques de cód
   - `stopServer()` → `invoke('detener_servidor')`.
   - `sendCommand()` → `invoke('enviar_comando', { comando })`.
   - `continueAfterEulaAcceptance()` y `acceptEulaAndRestart()` → `invoke('aceptar_eula_y_reiniciar')`.
+  - `remover_servidor_guardado` → `invoke('remover_servidor_guardado', { serverDir, deleteFiles })` para quitarlo de la lista y, opcionalmente, borrar sus archivos físicos en el disco.
 
 - Inicialización y eventos:
   - `loadInitialState()` invoca `obtener_estado_aplicacion` y navega según si hay `activeSession`.

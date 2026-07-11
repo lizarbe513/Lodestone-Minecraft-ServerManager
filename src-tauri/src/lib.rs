@@ -17,8 +17,8 @@ use crate::{
     },
     server_files::ensure_eula_accepted,
     sessions::{
-        create_server_session, load_or_infer_session, update_server_session_config,
-        validate_existing_session,
+        create_server_session, load_app_config, load_or_infer_session, save_app_config,
+        update_server_session_config, validate_existing_session,
     },
 };
 use std::{
@@ -137,6 +137,40 @@ fn aceptar_eula_y_reiniciar(
         .runtime
         .lock()
         .map_err(|_| "No se pudo leer el estado actualizado.".to_string())?;
+    Ok(build_snapshot(&runtime_guard))
+}
+
+#[tauri::command]
+fn remover_servidor_guardado(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+    server_dir: String,
+    delete_files: bool,
+) -> Result<AppSnapshot, String> {
+    ensure_server_is_idle(&state.runtime)?;
+
+    let path = PathBuf::from(server_dir.trim());
+    if delete_files && path.is_dir() {
+        std::fs::remove_dir_all(&path)
+            .map_err(|e| format!("No se pudo eliminar la carpeta del servidor: {e}"))?;
+    }
+
+    let mut config = load_app_config(&app_handle)?;
+    config.saved_servers.retain(|s| s.server_dir != server_dir.trim());
+    
+    if let Some(active) = &config.active_session {
+        if active.server_dir == server_dir.trim() {
+            config.active_session = None;
+        }
+    }
+
+    save_app_config(&app_handle, &config)?;
+    sync_runtime_from_saved_config(&app_handle, &state.runtime)?;
+
+    let runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer el estado.".to_string())?;
     Ok(build_snapshot(&runtime_guard))
 }
 
@@ -460,7 +494,8 @@ pub fn run() {
             borrar_mundo,
             renombrar_mundo,
             crear_mundo_nuevo,
-            importar_mundo_zip
+            importar_mundo_zip,
+            remover_servidor_guardado
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -21,6 +21,8 @@ pub enum LogKind {
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct AppConfig {
     pub active_session: Option<ServerSession>,
+    #[serde(default)]
+    pub saved_servers: Vec<ServerSession>,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -100,6 +102,7 @@ pub struct AppSnapshot {
     pub active_session: Option<ServerSession>,
     pub java_versions: Vec<JavaOption>,
     pub eula_pending: bool,
+    pub saved_servers: Vec<ServerSession>,
 }
 
 #[derive(Debug, Serialize, Clone)]

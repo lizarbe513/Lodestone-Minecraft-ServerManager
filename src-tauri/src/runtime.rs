@@ -2,7 +2,7 @@ use crate::{
     constants::START_SCRIPT_NAME,
     events::{emit_log, emit_status},
     java::collect_java_versions,
-    models::{AppConfig, AppSnapshot, LogKind, ServerSession, ServerStatus},
+    models::{AppSnapshot, LogKind, ServerSession, ServerStatus},
     server_files::eula_needs_acceptance,
     sessions::{
         load_app_config, save_app_config, save_session_metadata, validate_existing_session,
@@ -26,6 +26,7 @@ pub struct ServerRuntime {
     pub child: Option<CommandChild>,
     pub status: ServerStatus,
     pub active_session: Option<ServerSession>,
+    pub saved_servers: Vec<ServerSession>,
     pub eula_pending: bool,
     pub system: System,
 }
@@ -36,6 +37,7 @@ impl Default for ServerRuntime {
             child: None,
             status: ServerStatus::Offline,
             active_session: None,
+            saved_servers: Vec::new(),
             eula_pending: false,
             system: System::new_all(),
         }
@@ -60,6 +62,7 @@ pub fn build_snapshot(runtime: &ServerRuntime) -> AppSnapshot {
         active_session: runtime.active_session.clone(),
         java_versions: collect_java_versions(runtime.active_session.as_ref()),
         eula_pending: runtime.eula_pending,
+        saved_servers: runtime.saved_servers.clone(),
     }
 }
 
@@ -68,20 +71,22 @@ pub fn update_active_session(
     runtime: &Arc<Mutex<ServerRuntime>>,
     session: Option<ServerSession>,
 ) -> Result<(), String> {
-    save_app_config(
-        app_handle,
-        &AppConfig {
-            active_session: session.clone(),
-        },
-    )?;
+    let mut config = load_app_config(app_handle).unwrap_or_default();
+    config.active_session = session.clone();
 
     if let Some(active_session) = &session {
+        // Remove existing duplicate by server_dir, then insert/update it
+        config.saved_servers.retain(|s| s.server_dir != active_session.server_dir);
+        config.saved_servers.push(active_session.clone());
         save_session_metadata(active_session)?;
     }
+
+    save_app_config(app_handle, &config)?;
 
     let mut runtime_guard = runtime
         .lock()
         .map_err(|_| "No se pudo actualizar la sesión activa.".to_string())?;
+    runtime_guard.saved_servers = config.saved_servers;
     runtime_guard.active_session = session;
     runtime_guard.eula_pending = false;
     if runtime_guard.child.is_none() {
@@ -99,6 +104,8 @@ pub fn sync_runtime_from_saved_config(
     let mut runtime_guard = runtime
         .lock()
         .map_err(|_| "No se pudo sincronizar la configuración guardada.".to_string())?;
+
+    runtime_guard.saved_servers = config.saved_servers;
 
     if runtime_guard.child.is_none() {
         runtime_guard.active_session = config.active_session;
