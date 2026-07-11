@@ -1,4 +1,4 @@
-import { invoke, open, getPaperDownloadUrl, getVanillaDownloadUrl } from "./api.js";
+import { invoke, open, getPaperDownloadUrl, getVanillaDownloadUrl, getPurpurDownloadUrl, getFabricDownloadUrl } from "./api.js";
 import { els } from "./dom.js";
 import { appState, connectedPlayers } from "./state.js";
 import { navigateTo, updateControls, applySnapshot, renderJavaOptions, renderPlayersList } from "./ui.js";
@@ -116,6 +116,12 @@ export async function createServer() {
       } else if (software === "vanilla") {
         url = await getVanillaDownloadUrl(version);
         jarName = `vanilla-${version}.jar`;
+      } else if (software === "purpur") {
+        url = await getPurpurDownloadUrl(version);
+        jarName = `purpur-${version}.jar`;
+      } else if (software === "fabric") {
+        url = await getFabricDownloadUrl(version);
+        jarName = `fabric-${version}.jar`;
       }
 
       if (!url) throw new Error("No se pudo obtener la URL de descarga.");

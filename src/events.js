@@ -234,6 +234,33 @@ export function setupEvents() {
           els.selectDownloadVersion.appendChild(opt);
         });
         els.downloadStatusHint.textContent = "Versiones de Vanilla obtenidas correctamente.";
+      } else if (type === "purpur") {
+        const res = await fetch("https://api.purpurmc.org/v2/purpur");
+        const data = await res.json();
+        const versions = [...data.versions].reverse();
+
+        els.selectDownloadVersion.innerHTML = "";
+        versions.forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          els.selectDownloadVersion.appendChild(opt);
+        });
+        els.downloadStatusHint.textContent = "Versiones de Purpur obtenidas correctamente.";
+      } else if (type === "fabric") {
+        const res = await fetch("https://launchermeta.mojang.com/mc/game/version_manifest.json");
+        const data = await res.json();
+        globals.cachedVanillaVersions = data.versions;
+        const versions = data.versions.filter(v => v.type === "release");
+
+        els.selectDownloadVersion.innerHTML = "";
+        versions.forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v.id;
+          opt.textContent = v.id;
+          els.selectDownloadVersion.appendChild(opt);
+        });
+        els.downloadStatusHint.textContent = "Versiones de Fabric obtenidas correctamente.";
       }
       els.selectDownloadVersion.disabled = false;
     } catch (err) {
