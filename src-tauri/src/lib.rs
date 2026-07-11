@@ -257,6 +257,33 @@ fn obtener_estadisticas_servidor(state: tauri::State<AppState>) -> Result<Server
     })
 }
 
+#[tauri::command]
+async fn descargar_servidor_jar(url: String, destino: String) -> Result<(), String> {
+    let response = reqwest::get(&url)
+        .await
+        .map_err(|e| format!("Error en la petición: {}", e))?;
+
+    if !response.status().is_success() {
+        return Err(format!("El servidor devolvió un error: {}", response.status()));
+    }
+
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("Error al descargar bytes: {}", e))?;
+
+    let path = PathBuf::from(&destino);
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Error creando carpeta destino: {}", e))?;
+    }
+
+    std::fs::write(&path, &bytes)
+        .map_err(|e| format!("Error guardando archivo: {}", e))?;
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -279,7 +306,8 @@ pub fn run() {
             guardar_server_properties,
             leer_archivo_servidor,
             guardar_archivo_servidor,
-            obtener_estadisticas_servidor
+            obtener_estadisticas_servidor,
+            descargar_servidor_jar
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
