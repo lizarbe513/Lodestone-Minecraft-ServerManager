@@ -252,6 +252,19 @@
                     <p class="hint" style="text-align: center; margin: 16px 0;">No hay jugadores conectados.</p>
                 </div>
             </div>
+
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Mundos</h2>
+                        <p class="hint">Gestiona los mundos, realiza respaldos y cambia el mundo activo.</p>
+                    </div>
+                </div>
+
+                <button id="btn-open-worlds" type="button" class="secondary">
+                    Gestión de Mundos
+                </button>
+            </div>
         </section>
 
         <section id="page-eula" class="page-section" hidden>
@@ -355,6 +368,26 @@
                             style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;"></div>
                     </div>
 
+                </div>
+            </div>
+        </section>
+
+        <section id="page-worlds" class="page-section" hidden>
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Gestión de Mundos</h2>
+                        <p class="hint">Administra los mundos del servidor. Nota: el cambio de mundo activo requiere que reinicies el servidor.</p>
+                    </div>
+                    <div class="row responsive-row">
+                        <button id="btn-import-world" type="button" class="secondary">Importar mundo (.zip)</button>
+                        <button id="btn-create-world" type="button">Crear nuevo mundo</button>
+                        <button id="btn-worlds-back" type="button" class="secondary">Volver al control</button>
+                    </div>
+                </div>
+
+                <div id="list-worlds" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
+                    <p class="hint" style="text-align: center; margin: 16px 0;">Cargando mundos...</p>
                 </div>
             </div>
         </section>

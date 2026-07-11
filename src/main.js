@@ -80,6 +80,13 @@ let btnPropertiesSaveEl;
 let btnPropertiesBackEl;
 let propertiesContainerEl;
 
+let pageWorldsEl;
+let btnOpenWorldsEl;
+let btnWorldsBackEl;
+let listWorldsEl;
+let btnImportWorldEl;
+let btnCreateWorldEl;
+
 let pagePlayersEl;
 let btnOpenPlayersEl;
 let btnPlayersBackEl;
@@ -176,6 +183,7 @@ function navigateTo(page) {
   if (pagePropertiesEl) pagePropertiesEl.hidden = page !== "properties";
   if (pageConfigEl) pageConfigEl.hidden = page !== "config";
   if (pagePlayersEl) pagePlayersEl.hidden = page !== "players";
+  if (pageWorldsEl) pageWorldsEl.hidden = page !== "worlds";
   if (pageEulaEl) pageEulaEl.hidden = page !== "eula";
   updateControls();
 }
@@ -1081,6 +1089,113 @@ function handleRemoveWhitelist(item) { removeItemFromList("whitelist.json", i =>
 function handleRemoveBannedPlayer(item) { removeItemFromList("banned-players.json", i => i.name === item.name, listBannedPlayersEl, handleRemoveBannedPlayer); }
 function handleRemoveBannedIp(item) { removeItemFromList("banned-ips.json", i => i.ip === item.ip, listBannedIpsEl, handleRemoveBannedIp); }
 
+async function loadWorlds() {
+    if (!listWorldsEl) return;
+    try {
+        listWorldsEl.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Cargando mundos...</p>';
+        const mundos = await invoke("listar_mundos");
+        const mundoActivo = await invoke("obtener_mundo_activo");
+        
+        listWorldsEl.innerHTML = "";
+        if (!mundos || mundos.length === 0) {
+            listWorldsEl.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No se encontraron mundos.</p>';
+            return;
+        }
+        
+        for (const mundo of mundos) {
+            const div = document.createElement("div");
+            div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border-color);";
+            
+            const nameEl = document.createElement("strong");
+            nameEl.style.fontSize = "1rem";
+            nameEl.textContent = mundo;
+            
+            const row = document.createElement("div");
+            row.className = "row";
+            row.style.gap = "8px";
+            
+            if (mundo === mundoActivo) {
+                const badge = document.createElement("span");
+                badge.style = "font-size: 0.8rem; padding: 4px 8px; background: var(--primary); color: #fff; border-radius: 4px; font-weight: bold;";
+                badge.textContent = "ACTIVO";
+                row.appendChild(badge);
+            } else {
+                const btnActive = document.createElement("button");
+                btnActive.className = "secondary";
+                btnActive.style = "padding: 4px 12px; font-size: 0.85rem;";
+                btnActive.textContent = "Hacer Activo";
+                btnActive.onclick = () => {
+                    requestConfirm("Cambiar Mundo Activo", `¿Estás seguro de que quieres establecer "${mundo}" como el mundo activo? Requiere reiniciar el servidor.`, async () => {
+                        try {
+                            await invoke("cambiar_mundo_activo", { mundo });
+                            showFeedback(`El mundo "${mundo}" ahora es el activo.`, "success");
+                            loadWorlds();
+                        } catch(e) {
+                            showFeedback(`Error: ${e}`, "error");
+                        }
+                    });
+                };
+                row.appendChild(btnActive);
+                
+                const btnRename = document.createElement("button");
+                btnRename.className = "secondary";
+                btnRename.style = "padding: 4px 12px; font-size: 0.85rem;";
+                btnRename.textContent = "Renombrar";
+                btnRename.onclick = () => {
+                    const newName = window.prompt("Introduce el nuevo nombre para el mundo:", mundo);
+                    if (newName && newName.trim() !== "" && newName !== mundo) {
+                        invoke("renombrar_mundo", { oldName: mundo, newName: newName.trim() }).then(() => {
+                            showFeedback(`El mundo "${mundo}" fue renombrado a "${newName.trim()}".`, "success");
+                            loadWorlds();
+                        }).catch(e => {
+                            showFeedback(`Error: ${e}`, "error");
+                        });
+                    }
+                };
+                row.appendChild(btnRename);
+                
+                const btnDelete = document.createElement("button");
+                btnDelete.className = "warning";
+                btnDelete.style = "padding: 4px 12px; font-size: 0.85rem;";
+                btnDelete.textContent = "Eliminar";
+                btnDelete.onclick = () => {
+                    requestConfirm("Eliminar Mundo", `¿Estás completamente seguro de eliminar permanentemente el mundo "${mundo}"? Esto no se puede deshacer.`, async () => {
+                        try {
+                            await invoke("borrar_mundo", { mundo });
+                            showFeedback(`El mundo "${mundo}" fue eliminado.`, "success");
+                            loadWorlds();
+                        } catch(e) {
+                            showFeedback(`Error: ${e}`, "error");
+                        }
+                    });
+                };
+                row.appendChild(btnDelete);
+            }
+            
+            const btnBackup = document.createElement("button");
+            btnBackup.className = "secondary";
+            btnBackup.style = "padding: 4px 12px; font-size: 0.85rem;";
+            btnBackup.textContent = "Respaldar (.zip)";
+            btnBackup.onclick = async () => {
+                try {
+                    showFeedback(`Creando respaldo de "${mundo}"...`, "info");
+                    const path = await invoke("respaldar_mundo", { mundo });
+                    showFeedback(`Respaldo creado en: ${path}`, "success");
+                } catch(e) {
+                    showFeedback(`Error al crear respaldo: ${e}`, "error");
+                }
+            };
+            row.appendChild(btnBackup);
+            
+            div.appendChild(nameEl);
+            div.appendChild(row);
+            listWorldsEl.appendChild(div);
+        }
+    } catch (err) {
+        listWorldsEl.innerHTML = `<p class="hint" style="color: var(--error);">Error: ${err}</p>`;
+    }
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   pageHomeEl = document.querySelector("#page-home");
   pageCreateEl = document.querySelector("#page-create");
@@ -1088,6 +1203,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   pagePropertiesEl = document.querySelector("#page-properties");
   pageConfigEl = document.querySelector("#page-config");
   pagePlayersEl = document.querySelector("#page-players");
+  pageWorldsEl = document.querySelector("#page-worlds");
   homeSessionHintEl = document.querySelector("#home-session-hint");
   serverStatusEl = document.querySelector("#server-status");
   feedbackEl = document.querySelector("#app-feedback");
@@ -1150,6 +1266,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   
   btnOpenPlayersEl = document.querySelector("#btn-open-players");
   btnPlayersBackEl = document.querySelector("#btn-players-back");
+  btnOpenWorldsEl = document.querySelector("#btn-open-worlds");
+  btnWorldsBackEl = document.querySelector("#btn-worlds-back");
+  btnImportWorldEl = document.querySelector("#btn-import-world");
+  btnCreateWorldEl = document.querySelector("#btn-create-world");
+  listWorldsEl = document.querySelector("#list-worlds");
   listOpsEl = document.querySelector("#list-ops");
   listWhitelistEl = document.querySelector("#list-whitelist");
   listBannedPlayersEl = document.querySelector("#list-banned-players");
@@ -1178,11 +1299,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (btnConfirmAcceptEl) {
-      btnConfirmAcceptEl.addEventListener("click", () => {
-          if (pendingConfirmAction) {
+      btnConfirmAcceptEl.addEventListener("click", async () => {
+          if (typeof pendingConfirmAction === "function") {
+              await pendingConfirmAction();
+          } else if (pendingConfirmAction) {
               invoke("enviar_comando", { comando: pendingConfirmAction });
-              pendingConfirmAction = null;
           }
+          pendingConfirmAction = null;
           confirmDialogEl.close();
       });
   }
@@ -1199,6 +1322,64 @@ window.addEventListener("DOMContentLoaded", async () => {
       btnPlayersBackEl.addEventListener("click", () => {
           navigateTo("control");
           showFeedback("Panel de control del servidor.", "info");
+      });
+  }
+
+  if (btnOpenWorldsEl) {
+      btnOpenWorldsEl.addEventListener("click", () => {
+          navigateTo("worlds");
+          showFeedback("Gestión de mundos locales.", "info");
+          loadWorlds();
+      });
+  }
+
+  if (btnWorldsBackEl) {
+      btnWorldsBackEl.addEventListener("click", () => {
+          navigateTo("control");
+          showFeedback("Panel de control del servidor.", "info");
+      });
+  }
+
+  if (btnImportWorldEl) {
+      btnImportWorldEl.addEventListener("click", async () => {
+          try {
+              const selectedPath = await open({
+                  directory: false,
+                  multiple: false,
+                  title: "Selecciona el archivo .zip del mundo",
+                  filters: [{ name: "Zip Archive", extensions: ["zip"] }]
+              });
+
+              if (!selectedPath || Array.isArray(selectedPath)) {
+                  return;
+              }
+
+              const newName = window.prompt("Introduce un nombre para el mundo importado:", "world");
+              if (newName && newName.trim() !== "") {
+                  showFeedback(`Importando el mundo "${newName.trim()}" desde archivo... Esto puede tardar unos segundos.`, "info");
+                  await invoke("importar_mundo_zip", { zipPath: selectedPath, mundo: newName.trim() });
+                  showFeedback(`Mundo "${newName.trim()}" importado correctamente.`, "success");
+                  loadWorlds();
+              }
+          } catch (e) {
+              showFeedback(`Error al importar mundo: ${e}`, "error");
+          }
+      });
+  }
+
+  if (btnCreateWorldEl) {
+      btnCreateWorldEl.addEventListener("click", async () => {
+          try {
+              const newName = window.prompt("Introduce un nombre para el mundo nuevo:", "nuevo_mundo");
+              if (newName && newName.trim() !== "") {
+                  showFeedback(`Creando carpeta para nuevo mundo "${newName.trim()}"...`, "info");
+                  await invoke("crear_mundo_nuevo", { mundo: newName.trim() });
+                  showFeedback(`Mundo "${newName.trim()}" creado. Establécelo como activo para que se genere.`, "success");
+                  loadWorlds();
+              }
+          } catch (e) {
+              showFeedback(`Error al crear mundo: ${e}`, "error");
+          }
       });
   }
 

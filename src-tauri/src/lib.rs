@@ -5,6 +5,7 @@ mod models;
 mod runtime;
 mod server_files;
 mod sessions;
+mod worlds;
 
 use crate::{
     events::emit_log,
@@ -293,6 +294,140 @@ async fn descargar_servidor_jar(url: String, destino: String) -> Result<(), Stri
     Ok(())
 }
 
+#[tauri::command]
+fn listar_mundos(state: tauri::State<AppState>) -> Result<Vec<String>, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::worlds::get_worlds(&path)
+}
+
+#[tauri::command]
+fn obtener_mundo_activo(state: tauri::State<AppState>) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    Ok(crate::worlds::get_active_world(&path))
+}
+
+#[tauri::command]
+fn cambiar_mundo_activo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+    mundo: String,
+) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::worlds::set_active_world(&path, &mundo)?;
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Mundo activo cambiado a `{}`.", mundo),
+    )?;
+    Ok(())
+}
+
+#[tauri::command]
+fn respaldar_mundo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+    mundo: String,
+) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Creando respaldo del mundo `{}`...", mundo),
+    )?;
+    
+    let backup_path = crate::worlds::backup_world(&path, &mundo)?;
+    
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Respaldo creado en `{}`.", backup_path),
+    )?;
+    Ok(backup_path)
+}
+
+#[tauri::command]
+fn borrar_mundo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+    mundo: String,
+) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::worlds::delete_world(&path, &mundo)?;
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Mundo `{}` eliminado.", mundo),
+    )?;
+    Ok(())
+}
+
+#[tauri::command]
+fn renombrar_mundo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+    old_name: String,
+    new_name: String,
+) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::worlds::rename_world(&path, &old_name, &new_name)?;
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Mundo `{}` renombrado a `{}`.", old_name, new_name),
+    )?;
+    Ok(())
+}
+
+#[tauri::command]
+fn crear_mundo_nuevo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+    mundo: String,
+) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::worlds::create_new_world(&path, &mundo)?;
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Nuevo mundo vacío `{}` creado.", mundo),
+    )?;
+    Ok(())
+}
+
+#[tauri::command]
+fn importar_mundo_zip(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+    zip_path: String,
+    mundo: String,
+) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Importando mundo desde `{}`...", zip_path),
+    )?;
+    
+    crate::worlds::import_world_zip(&path, &zip_path, &mundo)?;
+    
+    emit_log(
+        &app_handle,
+        LogKind::System,
+        format!("Mundo `{}` importado correctamente.", mundo),
+    )?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -317,7 +452,15 @@ pub fn run() {
             leer_archivo_servidor,
             guardar_archivo_servidor,
             obtener_estadisticas_servidor,
-            descargar_servidor_jar
+            descargar_servidor_jar,
+            listar_mundos,
+            obtener_mundo_activo,
+            cambiar_mundo_activo,
+            respaldar_mundo,
+            borrar_mundo,
+            renombrar_mundo,
+            crear_mundo_nuevo,
+            importar_mundo_zip
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
