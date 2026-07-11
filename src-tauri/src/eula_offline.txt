@@ -1,0 +1,31 @@
+ACUERDO DE LICENCIA DE USUARIO FINAL DE MINECRAFT (EULA)
+
+Para proteger a Minecraft (nuestro "Juego") y a los miembros de nuestra comunidad, necesitamos que estos Términos de la Licencia de Usuario Final (los "Términos") regulen el uso que haces de Minecraft. Este acuerdo es un contrato vinculante entre tú y nosotros (Mojang AB).
+
+---
+
+REGLAS GENERALES Y DE USO
+Al comprar, descargar o usar el Juego, aceptas estas reglas. Si no estás de acuerdo o no puedes cumplirlas, no debes usar el Juego.
+
+1. PROPIEDAD DEL JUEGO
+Aunque te otorgamos permiso para jugar a nuestro Juego, nosotros seguimos siendo los propietarios del mismo. También somos propietarios de nuestras marcas y de cualquier contenido que esté en el Juego. El permiso que te otorgamos para usar y jugar al Juego puede ser revocado por nosotros si incumples estos Términos.
+
+2. LO QUE PUEDES HACER
+Te otorgamos el derecho de instalar y jugar al Juego en tus dispositivos. También puedes crear herramientas, mods y contenido multimedia basados en nuestro Juego, siempre y cuando cumplas con nuestras Directrices de Uso Comercial y de Marca.
+
+3. LO QUE NO PUEDES HACER
+- No puedes distribuir copias de nuestro Juego o de versiones modificadas del mismo.
+- No puedes usar el Juego con fines comerciales de forma no autorizada.
+- No puedes intentar ganar dinero real con el Juego o con elementos del mismo de manera engañosa o no autorizada.
+- No puedes alojar servidores multijugador comerciales que violen nuestras directrices (por ejemplo, vendiendo ventajas injustas de juego o "pay-to-win").
+
+4. MODS Y CONTENIDO DE LA COMUNIDAD
+Nos encanta que crees contenido para el Juego. Si creas mods, son tuyos, pero no puedes distribuirlos a cambio de dinero real de manera directa si contienen código propietario nuestro, y debes permitir que otros los usen libremente si los integras en el Juego.
+
+---
+
+ACEPTACIÓN DEL EULA PARA SERVIDORES
+Para poder ejecutar un servidor de Minecraft, debes aceptar expresamente estos términos. Al configurar `eula=true` en el archivo de configuración del servidor (`eula.txt`), declaras que has leído y aceptas regirte por el Acuerdo de Licencia de Usuario Final de Minecraft.
+
+Para consultar los términos completos y actualizados en línea, visita:
+https://red.mojang.com/documents/minecraft_eula

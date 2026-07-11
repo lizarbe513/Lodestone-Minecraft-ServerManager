@@ -140,6 +140,15 @@ fn aceptar_eula_y_reiniciar(
 }
 
 #[tauri::command]
+async fn obtener_eula_texto(
+    state: tauri::State<'_, AppState>,
+) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    let session_dir = PathBuf::from(&session.server_dir);
+    Ok(crate::server_files::obtener_eula_texto_backend(&session_dir).await)
+}
+
+#[tauri::command]
 fn enviar_comando(comando: String, state: tauri::State<AppState>) -> Result<(), String> {
     send_console_command(&state.runtime, &comando)
 }
@@ -298,6 +307,7 @@ pub fn run() {
             abrir_servidor_existente,
             iniciar_servidor_actual,
             aceptar_eula_y_reiniciar,
+            obtener_eula_texto,
             enviar_comando,
             detener_servidor,
             abrir_carpeta_servidor,

@@ -104,6 +104,116 @@ pub fn eula_needs_acceptance(server_dir: &Path) -> bool {
     }
 }
 
+pub fn extract_eula_url(server_dir: &Path) -> String {
+    let eula_path = server_dir.join(EULA_FILE_NAME);
+    if let Ok(content) = fs::read_to_string(&eula_path) {
+        for line in content.lines() {
+            if line.trim().starts_with('#') {
+                if let Some(start_idx) = line.find("http") {
+                    let end_idx = line[start_idx..].find(|c: char| c == ')' || c.is_whitespace())
+                        .map(|i| start_idx + i)
+                        .unwrap_or(line.len());
+                    return line[start_idx..end_idx].to_string();
+                }
+            }
+        }
+    }
+    "https://aka.ms/MinecraftEULA".to_string()
+}
+
+fn strip_html(html: &str) -> String {
+    let step1 = html
+        .replace("<p>", "\n\n")
+        .replace("</p>", "\n")
+        .replace("<br>", "\n")
+        .replace("<br/>", "\n")
+        .replace("<br />", "\n")
+        .replace("<h1>", "\n\n=== ")
+        .replace("</h1>", " ===\n\n")
+        .replace("<h2>", "\n\n--- ")
+        .replace("</h2>", " ---\n\n")
+        .replace("<h3>", "\n\n")
+        .replace("</h3>", "\n")
+        .replace("<li>", "\n* ")
+        .replace("</li>", "");
+
+    let mut in_tag = false;
+    let mut clean = String::new();
+    for c in step1.chars() {
+        if c == '<' {
+            in_tag = true;
+        } else if c == '>' {
+            in_tag = false;
+        } else if !in_tag {
+            clean.push(c);
+        }
+    }
+
+    let final_clean = clean
+        .replace("&nbsp;", " ")
+        .replace("&amp;", "&")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">");
+
+    let mut result = String::new();
+    let mut consecutive_newlines = 0;
+    for line in final_clean.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            consecutive_newlines += 1;
+            if consecutive_newlines <= 2 {
+                result.push('\n');
+            }
+        } else {
+            consecutive_newlines = 0;
+            result.push_str(line);
+            result.push('\n');
+        }
+    }
+
+    result.trim().to_string()
+}
+
+fn extract_eula_rich_text(html: &str) -> String {
+    if let Some(start_idx) = html.find("class=\"MC_Link_Style_RichText\"") {
+        if let Some(tag_end) = html[start_idx..].find('>') {
+            let content_start = start_idx + tag_end + 1;
+            if let Some(end_offset) = html[content_start..].find("</div>") {
+                let content_end = content_start + end_offset;
+                return html[content_start..content_end].to_string();
+            }
+        }
+    }
+    html.to_string()
+}
+
+pub async fn obtener_eula_texto_backend(server_dir: &Path) -> String {
+    let url = extract_eula_url(server_dir);
+    
+    let client = reqwest::Client::builder()
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+        .timeout(std::time::Duration::from_secs(5))
+        .build();
+
+    if let Ok(c) = client {
+        if let Ok(res) = c.get(&url).send().await {
+            if res.status().is_success() {
+                if let Ok(html) = res.text().await {
+                    let rich_text = extract_eula_rich_text(&html);
+                    let clean = strip_html(&rich_text);
+                    if !clean.is_empty() {
+                        return clean;
+                    }
+                }
+            }
+        }
+    }
+
+    include_str!("eula_offline.txt").to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

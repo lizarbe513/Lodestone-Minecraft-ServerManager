@@ -205,8 +205,8 @@
                     <button id="btn-control-open-folder" type="button" class="secondary">
                         Abrir carpeta del servidor
                     </button>
-                    <button id="btn-control-accept-eula" type="button" class="warning" hidden>
-                        Aceptar EULA y reiniciar
+                    <button id="btn-control-eula" type="button" class="warning" hidden>
+                        EULA
                     </button>
                 </div>
             </div>
@@ -250,6 +250,35 @@
 
                 <div id="players-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
                     <p class="hint" style="text-align: center; margin: 16px 0;">No hay jugadores conectados.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-eula" class="page-section" hidden>
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>EULA de Minecraft</h2>
+                        <p class="hint">
+                            Debes leer y aceptar el Acuerdo de Licencia de Usuario Final (EULA) de Minecraft para poder ejecutar el servidor.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="eula-text-container" style="max-height: 380px; overflow-y: auto; padding: 20px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; font-size: 0.95rem; margin-bottom: 24px; line-height: 1.6; color: rgba(255, 255, 255, 0.85); box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);">Cargando el texto del EULA...</div>
+
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 24px;">
+                    <input type="checkbox" id="checkbox-accept-eula" style="width: auto; cursor: pointer;" />
+                    <label for="checkbox-accept-eula" style="font-weight: normal; cursor: pointer; user-select: none;">Acepto los términos y condiciones del EULA de Minecraft.</label>
+                </div>
+
+                <div class="row action-row">
+                    <button id="btn-eula-accept-continue" type="button" class="warning" disabled>
+                        Continuar con el inicio del servidor
+                    </button>
+                    <button id="btn-eula-cancel" type="button" class="secondary">
+                        Cancelar
+                    </button>
                 </div>
             </div>
         </section>

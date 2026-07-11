@@ -36,9 +36,15 @@ let btnControlBackEl;
 let btnControlStartEl;
 let btnControlStopEl;
 let btnControlOpenFolderEl;
-let btnControlAcceptEulaEl;
+let btnControlEulaEl;
 let btnToggleConfigPanelEl;
 let btnSendCommandEl;
+
+let pageEulaEl;
+let eulaTextContainerEl;
+let checkboxAcceptEulaEl;
+let btnEulaAcceptContinueEl;
+let btnEulaCancelEl;
 let serverJarPathEl;
 let serverParentDirEl;
 let serverNameEl;
@@ -170,6 +176,7 @@ function navigateTo(page) {
   if (pagePropertiesEl) pagePropertiesEl.hidden = page !== "properties";
   if (pageConfigEl) pageConfigEl.hidden = page !== "config";
   if (pagePlayersEl) pagePlayersEl.hidden = page !== "players";
+  if (pageEulaEl) pageEulaEl.hidden = page !== "eula";
   updateControls();
 }
 
@@ -418,8 +425,8 @@ function updateControls() {
   btnControlOpenFolderEl.disabled = !hasSession;
   if (btnToggleConfigPanelEl) btnToggleConfigPanelEl.disabled = !hasSession || busy;
   if (btnOpenPropertiesEl) btnOpenPropertiesEl.disabled = !hasSession || busy;
-  btnControlAcceptEulaEl.hidden = !waitingEula;
-  btnControlAcceptEulaEl.disabled = !waitingEula;
+  btnControlEulaEl.hidden = !waitingEula;
+  btnControlEulaEl.disabled = !waitingEula;
   inputCommandEl.disabled = appState.status !== "running";
   btnSendCommandEl.disabled = appState.status !== "running";
 }
@@ -655,10 +662,26 @@ async function acceptEulaAndRestart() {
 
   try {
     await continueAfterEulaAcceptance();
+    navigateTo("control");
   } catch (error) {
     const message = normalizeError(error);
     showFeedback(message, "error");
     appendLog("stderr", message);
+  }
+}
+
+async function loadAndShowEula() {
+  eulaTextContainerEl.textContent = "Cargando el acuerdo de licencia (EULA) desde internet...";
+  checkboxAcceptEulaEl.checked = false;
+  btnEulaAcceptContinueEl.disabled = true;
+  navigateTo("eula");
+  try {
+    const text = await invoke("obtener_eula_texto");
+    eulaTextContainerEl.textContent = text;
+  } catch (error) {
+    const message = normalizeError(error);
+    showFeedback(`Error al obtener el EULA: ${message}`, "error");
+    eulaTextContainerEl.textContent = "Error al descargar el EULA de Minecraft. Por favor, asegúrate de estar conectado a internet o inténtalo de nuevo.";
   }
 }
 
@@ -1086,7 +1109,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   btnPropertiesSaveEl = document.querySelector("#btn-properties-save");
   btnPropertiesBackEl = document.querySelector("#btn-properties-back");
   propertiesContainerEl = document.querySelector("#properties-container");
-  btnControlAcceptEulaEl = document.querySelector("#btn-control-accept-eula");
+  btnControlEulaEl = document.querySelector("#btn-control-eula");
+  pageEulaEl = document.querySelector("#page-eula");
+  eulaTextContainerEl = document.querySelector("#eula-text-container");
+  checkboxAcceptEulaEl = document.querySelector("#checkbox-accept-eula");
+  btnEulaAcceptContinueEl = document.querySelector("#btn-eula-accept-continue");
+  btnEulaCancelEl = document.querySelector("#btn-eula-cancel");
   btnToggleConfigPanelEl = document.querySelector("#btn-toggle-config-panel");
   btnSendCommandEl = document.querySelector("#btn-send-command");
   serverJarPathEl = document.querySelector("#server-jar-path");
@@ -1402,8 +1430,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  btnControlAcceptEulaEl.addEventListener("click", async () => {
+  btnControlEulaEl.addEventListener("click", async () => {
+    await loadAndShowEula();
+  });
+
+  checkboxAcceptEulaEl.addEventListener("change", () => {
+    btnEulaAcceptContinueEl.disabled = !checkboxAcceptEulaEl.checked;
+  });
+
+  btnEulaAcceptContinueEl.addEventListener("click", async () => {
     await acceptEulaAndRestart();
+  });
+
+  btnEulaCancelEl.addEventListener("click", () => {
+    navigateTo("control");
   });
 
   btnControlSelectJarEl.addEventListener("click", async () => {
