@@ -8,6 +8,7 @@ import { parsePropertiesContent, renderPropertiesUI, buildPropertiesPayload } fr
 import { loadAllPlayerLists, addItemToList, handleRemoveOp, handleRemoveWhitelist, handleRemoveBannedPlayer, handleRemoveBannedIp } from "./players.js";
 import { loadWorlds } from "./worlds.js";
 import { loadInstalledExtensions, searchModrinth, initExtensionsPage, setActiveCategory, setActiveSubTab, activeCategory, activeSubTab } from "./extensions.js";
+import { loadBackupsList, loadTasksList, createFullBackup, addNewTask, startScheduler, setActiveAdminTab } from "./backups.js";
 
 export async function registerTauriEvents() {
   await listen("server-status", async (event) => {
@@ -647,4 +648,100 @@ export function setupEvents() {
       els.extensionVersionsDialog.close();
     });
   }
+
+  // EVENTOS DE COPIAS DE SEGURIDAD Y TAREAS
+
+  const selectAdminTab = (activeButton) => {
+    const buttons = [els.tabBackupsList, els.tabTasksList];
+    buttons.forEach(btn => {
+      if (!btn) return;
+      if (btn === activeButton) {
+        btn.classList.add("active");
+        btn.classList.remove("secondary");
+      } else {
+        btn.classList.remove("active");
+        btn.classList.add("secondary");
+      }
+    });
+  };
+
+  if (els.btnOpenBackups) {
+    els.btnOpenBackups.addEventListener("click", async () => {
+      navigateTo("backups");
+      setActiveAdminTab("backups");
+      selectAdminTab(els.tabBackupsList);
+      
+      if (els.sectionBackupsList) els.sectionBackupsList.hidden = false;
+      if (els.sectionTasksList) els.sectionTasksList.hidden = true;
+
+      await loadBackupsList();
+      await loadTasksList();
+    });
+  }
+
+  if (els.btnBackupsBack) {
+    els.btnBackupsBack.addEventListener("click", () => {
+      navigateTo("control");
+    });
+  }
+
+  if (els.tabBackupsList) {
+    els.tabBackupsList.addEventListener("click", () => {
+      setActiveAdminTab("backups");
+      selectAdminTab(els.tabBackupsList);
+      if (els.sectionBackupsList) els.sectionBackupsList.hidden = false;
+      if (els.sectionTasksList) els.sectionTasksList.hidden = true;
+      loadBackupsList();
+    });
+  }
+
+  if (els.tabTasksList) {
+    els.tabTasksList.addEventListener("click", () => {
+      setActiveAdminTab("tasks");
+      selectAdminTab(els.tabTasksList);
+      if (els.sectionBackupsList) els.sectionBackupsList.hidden = true;
+      if (els.sectionTasksList) els.sectionTasksList.hidden = false;
+      loadTasksList();
+    });
+  }
+
+  if (els.btnCreateBackup) {
+    els.btnCreateBackup.addEventListener("click", () => {
+      createFullBackup();
+    });
+  }
+
+  if (els.btnOpenNewTaskModal) {
+    els.btnOpenNewTaskModal.addEventListener("click", () => {
+      els.newTaskDialog.showModal();
+    });
+  }
+
+  if (els.btnNewTaskClose) {
+    els.btnNewTaskClose.addEventListener("click", () => {
+      els.newTaskDialog.close();
+    });
+  }
+
+  if (els.btnNewTaskSave) {
+    els.btnNewTaskSave.addEventListener("click", () => {
+      addNewTask();
+    });
+  }
+
+  if (els.taskType) {
+    els.taskType.addEventListener("change", () => {
+      if (els.groupTaskCommand) els.groupTaskCommand.hidden = els.taskType.value !== "command";
+    });
+  }
+
+  if (els.taskTrigger) {
+    els.taskTrigger.addEventListener("change", () => {
+      if (els.groupTaskInterval) els.groupTaskInterval.hidden = els.taskTrigger.value !== "interval";
+      if (els.groupTaskTime) els.groupTaskTime.hidden = els.taskTrigger.value !== "daily";
+    });
+  }
+
+  // Iniciar el programador de tareas
+  startScheduler();
 }

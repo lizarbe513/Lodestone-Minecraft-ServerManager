@@ -43,6 +43,6 @@ export async function getFabricDownloadUrl(version) {
 }
 
 // Wrapper utility para invocar a tauri (opcional usar directamente invoke)
-const { open } = window.__TAURI__.dialog;
+const { open, ask } = window.__TAURI__.dialog;
 const { listen } = window.__TAURI__.event;
-export { invoke, open, listen };
+export { invoke, open, ask, listen };

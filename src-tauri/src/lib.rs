@@ -1,6 +1,7 @@
 mod constants;
 mod events;
 mod extensions;
+mod backups;
 mod java;
 mod models;
 mod runtime;
@@ -545,8 +546,41 @@ pub fn run() {
             eliminar_extension,
             instalar_extension,
             detectar_motor_servidor,
-            detectar_version_minecraft
+            detectar_version_minecraft,
+            crear_backup_completo,
+            listar_backups,
+            restaurar_backup,
+            eliminar_backup
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[tauri::command]
+async fn crear_backup_completo(state: tauri::State<'_, AppState>) -> Result<String, String> {
+    let session = current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    crate::backups::create_full_backup(&path)
+}
+
+#[tauri::command]
+fn listar_backups(state: tauri::State<AppState>) -> Result<Vec<crate::backups::BackupInfo>, String> {
+    let session = current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    crate::backups::list_backups(&path)
+}
+
+#[tauri::command]
+async fn restaurar_backup(state: tauri::State<'_, AppState>, backup_name: String) -> Result<(), String> {
+    ensure_server_is_idle(&state.runtime)?;
+    let session = current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    crate::backups::restore_backup(&path, &backup_name)
+}
+
+#[tauri::command]
+fn eliminar_backup(state: tauri::State<AppState>, backup_name: String) -> Result<(), String> {
+    let session = current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    crate::backups::delete_backup(&path, &backup_name)
 }

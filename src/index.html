@@ -287,6 +287,19 @@
                     Gestión de Plugins y Mods
                 </button>
             </div>
+
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Copias de Seguridad y Tareas</h2>
+                        <p class="hint">Realiza copias de seguridad completas y programa tareas automáticas para tu servidor.</p>
+                    </div>
+                </div>
+
+                <button id="btn-open-backups" type="button" class="secondary">
+                    Gestión de Backups y Tareas
+                </button>
+            </div>
         </section>
 
         <section id="page-eula" class="page-section" hidden>
@@ -527,6 +540,46 @@
                 </div>
             </div>
         </section>
+
+        <section id="page-backups" class="page-section" hidden>
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Administración del Servidor</h2>
+                        <p class="hint">Gestiona copias de seguridad y automatización de tareas.</p>
+                    </div>
+                    <div class="row responsive-row">
+                        <button id="btn-backups-back" type="button" class="secondary">Volver al control</button>
+                    </div>
+                </div>
+
+                <!-- Pestañas Backups vs Tareas -->
+                <div class="tabs" style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                    <button id="tab-backups-list" type="button" class="tab-btn active" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Copias de Seguridad</button>
+                    <button id="tab-tasks-list" type="button" class="tab-btn secondary" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Tareas Programadas</button>
+                </div>
+
+                <!-- Sección Copias de Seguridad -->
+                <div id="section-backups-list">
+                    <div class="row action-row" style="margin-bottom: 20px;">
+                        <button id="btn-create-backup" type="button">Crear Copia Completa</button>
+                    </div>
+                    <div id="list-backups" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p class="hint" style="text-align: center; margin: 16px 0;">Cargando copias de seguridad...</p>
+                    </div>
+                </div>
+
+                <!-- Sección Tareas Programadas -->
+                <div id="section-tasks-list" hidden>
+                    <div class="row action-row" style="margin-bottom: 20px;">
+                        <button id="btn-open-new-task-modal" type="button">Nueva Tarea Programada</button>
+                    </div>
+                    <div id="list-tasks" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p class="hint" style="text-align: center; margin: 16px 0;">No hay tareas programadas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <dialog id="confirm-dialog" class="panel"
@@ -551,6 +604,51 @@
         
         <div class="row action-row" style="justify-content: flex-end;">
             <button id="btn-ext-dialog-close" class="secondary" type="button">Cerrar</button>
+        </div>
+    </dialog>
+
+    <dialog id="new-task-dialog" class="panel"
+        style="margin: auto; max-width: 450px; width: 90%; padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
+        <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 600; color: #fff;">Programar Nueva Tarea</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px; margin: 16px 0 24px;">
+            <div>
+                <label for="task-type" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Acción / Tipo de Tarea</label>
+                <select id="task-type">
+                    <option value="backup">Copia de Seguridad Completa</option>
+                    <option value="restart">Reinicio de Servidor</option>
+                    <option value="command">Ejecutar Comando en Consola</option>
+                </select>
+            </div>
+
+            <div id="group-task-command" hidden>
+                <label for="task-command" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Comando a ejecutar</label>
+                <input id="task-command" type="text" placeholder="ej. say Hola a todos!" autocomplete="off" />
+            </div>
+
+            <div>
+                <label for="task-trigger" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Disparador (Cuándo ejecutar)</label>
+                <select id="task-trigger">
+                    <option value="start">Al iniciar el servidor</option>
+                    <option value="interval">Cada intervalo de minutos</option>
+                    <option value="daily">A una hora fija diaria</option>
+                </select>
+            </div>
+
+            <div id="group-task-interval" hidden>
+                <label for="task-interval" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Intervalo (en minutos)</label>
+                <input id="task-interval" type="number" min="1" value="60" />
+            </div>
+
+            <div id="group-task-time" hidden>
+                <label for="task-time" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Hora fija diaria (HH:MM)</label>
+                <input id="task-time" type="time" value="03:00" />
+            </div>
+        </div>
+
+        <div class="row action-row" style="justify-content: flex-end; gap: 8px;">
+            <button id="btn-new-task-close" class="secondary" type="button">Cancelar</button>
+            <button id="btn-new-task-save" type="button">Guardar Tarea</button>
         </div>
     </dialog>
 </body>

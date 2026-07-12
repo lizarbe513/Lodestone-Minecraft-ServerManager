@@ -1,6 +1,7 @@
 import { invoke, open, getPaperDownloadUrl, getVanillaDownloadUrl, getPurpurDownloadUrl, getFabricDownloadUrl } from "./api.js";
 import { els } from "./dom.js";
 import { appState, connectedPlayers } from "./state.js";
+import { triggerStartTasks } from "./backups.js";
 import { navigateTo, updateControls, applySnapshot, renderJavaOptions, renderPlayersList } from "./ui.js";
 import { showFeedback, clearLogs, suggestedServerName, normalizeError, appendLog, normalizeMessage } from "./utils.js";
 
@@ -154,6 +155,10 @@ export async function startCurrentServer() {
   appState.pendingCreateFlow = false;
   clearLogs();
   showFeedback("Iniciando servidor...", "info");
+  
+  // Disparar las tareas programadas de tipo "Al iniciar"
+  triggerStartTasks();
+
   const snapshot = await invoke("iniciar_servidor_actual");
   applySnapshot(snapshot);
 }

@@ -115,4 +115,29 @@ export function initDom() {
   els.extVersionsList = document.querySelector("#ext-versions-list");
   els.btnExtDialogClose = document.querySelector("#btn-ext-dialog-close");
   els.extensionsCategories = document.querySelector("#extensions-categories");
+
+  els.btnOpenBackups = document.querySelector("#btn-open-backups");
+  els.btnBackupsBack = document.querySelector("#btn-backups-back");
+  els.pageBackups = document.querySelector("#page-backups");
+  els.tabBackupsList = document.querySelector("#tab-backups-list");
+  els.tabTasksList = document.querySelector("#tab-tasks-list");
+  els.sectionBackupsList = document.querySelector("#section-backups-list");
+  els.sectionTasksList = document.querySelector("#section-tasks-list");
+  els.btnCreateBackup = document.querySelector("#btn-create-backup");
+  els.listBackups = document.querySelector("#list-backups");
+  els.btnOpenNewTaskModal = document.querySelector("#btn-open-new-task-modal");
+  els.listTasks = document.querySelector("#list-tasks");
+  
+  els.newTaskDialog = document.querySelector("#new-task-dialog");
+  els.taskType = document.querySelector("#task-type");
+  els.taskCommand = document.querySelector("#task-command");
+  els.taskTrigger = document.querySelector("#task-trigger");
+  els.taskInterval = document.querySelector("#task-interval");
+  els.taskTime = document.querySelector("#task-time");
+  els.btnNewTaskClose = document.querySelector("#btn-new-task-close");
+  els.btnNewTaskSave = document.querySelector("#btn-new-task-save");
+  
+  els.groupTaskCommand = document.querySelector("#group-task-command");
+  els.groupTaskInterval = document.querySelector("#group-task-interval");
+  els.groupTaskTime = document.querySelector("#group-task-time");
 }

@@ -1,7 +1,7 @@
 import { appState, statusLabels, connectedPlayers, globals } from "./state.js";
 import { els } from "./dom.js";
 import { showFeedback, clearLogs, requestConfirm } from "./utils.js";
-import { invoke } from "./api.js";
+import { invoke, ask } from "./api.js";
 
 export function navigateTo(page) {
   appState.currentPage = page;
@@ -14,6 +14,7 @@ export function navigateTo(page) {
   if (els.pageWorlds) els.pageWorlds.hidden = page !== "worlds";
   if (els.pageEula) els.pageEula.hidden = page !== "eula";
   if (els.pageExtensions) els.pageExtensions.hidden = page !== "extensions";
+  if (els.pageBackups) els.pageBackups.hidden = page !== "backups";
   updateControls();
 }
 
@@ -323,16 +324,15 @@ export function renderSavedServers() {
     btnRemove.onclick = () => {
       requestConfirm(
         "Quitar Servidor",
-        `¿Estás seguro de que quieres quitar "${server.server_name}" de la lista?`,
+        `¿Estás seguro de que quieres quitar "${server.server_name}" de la lista de acceso rápido? (Sus archivos permanecerán intactos en tu disco).`,
         async () => {
-          const deleteDisk = window.confirm("¿Deseas eliminar también permanentemente la carpeta del servidor y todos sus archivos en el disco? (Esta acción no se puede deshacer)");
           try {
-            showFeedback("Quitando servidor...", "info");
-            const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: deleteDisk });
+            showFeedback("Quitando servidor de la lista...", "info");
+            const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: false });
             applySnapshot(snapshot);
-            showFeedback("El servidor ha sido eliminado.", "success");
+            showFeedback("El servidor ha sido quitado de la lista.", "success");
           } catch (e) {
-            showFeedback(`Error al eliminar: ${e}`, "error");
+            showFeedback(`Error al quitar: ${e}`, "error");
           }
         }
       );
