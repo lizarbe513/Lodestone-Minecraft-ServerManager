@@ -1,7 +1,7 @@
 import { invoke, listen, open } from "./api.js";
 import { els } from "./dom.js";
 import { appState, globals } from "./state.js";
-import { setStatus, updateControls, navigateTo } from "./ui.js";
+import { setStatus, updateControls, navigateTo, applySnapshot } from "./ui.js";
 import { showFeedback, appendLog, normalizeError, requestConfirm } from "./utils.js";
 import { handleServerLogLine, resetNewServerForm, browseServerJar, browseServerParentDir, createServer, startCurrentServer, stopServer, sendCommand, saveServerConfig, acceptEulaAndRestart, loadAndShowEula, openExistingServer } from "./server.js";
 import { parsePropertiesContent, renderPropertiesUI, buildPropertiesPayload } from "./properties.js";
@@ -271,6 +271,62 @@ export function setupEvents() {
     updateControls();
   }
 
+  // Config Page File Source Selection
+  if (els.controlSourceLocal) {
+    els.controlSourceLocal.addEventListener("change", () => {
+      if (els.controlSourceLocal.checked) {
+        els.controlLocalContainer.style.display = "flex";
+        els.controlDownloadContainer.style.display = "none";
+      }
+    });
+  }
+
+  if (els.controlSourceDownload) {
+    els.controlSourceDownload.addEventListener("change", () => {
+      if (els.controlSourceDownload.checked) {
+        els.controlLocalContainer.style.display = "none";
+        els.controlDownloadContainer.style.display = "block";
+        loadControlDownloadVersions();
+      }
+    });
+  }
+  
+  if (els.controlEngineSelect) {
+    els.controlEngineSelect.addEventListener("change", loadControlDownloadVersions);
+  }
+
+  async function loadControlDownloadVersions() {
+    if (!els.controlVersionSelect) return;
+    
+    els.controlVersionSelect.innerHTML = '<option value="">Cargando versiones...</option>';
+    els.controlVersionSelect.disabled = true;
+
+    const type = els.controlEngineSelect.value;
+    try {
+      if (type === "paper") {
+        const res = await fetch("https://fill.papermc.io/v3/projects/paper");
+        const data = await res.json();
+        const versions = Object.values(data.versions).flat();
+        els.controlVersionSelect.innerHTML = versions.map(v => `<option value="${v}">${v}</option>`).join("");
+      } else if (type === "vanilla" || type === "fabric") {
+        const res = await fetch("https://launchermeta.mojang.com/mc/game/version_manifest.json");
+        const data = await res.json();
+        globals.cachedVanillaVersions = data.versions;
+        const versions = data.versions.filter(v => v.type === "release");
+        els.controlVersionSelect.innerHTML = versions.map(v => `<option value="${v.id}">${v.id}</option>`).join("");
+      } else if (type === "purpur") {
+        const res = await fetch("https://api.purpurmc.org/v2/purpur");
+        const data = await res.json();
+        const versions = [...data.versions].reverse();
+        els.controlVersionSelect.innerHTML = versions.map(v => `<option value="${v}">${v}</option>`).join("");
+      }
+      els.controlVersionSelect.disabled = false;
+    } catch (e) {
+      els.controlVersionSelect.innerHTML = '<option value="">Error al cargar</option>';
+      console.error(e);
+    }
+  }
+
   if (els.btnHomeOpenExisting) {
     els.btnHomeOpenExisting.addEventListener("click", async () => {
       try {
@@ -405,6 +461,31 @@ export function setupEvents() {
         showFeedback(message, "error");
         appendLog("stderr", message);
       }
+    });
+  }
+
+  if (els.btnControlDeleteServer) {
+    els.btnControlDeleteServer.addEventListener("click", () => {
+      const server = appState.activeSession;
+      if (!server) return;
+      requestConfirm(
+        "Borrar Servidor",
+        `¿Estás seguro de que quieres borrar el servidor "${server.server_name}"?\n\nLa carpeta del servidor y todos sus mundos se moverán a la papelera.`,
+        async () => {
+          try {
+            showFeedback("Borrando servidor (moviendo a papelera)...", "info");
+            const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: true });
+            
+            appState.activeSession = null;
+            navigateTo("home");
+            
+            applySnapshot(snapshot);
+            showFeedback("El servidor ha sido movido a la papelera.", "success");
+          } catch (e) {
+            showFeedback(`Error al borrar: ${e}`, "error");
+          }
+        }
+      );
     });
   }
 

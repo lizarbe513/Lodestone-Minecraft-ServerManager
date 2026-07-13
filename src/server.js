@@ -197,12 +197,59 @@ export async function saveServerConfig() {
     return;
   }
 
-  const jarSelectionValue = els.controlServerJarPath.value.trim();
-  const jarSelection =
-    jarSelectionValue &&
-      (jarSelectionValue.includes("/") || jarSelectionValue.includes("\\"))
-      ? jarSelectionValue
-      : "";
+  let jarSelection = "";
+  const isDownload = els.controlSourceDownload && els.controlSourceDownload.checked;
+
+  if (isDownload) {
+    showFeedback("Preparando descarga del software...", "info");
+    const software = els.controlEngineSelect.value;
+    const version = els.controlVersionSelect.value;
+
+    if (!version) {
+      showFeedback("Por favor, selecciona una versión para descargar.", "error");
+      return;
+    }
+
+    let url = "";
+    let jarName = "";
+
+    try {
+      if (software === "paper") {
+        url = await getPaperDownloadUrl(version);
+        jarName = `paper-${version}.jar`;
+      } else if (software === "vanilla") {
+        url = await getVanillaDownloadUrl(version);
+        jarName = `vanilla-${version}.jar`;
+      } else if (software === "purpur") {
+        url = await getPurpurDownloadUrl(version);
+        jarName = `purpur-${version}.jar`;
+      } else if (software === "fabric") {
+        url = await getFabricDownloadUrl(version);
+        jarName = `fabric-${version}.jar`;
+      }
+
+      if (!url) throw new Error("No se pudo obtener la URL de descarga.");
+
+      const serverDir = appState.activeSession.server_dir;
+      const tempDest = serverDir + (serverDir.endsWith("/") || serverDir.endsWith("\\") ? "" : "/") + "temp_" + jarName;
+      
+      showFeedback(`Descargando ${software} ${version}... Esto puede tardar dependiendo de tu conexión.`, "info");
+      await invoke("descargar_servidor_jar", { url: url, destino: tempDest });
+      
+      jarSelection = tempDest;
+    } catch (err) {
+      showFeedback(`Error durante la descarga: ${err.message || err}`, "error");
+      appendLog("stderr", err.message || err);
+      return;
+    }
+  } else {
+    const jarSelectionValue = els.controlServerJarPath.value.trim();
+    jarSelection =
+      jarSelectionValue &&
+        (jarSelectionValue.includes("/") || jarSelectionValue.includes("\\"))
+        ? jarSelectionValue
+        : "";
+  }
 
   const payload = {
     server_name: els.controlServerName.value.trim(),
@@ -211,12 +258,16 @@ export async function saveServerConfig() {
     memory_gb: memoryGb,
   };
 
-  const snapshot = await invoke("actualizar_configuracion_servidor", {
-    request: payload,
-  });
-  applySnapshot(snapshot);
-  navigateTo("control");
-  showFeedback("Configuración guardada correctamente.", "success");
+  try {
+    const snapshot = await invoke("actualizar_configuracion_servidor", {
+      request: payload,
+    });
+    applySnapshot(snapshot);
+    navigateTo("control");
+    showFeedback("Configuración guardada correctamente.", "success");
+  } catch (err) {
+    showFeedback(`Error al guardar configuración: ${err}`, "error");
+  }
 }
 
 export async function acceptEulaAndRestart() {

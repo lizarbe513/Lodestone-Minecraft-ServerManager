@@ -5,18 +5,47 @@ use zip::ZipArchive;
 use crate::models::ExtensionInfo;
 
 pub fn detect_server_engine(server_dir: &Path, jar_name: &str) -> String {
-    let jar_lower = jar_name.to_lowercase();
-    if jar_lower.contains("paper") {
-        return "paper".to_string();
-    }
-    if jar_lower.contains("fabric") {
-        return "fabric".to_string();
-    }
-    if jar_lower.contains("vanilla") || jar_lower.contains("minecraft_server") {
-        return "vanilla".to_string();
+    let jar_path = server_dir.join(jar_name);
+    
+    // Try to identify from JAR contents
+    if let Ok(file) = fs::File::open(&jar_path) {
+        if let Ok(mut archive) = ZipArchive::new(file) {
+            for i in 0..archive.len() {
+                if let Ok(entry) = archive.by_index(i) {
+                    let name = entry.name();
+                    if name.contains("net/fabricmc/") || name == "fabric.mod.json" {
+                        return "fabric".to_string();
+                    }
+                    if name.contains("org/quiltmc/") || name == "quilt.mod.json" {
+                        return "quilt".to_string();
+                    }
+                    if name.contains("org/purpurmc/") || name == "purpur.yml" {
+                        return "purpur".to_string();
+                    }
+                    if name.contains("com/destroystokyo/") || name.contains("io/papermc/") || name == "paper.yml" {
+                        return "paper".to_string();
+                    }
+                    if name.contains("net/minecraftforge/") {
+                        return "forge".to_string();
+                    }
+                    if name.contains("net/neoforged/") {
+                        return "neoforge".to_string();
+                    }
+                }
+            }
+        }
     }
 
     // Fallback based on directory markers
+    if server_dir.join("libraries/net/neoforged").is_dir() {
+        return "neoforge".to_string();
+    }
+    if server_dir.join("libraries/net/minecraftforge").is_dir() {
+        return "forge".to_string();
+    }
+    if server_dir.join("libraries/net/fabricmc").is_dir() {
+        return "fabric".to_string();
+    }
     if server_dir.join("spigot.yml").exists() || server_dir.join("paper.yml").exists() || server_dir.join("plugins").is_dir() {
         return "paper".to_string();
     }

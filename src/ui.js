@@ -75,7 +75,7 @@ export function renderJavaOptions(selectedPath = null, targetSelect = null) {
   }
 }
 
-export function syncControlConfigForm() {
+export async function syncControlConfigForm() {
   if (!els.controlServerName) return;
 
   if (!appState.activeSession) {
@@ -90,6 +90,35 @@ export function syncControlConfigForm() {
   els.controlServerJarPath.value = appState.activeSession.jar_file_name;
   els.controlMemoryGb.value = `${appState.activeSession.memory_gb}`;
   renderJavaOptions(appState.activeSession.java_path, els.controlJavaVersion);
+
+  // Set default view to "Local File"
+  if (els.controlSourceLocal) {
+    els.controlSourceLocal.checked = true;
+    els.controlLocalContainer.style.display = "flex";
+    els.controlDownloadContainer.style.display = "none";
+    els.controlEngineSelect.disabled = true;
+    els.controlVersionSelect.disabled = true;
+    els.controlVersionSelect.innerHTML = '<option value="">Cargando versiones...</option>';
+
+    try {
+      const engine = await invoke("detectar_motor_servidor", {
+        serverDir: appState.activeSession.server_dir,
+        jarName: appState.activeSession.jar_file_name
+      });
+      
+      const supportedEngines = ["vanilla", "paper", "purpur", "fabric"];
+      if (supportedEngines.includes(engine)) {
+        els.controlEngineSelect.value = engine;
+        els.controlSourceDownload.disabled = false;
+      } else {
+        els.controlSourceDownload.disabled = true;
+        els.controlEngineSelect.value = "vanilla";
+      }
+    } catch (e) {
+      console.error("Error detecting engine for config:", e);
+      els.controlSourceDownload.disabled = true;
+    }
+  }
 }
 
 export function renderActiveSession() {
@@ -253,6 +282,9 @@ export function updateControls() {
     appState.status === "starting" || appState.status === "running"
   );
   els.btnControlOpenFolder.disabled = !hasSession;
+  if (els.btnControlDeleteServer) {
+    els.btnControlDeleteServer.disabled = !hasSession || busy || waitingEula;
+  }
   if (els.btnToggleConfigPanel) els.btnToggleConfigPanel.disabled = !hasSession || busy;
   if (els.btnOpenProperties) els.btnOpenProperties.disabled = !hasSession || busy;
   if (els.btnOpenExtensions) els.btnOpenExtensions.disabled = !hasSession || busy;
@@ -323,19 +355,56 @@ export function renderSavedServers() {
     const btnRemove = document.createElement("button");
     btnRemove.className = "warning";
     btnRemove.style = "padding: 6px 12px; font-size: 0.85rem; border-radius: 6px;";
-    btnRemove.textContent = "Quitar";
+    btnRemove.textContent = "Ocultar";
     btnRemove.onclick = () => {
       requestConfirm(
-        "Quitar Servidor",
-        `¿Estás seguro de que quieres quitar "${server.server_name}" de la lista de acceso rápido? (Sus archivos permanecerán intactos en tu disco).`,
+        "Ocultar Servidor",
+        `¿Estás seguro de que quieres quitar "${server.server_name}" de la lista de acceso rápido? (Sus archivos permanecerán intactos).`,
         async () => {
           try {
-            showFeedback("Quitando servidor de la lista...", "info");
+            showFeedback("Ocultando servidor...", "info");
             const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: false });
             applySnapshot(snapshot);
-            showFeedback("El servidor ha sido quitado de la lista.", "success");
+            showFeedback("Servidor ocultado.", "success");
           } catch (e) {
-            showFeedback(`Error al quitar: ${e}`, "error");
+            showFeedback(`Error: ${e}`, "error");
+          }
+        }
+      );
+    };
+
+    const btnDelete = document.createElement("button");
+    btnDelete.className = "danger";
+    btnDelete.style = "padding: 6px 12px; font-size: 0.85rem; border-radius: 6px;";
+    btnDelete.textContent = "Borrar";
+    
+    // Disable if it's the active server and it's busy
+    const isActiveServer = appState.activeSession && appState.activeSession.server_dir === server.server_dir;
+    const isBusy = appState.status === "starting" || appState.status === "running";
+    if (isActiveServer && isBusy) {
+        btnDelete.disabled = true;
+        btnDelete.title = "No puedes borrar un servidor mientras está encendido.";
+    }
+
+    btnDelete.onclick = () => {
+      requestConfirm(
+        "Borrar Servidor",
+        `¿Estás seguro de que quieres borrar el servidor "${server.server_name}"?\n\nLa carpeta del servidor y todos sus mundos se moverán a la papelera.`,
+        async () => {
+          try {
+            showFeedback("Borrando servidor (moviendo a papelera)...", "info");
+            const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: true });
+            
+            // Clean up active session if it's the one we just deleted
+            if (appState.activeSession && appState.activeSession.server_dir === server.server_dir) {
+                appState.activeSession = null;
+                navigateTo("home"); // Ensure we stay/go home
+            }
+            
+            applySnapshot(snapshot);
+            showFeedback("El servidor ha sido movido a la papelera.", "success");
+          } catch (e) {
+            showFeedback(`Error al borrar: ${e}`, "error");
           }
         }
       );
@@ -343,6 +412,7 @@ export function renderSavedServers() {
 
     actions.appendChild(btnOpen);
     actions.appendChild(btnRemove);
+    actions.appendChild(btnDelete);
     header.appendChild(name);
     header.appendChild(actions);
 

@@ -339,15 +339,34 @@ pub fn update_server_session_config(
             return Err("El archivo del software del servidor debe terminar en `.jar`.".into());
         }
 
-        let jar_file_name = server_jar_path
+        let mut jar_file_name = server_jar_path
             .file_name()
             .and_then(|name| name.to_str())
             .ok_or_else(|| "No se pudo leer el nombre del archivo `.jar`.".to_string())?
             .to_string();
 
+        let is_temp = jar_file_name.starts_with("temp_") && server_jar_path.parent() == Some(&server_dir);
+        if is_temp {
+            jar_file_name = jar_file_name.strip_prefix("temp_").unwrap().to_string();
+        }
+
         let destination_jar = server_dir.join(&jar_file_name);
-        fs::copy(&server_jar_path, &destination_jar)
-            .map_err(|e| format!("No se pudo copiar el archivo del servidor: {e}"))?;
+        
+        if is_temp {
+            fs::rename(&server_jar_path, &destination_jar)
+                .map_err(|e| format!("No se pudo renombrar el archivo temporal: {e}"))?;
+        } else if server_jar_path != destination_jar {
+            fs::copy(&server_jar_path, &destination_jar)
+                .map_err(|e| format!("No se pudo copiar el archivo del servidor: {e}"))?;
+        }
+        
+        // Eliminar el archivo .jar anterior si es diferente
+        if jar_file_name != session.jar_file_name {
+            let old_jar_path = server_dir.join(&session.jar_file_name);
+            if old_jar_path.exists() {
+                let _ = fs::remove_file(old_jar_path);
+            }
+        }
 
         jar_file_name
     };

@@ -70,6 +70,11 @@ button.warning {
     background: #6c4e11;
 }
 
+button.danger {
+    color: #ffc2c2;
+    background: #6c1111;
+}
+
 input,
 select {
     width: 100%;

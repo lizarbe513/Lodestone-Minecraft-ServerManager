@@ -153,8 +153,8 @@ fn remover_servidor_guardado(
 
     let path = PathBuf::from(server_dir.trim());
     if delete_files && path.is_dir() {
-        std::fs::remove_dir_all(&path)
-            .map_err(|e| format!("No se pudo eliminar la carpeta del servidor: {e}"))?;
+        trash::delete(&path)
+            .map_err(|e| format!("No se pudo mover la carpeta del servidor a la papelera: {e}"))?;
     }
 
     let mut config = load_app_config(&app_handle)?;

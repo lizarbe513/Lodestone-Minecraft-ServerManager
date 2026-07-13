@@ -212,7 +212,10 @@
                         Detener servidor
                     </button>
                     <button id="btn-control-open-folder" type="button" class="secondary">
-                        Abrir carpeta del servidor
+                        Abrir carpeta
+                    </button>
+                    <button id="btn-control-delete-server" type="button" class="danger">
+                        Borrar servidor
                     </button>
                     <button id="btn-control-eula" type="button" class="warning" hidden>
                         EULA
@@ -456,7 +459,7 @@
             <div class="panel">
                 <div class="panel-heading">
                     <div>
-                        <h2>Configuración de arranque</h2>
+                        <h2>Configuración</h2>
                         <p class="hint">
                             Ajusta el nombre, el .jar, Java y la RAM del servidor.
                         </p>
@@ -484,13 +487,46 @@
                     </div>
 
                     <div class="field-group full-width">
-                        <label for="control-server-jar-path">Software del servidor (.jar)</label>
-                        <div class="row responsive-row">
-                            <input id="control-server-jar-path" type="text" placeholder="Selecciona un archivo .jar"
-                                readonly />
+                        <label>Versión</label>
+                        <div class="row responsive-row" style="margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem;">
+                                <input type="radio" name="control-software-source" id="control-source-local" value="local" checked style="width: auto; margin: 0;">
+                                Archivo local
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem;">
+                                <input type="radio" name="control-software-source" id="control-source-download" value="download" style="width: auto; margin: 0;">
+                                Descargar automáticamente
+                            </label>
+                        </div>
+
+                        <!-- Local File Selection -->
+                        <div id="control-local-container" class="row responsive-row">
+                            <input id="control-server-jar-path" type="text" placeholder="Selecciona un archivo .jar" readonly />
                             <button id="btn-control-select-jar" type="button">
                                 Seleccionar .jar
                             </button>
+                        </div>
+
+                        <!-- Download Version Selection -->
+                        <div id="control-download-container" class="grid-form" style="display: none; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 8px;">
+                            <div class="field-group">
+                                <label for="control-engine-select">Motor de Servidor</label>
+                                <select id="control-engine-select" disabled>
+                                    <option value="vanilla">Vanilla (Oficial)</option>
+                                    <option value="paper">Paper (Recomendado)</option>
+                                    <option value="purpur">Purpur</option>
+                                    <option value="fabric">Fabric</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label for="control-version-select">Versión</label>
+                                <select id="control-version-select" disabled>
+                                    <option value="">Cargando versiones...</option>
+                                </select>
+                            </div>
+                            <p id="control-download-warning" class="hint" style="color: #ffc2c2; margin-top: 8px; grid-column: 1 / -1;">
+                                ⚠️ Cambiar la versión del software puede corromper los mundos. ¡Haz una copia de seguridad antes de continuar!
+                            </p>
                         </div>
                     </div>
                 </div>

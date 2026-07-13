@@ -23,6 +23,7 @@ export function initDom() {
   els.btnControlStart = document.querySelector("#btn-control-start");
   els.btnControlStop = document.querySelector("#btn-control-stop");
   els.btnControlOpenFolder = document.querySelector("#btn-control-open-folder");
+  els.btnControlDeleteServer = document.querySelector("#btn-control-delete-server");
   els.btnOpenProperties = document.querySelector("#btn-open-properties");
   els.btnPropertiesSave = document.querySelector("#btn-properties-save");
   els.btnPropertiesBack = document.querySelector("#btn-properties-back");
@@ -54,6 +55,12 @@ export function initDom() {
   els.btnControlSelectJar = document.querySelector("#btn-control-select-jar");
   els.btnControlSaveConfig = document.querySelector("#btn-control-save-config");
 
+  els.controlSourceLocal = document.querySelector("#control-source-local");
+  els.controlSourceDownload = document.querySelector("#control-source-download");
+  els.controlLocalContainer = document.querySelector("#control-local-container");
+  els.controlDownloadContainer = document.querySelector("#control-download-container");
+  els.controlEngineSelect = document.querySelector("#control-engine-select");
+  els.controlVersionSelect = document.querySelector("#control-version-select");
   els.radioJarSourceLocal = document.querySelector('input[name="jar-source"][value="local"]');
   els.radioJarSourceDownload = document.querySelector('input[name="jar-source"][value="download"]');
   els.sectionJarLocal = document.querySelector("#section-jar-local");
