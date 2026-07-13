@@ -2,6 +2,7 @@ import { appState, statusLabels, connectedPlayers, globals } from "./state.js";
 import { els } from "./dom.js";
 import { showFeedback, clearLogs, requestConfirm } from "./utils.js";
 import { invoke, ask } from "./api.js";
+import { updateMetrics, clearMetrics } from "./metrics.js";
 
 export function navigateTo(page) {
   appState.currentPage = page;
@@ -139,6 +140,7 @@ export function setStatus(status) {
           const stats = await invoke("obtener_estadisticas_servidor");
           if (els.statRam) els.statRam.textContent = `${stats.ram_mb} MB`;
           if (els.statCpu) els.statCpu.textContent = `${stats.cpu.toFixed(1)}%`;
+          updateMetrics(stats.cpu, stats.ram_mb);
         } catch (e) {
           console.error(e);
         }
@@ -151,6 +153,7 @@ export function setStatus(status) {
     }
     if (els.statRam) els.statRam.textContent = "--";
     if (els.statCpu) els.statCpu.textContent = "--";
+    clearMetrics();
 
     if (status === "offline" || status === "starting") {
       connectedPlayers.clear();

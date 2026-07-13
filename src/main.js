@@ -1,4 +1,5 @@
 import { initDom } from "./dom.js";
+import { initMetrics } from "./metrics.js";
 import { setupEvents, registerTauriEvents } from "./events.js";
 import { invoke } from "./api.js";
 import { applySnapshot, navigateTo } from "./ui.js";
@@ -23,6 +24,7 @@ async function loadInitialState() {
 
 window.addEventListener("DOMContentLoaded", async () => {
   initDom();
+  initMetrics();
   setupEvents();
 
   try {

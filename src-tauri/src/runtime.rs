@@ -241,6 +241,47 @@ fn mark_server_as_running_if_ready(
     Ok(())
 }
 
+fn get_server_ip_and_port(server_dir: &std::path::Path) -> (String, u16) {
+    let properties_path = server_dir.join("server.properties");
+    let mut ip = "0.0.0.0".to_string();
+    let mut port = 25565;
+    
+    if let Ok(content) = std::fs::read_to_string(properties_path) {
+        for line in content.lines() {
+            let line = line.trim();
+            if line.starts_with('#') || line.is_empty() {
+                continue;
+            }
+            if let Some((key, val)) = line.split_once('=') {
+                let key = key.trim();
+                let val = val.trim();
+                if key == "server-port" {
+                    if let Ok(p) = val.parse::<u16>() {
+                        port = p;
+                    }
+                } else if key == "server-ip" {
+                    if !val.is_empty() {
+                        ip = val.to_string();
+                    }
+                }
+            }
+        }
+    }
+    (ip, port)
+}
+
+fn is_port_in_use(ip: &str, port: u16) -> bool {
+    use std::net::TcpListener;
+    if !ip.is_empty() && ip != "0.0.0.0" {
+        TcpListener::bind(format!("{}:{}", ip, port)).is_err()
+    } else {
+        if TcpListener::bind(format!("127.0.0.1:{}", port)).is_err() {
+            return true;
+        }
+        TcpListener::bind(format!("0.0.0.0:{}", port)).is_err()
+    }
+}
+
 pub fn spawn_server_process(
     app_handle: &tauri::AppHandle,
     runtime: &Arc<Mutex<ServerRuntime>>,
@@ -249,6 +290,16 @@ pub fn spawn_server_process(
     validate_existing_session(&session)?;
 
     let server_dir = PathBuf::from(&session.server_dir);
+    
+    // Validar conflicto de puertos
+    let (ip, port) = get_server_ip_and_port(&server_dir);
+    if is_port_in_use(&ip, port) {
+        return Err(format!(
+            "El puerto {} ya está siendo utilizado por otra aplicación. Por favor, asegúrate de que no esté en uso o cambia el puerto en la pestaña 'Propiedades'.",
+            port
+        ));
+    }
+
     let command = app_handle
         .shell()
         .command("bash")

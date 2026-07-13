@@ -140,4 +140,9 @@ export function initDom() {
   els.groupTaskCommand = document.querySelector("#group-task-command");
   els.groupTaskInterval = document.querySelector("#group-task-interval");
   els.groupTaskTime = document.querySelector("#group-task-time");
+
+  els.chartCpu = document.querySelector("#chart-cpu");
+  els.chartCpuVal = document.querySelector("#chart-cpu-val");
+  els.chartRam = document.querySelector("#chart-ram");
+  els.chartRamVal = document.querySelector("#chart-ram-val");
 }
