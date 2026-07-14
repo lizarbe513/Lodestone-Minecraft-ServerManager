@@ -524,17 +524,17 @@
                         <label>Versión</label>
                         <div class="row responsive-row" style="margin-bottom: 12px;">
                             <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem;">
-                                <input type="radio" name="control-software-source" id="control-source-local" value="local" style="width: auto; margin: 0;">
+                                <input type="radio" name="control-software-source" id="control-source-local" value="local" checked style="width: auto; margin: 0;">
                                 Archivo local
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem;">
-                                <input type="radio" name="control-software-source" id="control-source-download" value="download" checked style="width: auto; margin: 0;">
+                                <input type="radio" name="control-software-source" id="control-source-download" value="download" style="width: auto; margin: 0;">
                                 Descargar automáticamente
                             </label>
                         </div>
 
                         <!-- Local File Selection -->
-                        <div id="control-local-container" class="row responsive-row" style="display: none;">
+                        <div id="control-local-container" class="row responsive-row">
                             <input id="control-server-jar-path" type="text" placeholder="Selecciona un archivo .jar" readonly />
                             <button id="btn-control-select-jar" type="button">
                                 Seleccionar .jar
@@ -542,7 +542,7 @@
                         </div>
 
                         <!-- Download Version Selection -->
-                        <div id="control-download-container" class="grid-form" style="display: block; background: rgba(0,0,0,0.2); padding: 16px; border: 1px solid rgba(255,255,255,0.05); margin-top: 8px;">
+                        <div id="control-download-container" class="grid-form" style="display: none; background: rgba(0,0,0,0.2); padding: 16px; border: 1px solid rgba(255,255,255,0.05); margin-top: 8px;">
                             <div class="field-group">
                                 <label for="control-engine-select">Motor de Servidor</label>
                                 <select id="control-engine-select" disabled>
@@ -593,10 +593,10 @@
                 </div>
 
                 <div id="tab-prop-game-content">
-                    <div id="prop-container-game" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;"></div>
+                    <div id="prop-container-game" class="properties-grid"></div>
                 </div>
                 <div id="tab-prop-server-content" hidden>
-                    <div id="prop-container-server" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;"></div>
+                    <div id="prop-container-server" class="properties-grid"></div>
                 </div>
             </div>
         </section>
