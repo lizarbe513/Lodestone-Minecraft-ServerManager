@@ -61,7 +61,7 @@ export async function loadPlayerList(filename, containerEl, removeHandler) {
       nameEl.textContent = item.name || item.ip || "Desconocido";
 
       const btnRemove = document.createElement("button");
-      btnRemove.className = "secondary";
+      btnRemove.className = "mc-btn-secondary btn-small";
       btnRemove.style.padding = "4px 8px";
       btnRemove.style.fontSize = "0.8rem";
       btnRemove.textContent = "Eliminar";

@@ -29,7 +29,19 @@ export function appendLog(kind, message) {
   }
   const line = document.createElement("div");
   line.className = `log-line log-${kind}`;
-  line.textContent = text;
+  
+  let safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+  if (/Exception|WARN|ERROR|Caused by:|at /i.test(safeText)) {
+      safeText = `<span style="color: #ffff55;">${safeText}</span>`;
+  } else {
+      const prefixMatch = safeText.match(/^(\[[0-9:]+\] \[[^\]]+\])(.*)$/);
+      if (prefixMatch) {
+          safeText = `<span style="color: #55ff55;">${prefixMatch[1]}</span>${prefixMatch[2]}`;
+      }
+  }
+  
+  line.innerHTML = safeText;
   els.logOutput.appendChild(line);
   els.logOutput.scrollTop = els.logOutput.scrollHeight;
 }

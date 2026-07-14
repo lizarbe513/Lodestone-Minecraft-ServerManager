@@ -35,11 +35,14 @@ export function buildPropertiesPayload() {
 }
 
 export function renderPropertiesUI() {
-  if (!els.propertiesContainer) return;
-  els.propertiesContainer.innerHTML = '';
+  if (!els.propContainerGame || !els.propContainerServer) return;
+  els.propContainerGame.innerHTML = '';
+  els.propContainerServer.innerHTML = '';
 
   const groupsToRender = Object.assign({}, PROPERTY_GROUPS);
   const renderedKeys = new Set();
+  
+  const gameGroups = ["Mundo y Generación", "Reglas del Juego", "Generación de Entidades", "Mundo (Avanzado)", "Paquetes de Recursos"];
 
   for (const [groupName, keys] of Object.entries(groupsToRender)) {
     const validKeys = keys.filter(k => !EXCLUDED_PROPERTIES.includes(k));
@@ -58,16 +61,24 @@ export function renderPropertiesUI() {
     formGrid.className = 'grid-form';
     panel.appendChild(formGrid);
 
+    let hasFields = false;
     for (const key of validKeys) {
       const val = globals.parsedProperties[key] ? globals.parsedProperties[key].value : "";
       const field = createPropertyField(key, val);
       if (field) {
         formGrid.appendChild(field);
+        hasFields = true;
       }
       renderedKeys.add(key);
     }
 
-    els.propertiesContainer.appendChild(panel);
+    if (hasFields) {
+      if (gameGroups.includes(groupName)) {
+        els.propContainerGame.appendChild(panel);
+      } else {
+        els.propContainerServer.appendChild(panel);
+      }
+    }
   }
 
   const otherKeys = Object.keys(globals.parsedProperties).filter(k => !EXCLUDED_PROPERTIES.includes(k) && !renderedKeys.has(k));
@@ -91,7 +102,7 @@ export function renderPropertiesUI() {
         formGrid.appendChild(field);
       }
     }
-    els.propertiesContainer.appendChild(panel);
+    els.propContainerServer.appendChild(panel);
   }
 }
 

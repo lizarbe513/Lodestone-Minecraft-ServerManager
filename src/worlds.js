@@ -34,7 +34,7 @@ export async function loadWorlds() {
         row.appendChild(badge);
       } else {
         const btnActive = document.createElement("button");
-        btnActive.className = "secondary";
+        btnActive.className = "mc-btn-secondary btn-small";
         btnActive.style = "padding: 4px 12px; font-size: 0.85rem;";
         btnActive.textContent = "Hacer Activo";
         btnActive.onclick = () => {
@@ -51,7 +51,7 @@ export async function loadWorlds() {
         row.appendChild(btnActive);
 
         const btnRename = document.createElement("button");
-        btnRename.className = "secondary";
+        btnRename.className = "mc-btn-secondary btn-small";
         btnRename.style = "padding: 4px 12px; font-size: 0.85rem;";
         btnRename.textContent = "Renombrar";
         btnRename.onclick = () => {
@@ -68,7 +68,7 @@ export async function loadWorlds() {
         row.appendChild(btnRename);
 
         const btnDelete = document.createElement("button");
-        btnDelete.className = "warning";
+        btnDelete.className = "mc-btn-warning btn-small";
         btnDelete.style = "padding: 4px 12px; font-size: 0.85rem;";
         btnDelete.textContent = "Eliminar";
         btnDelete.onclick = () => {
@@ -86,7 +86,7 @@ export async function loadWorlds() {
       }
 
       const btnBackup = document.createElement("button");
-      btnBackup.className = "secondary";
+      btnBackup.className = "mc-btn-secondary btn-small";
       btnBackup.style = "padding: 4px 12px; font-size: 0.85rem;";
       btnBackup.textContent = "Respaldar (.zip)";
       btnBackup.onclick = async () => {

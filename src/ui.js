@@ -214,19 +214,19 @@ export function renderPlayersList() {
     row.style.gap = "8px";
 
     const btnKick = document.createElement('button');
-    btnKick.className = "secondary";
+    btnKick.className = "mc-btn-secondary btn-small";
     btnKick.style = "padding: 4px 12px; font-size: 0.85rem;";
     btnKick.textContent = "Expulsar";
     btnKick.onclick = () => { invoke("enviar_comando", { comando: `kick ${player}` }); };
 
     const btnOp = document.createElement('button');
-    btnOp.className = "secondary";
+    btnOp.className = "mc-btn-secondary btn-small";
     btnOp.style = "padding: 4px 12px; font-size: 0.85rem;";
     btnOp.textContent = "Convertir en OP";
     btnOp.onclick = () => requestConfirm(`Convertir en OP a ${player}`, `¿Estás seguro de que quieres darle permisos de operador a ${player}?`, `op ${player}`);
 
     const btnBan = document.createElement('button');
-    btnBan.className = "warning";
+    btnBan.className = "mc-btn-warning btn-small";
     btnBan.style = "padding: 4px 12px; font-size: 0.85rem;";
     btnBan.textContent = "Banear";
     btnBan.onclick = () => requestConfirm(`Banear a ${player}`, `¿Estás seguro de que quieres banear a ${player} del servidor?`, `ban ${player}`);
@@ -337,8 +337,7 @@ export function renderSavedServers() {
     actions.style = "display: flex; gap: 8px;";
 
     const btnOpen = document.createElement("button");
-    btnOpen.className = "primary";
-    btnOpen.style = "padding: 6px 12px; font-size: 0.85rem; border-radius: 6px;";
+    btnOpen.className = "mc-btn-primary btn-small";
     btnOpen.textContent = "Abrir";
     btnOpen.onclick = async () => {
       try {
@@ -353,8 +352,7 @@ export function renderSavedServers() {
     };
 
     const btnRemove = document.createElement("button");
-    btnRemove.className = "warning";
-    btnRemove.style = "padding: 6px 12px; font-size: 0.85rem; border-radius: 6px;";
+    btnRemove.className = "mc-btn-warning btn-small";
     btnRemove.textContent = "Ocultar";
     btnRemove.onclick = () => {
       requestConfirm(
@@ -374,8 +372,7 @@ export function renderSavedServers() {
     };
 
     const btnDelete = document.createElement("button");
-    btnDelete.className = "danger";
-    btnDelete.style = "padding: 6px 12px; font-size: 0.85rem; border-radius: 6px;";
+    btnDelete.className = "mc-btn-danger btn-small";
     btnDelete.textContent = "Borrar";
     
     // Disable if it's the active server and it's busy

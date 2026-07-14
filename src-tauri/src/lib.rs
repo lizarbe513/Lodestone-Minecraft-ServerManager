@@ -130,15 +130,17 @@ fn aceptar_eula_y_reiniciar(
     emit_log(
         &app_handle,
         LogKind::System,
-        "EULA aceptado. Reiniciando servidor...",
+        "EULA aceptado. Servidor listo para iniciarse.",
     )?;
 
-    spawn_server_process(&app_handle, &state.runtime, session)?;
-
-    let runtime_guard = state
+    let mut runtime_guard = state
         .runtime
         .lock()
         .map_err(|_| "No se pudo leer el estado actualizado.".to_string())?;
+        
+    runtime_guard.status = crate::models::ServerStatus::Offline;
+    runtime_guard.eula_pending = false;
+
     Ok(build_snapshot(&runtime_guard))
 }
 

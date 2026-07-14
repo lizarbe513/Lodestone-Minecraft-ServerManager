@@ -27,7 +27,13 @@ export function initDom() {
   els.btnOpenProperties = document.querySelector("#btn-open-properties");
   els.btnPropertiesSave = document.querySelector("#btn-properties-save");
   els.btnPropertiesBack = document.querySelector("#btn-properties-back");
-  els.propertiesContainer = document.querySelector("#properties-container");
+  
+  els.btnTabPropGame = document.querySelector("#btn-tab-prop-game");
+  els.btnTabPropServer = document.querySelector("#btn-tab-prop-server");
+  els.tabPropGameContent = document.querySelector("#tab-prop-game-content");
+  els.tabPropServerContent = document.querySelector("#tab-prop-server-content");
+  els.propContainerGame = document.querySelector("#prop-container-game");
+  els.propContainerServer = document.querySelector("#prop-container-server");
   els.btnControlEula = document.querySelector("#btn-control-eula");
   els.pageEula = document.querySelector("#page-eula");
   els.eulaTextContainer = document.querySelector("#eula-text-container");
@@ -65,7 +71,7 @@ export function initDom() {
   els.radioJarSourceDownload = document.querySelector('input[name="jar-source"][value="download"]');
   els.sectionJarLocal = document.querySelector("#section-jar-local");
   els.sectionJarDownload = document.querySelector("#section-jar-download");
-  els.selectDownloadType = document.querySelector("#download-software-type");
+  els.btnCreateSoftwareCycle = document.querySelector("#btn-create-software-cycle");
   els.selectDownloadVersion = document.querySelector("#download-software-version");
   els.downloadStatusHint = document.querySelector("#download-status-hint");
 

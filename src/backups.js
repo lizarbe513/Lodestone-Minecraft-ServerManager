@@ -61,7 +61,7 @@ export async function loadBackupsList() {
       const btnRestore = document.createElement("button");
       btnRestore.style = "padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;";
       btnRestore.textContent = "Restaurar";
-      btnRestore.className = "secondary";
+      btnRestore.className = "mc-btn-secondary btn-small";
       btnRestore.onclick = () => {
         if (appState.status === "starting" || appState.status === "running") {
           showFeedback("No puedes restaurar una copia con el servidor encendido.", "error");
@@ -87,7 +87,7 @@ export async function loadBackupsList() {
       const btnDelete = document.createElement("button");
       btnDelete.style = "padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;";
       btnDelete.textContent = "Eliminar";
-      btnDelete.className = "warning";
+      btnDelete.className = "mc-btn-warning btn-small";
       btnDelete.onclick = () => {
         requestConfirm(
           "¿Eliminar copia de seguridad?",
@@ -198,7 +198,7 @@ export async function loadTasksList() {
       const btnDelete = document.createElement("button");
       btnDelete.style = "padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;";
       btnDelete.textContent = "Eliminar";
-      btnDelete.className = "warning";
+      btnDelete.className = "mc-btn-warning btn-small";
       btnDelete.onclick = () => {
         requestConfirm(
           "¿Eliminar tarea programada?",

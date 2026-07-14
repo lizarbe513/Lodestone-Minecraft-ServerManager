@@ -176,7 +176,7 @@ export async function loadInstalledExtensions() {
       }
 
       const btnDelete = document.createElement("button");
-      btnDelete.className = "warning";
+      btnDelete.className = "mc-btn-warning btn-small";
       btnDelete.style = "padding: 6px 12px; font-size: 0.85rem; margin-left: 16px; border-radius: 6px; flex-shrink: 0;";
       btnDelete.textContent = "Eliminar";
       btnDelete.onclick = () => {

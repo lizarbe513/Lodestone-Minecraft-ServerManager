@@ -190,12 +190,23 @@ export function setupEvents() {
     els.btnTabCreateServer.addEventListener("click", () => setCreateTab("server"));
   }
 
+  if (els.btnTabPropGame && els.btnTabPropServer) {
+    const setPropTab = (tab) => {
+      els.btnTabPropGame.classList.toggle("active", tab === "game");
+      els.btnTabPropServer.classList.toggle("active", tab === "server");
+      els.tabPropGameContent.hidden = tab !== "game";
+      els.tabPropServerContent.hidden = tab !== "server";
+    };
+    els.btnTabPropGame.addEventListener("click", () => setPropTab("game"));
+    els.btnTabPropServer.addEventListener("click", () => setPropTab("server"));
+  }
+
   const gamemodes = ['survival', 'creative', 'adventure', 'spectator'];
   const gamemodeTexts = {
-    survival: "Modo de juego: Supervivencia",
-    creative: "Modo de juego: Creativo",
-    adventure: "Modo de juego: Aventura",
-    spectator: "Modo de juego: Espectador"
+    survival: "Modo: Supervivencia",
+    creative: "Modo: Creativo",
+    adventure: "Modo: Aventura",
+    spectator: "Modo: Espectador"
   };
   const gamemodeDescs = {
     survival: "Consigue recursos, fabrica herramientas, gana niveles de experiencia y cuida tu salud.",
@@ -270,8 +281,23 @@ export function setupEvents() {
     els.radioJarSourceDownload.addEventListener("change", toggleSource);
   }
 
-  if (els.selectDownloadType) {
-    els.selectDownloadType.addEventListener("change", loadDownloadVersions);
+  if (els.btnCreateSoftwareCycle) {
+    const swTypes = ['vanilla', 'paper', 'purpur', 'fabric'];
+    const swNames = {
+      'vanilla': 'Vanilla (Oficial)',
+      'paper': 'PaperMC (Optimizado, Plugins)',
+      'purpur': 'Purpur (Súper Optimizado, Plugins)',
+      'fabric': 'Fabric (Mods)'
+    };
+    els.btnCreateSoftwareCycle.addEventListener("click", () => {
+      let current = els.btnCreateSoftwareCycle.dataset.value || "vanilla";
+      let nextIdx = (swTypes.indexOf(current) + 1) % swTypes.length;
+      let next = swTypes[nextIdx];
+      
+      els.btnCreateSoftwareCycle.dataset.value = next;
+      els.btnCreateSoftwareCycle.textContent = "Software: " + swNames[next];
+      loadDownloadVersions();
+    });
   }
 
   if (els.selectDownloadVersion) {
@@ -283,7 +309,7 @@ export function setupEvents() {
     els.selectDownloadVersion.disabled = true;
     els.downloadStatusHint.textContent = "Obteniendo versiones desde la red...";
 
-    const type = els.selectDownloadType.value;
+    const type = els.btnCreateSoftwareCycle.dataset.value;
     try {
       if (type === "paper") {
         const res = await fetch("https://fill.papermc.io/v3/projects/paper");

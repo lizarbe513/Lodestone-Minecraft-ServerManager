@@ -35,9 +35,11 @@ export function resetNewServerForm() {
   if (els.serverJarPath) els.serverJarPath.value = "";
   if (els.serverParentDir) els.serverParentDir.value = "";
   if (els.serverName) els.serverName.value = "";
-  if (els.radioJarSourceLocal) els.radioJarSourceLocal.checked = true;
-  if (els.sectionJarLocal) els.sectionJarLocal.hidden = false;
-  if (els.sectionJarDownload) els.sectionJarDownload.hidden = true;
+  if (els.radioJarSourceLocal) els.radioJarSourceLocal.checked = false;
+  if (els.radioJarSourceDownload) {
+    els.radioJarSourceDownload.checked = true;
+    els.radioJarSourceDownload.dispatchEvent(new Event('change'));
+  }
   if (els.downloadStatusHint) els.downloadStatusHint.textContent = "";
   if (els.memoryGb) els.memoryGb.value = "4";
 
@@ -53,7 +55,7 @@ export function resetNewServerForm() {
   if (els.createWorldName) els.createWorldName.value = "world";
   if (els.btnCreateGamemodeCycle) {
     els.btnCreateGamemodeCycle.dataset.value = "survival";
-    els.btnCreateGamemodeCycle.textContent = "Modo de juego: Supervivencia";
+    els.btnCreateGamemodeCycle.textContent = "Modo: Supervivencia";
     els.createGamemodeDesc.textContent = "Consigue recursos, fabrica herramientas, gana niveles de experiencia y cuida tu salud.";
   }
   if (els.btnCreateDifficultyCycle) {
@@ -153,7 +155,7 @@ export async function createServer() {
 
   if (isDownload) {
     showFeedback("Obteniendo información de descarga...", "info");
-    const software = els.selectDownloadType.value;
+    const software = els.btnCreateSoftwareCycle.dataset.value;
     const version = els.selectDownloadVersion.value;
     let url = "";
     let jarName = "";
