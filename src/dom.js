@@ -68,6 +68,21 @@ export function initDom() {
   els.selectDownloadType = document.querySelector("#download-software-type");
   els.selectDownloadVersion = document.querySelector("#download-software-version");
   els.downloadStatusHint = document.querySelector("#download-status-hint");
+
+  els.createWorldName = document.querySelector("#create-world-name");
+  els.btnTabCreateGame = document.querySelector("#btn-tab-create-game");
+  els.btnTabCreateServer = document.querySelector("#btn-tab-create-server");
+  els.tabCreateGameContent = document.querySelector("#tab-create-game-content");
+  els.tabCreateServerContent = document.querySelector("#tab-create-server-content");
+  els.btnCreateGamemodeCycle = document.querySelector("#btn-create-gamemode-cycle");
+  els.createGamemodeDesc = document.querySelector("#create-gamemode-desc");
+  els.btnCreateDifficultyCycle = document.querySelector("#btn-create-difficulty-cycle");
+  els.createDifficultyDesc = document.querySelector("#create-difficulty-desc");
+  els.createMaxPlayers = document.querySelector("#create-max-players");
+  els.createOnlineMode = document.querySelector("#create-online-mode");
+  els.createHardcore = document.querySelector("#create-hardcore");
+  els.createPvp = document.querySelector("#create-pvp");
+  els.createAllowFlight = document.querySelector("#create-allow-flight");
   els.statRam = document.querySelector("#stat-ram");
   els.statCpu = document.querySelector("#stat-cpu");
   els.playersCount = document.querySelector("#players-count");
@@ -122,6 +137,22 @@ export function initDom() {
   els.extVersionsList = document.querySelector("#ext-versions-list");
   els.btnExtDialogClose = document.querySelector("#btn-ext-dialog-close");
   els.extensionsCategories = document.querySelector("#extensions-categories");
+
+  els.selectSearchProvider = document.querySelector("#select-search-provider");
+  els.extensionPreviewDialog = document.querySelector("#extension-preview-dialog");
+  els.extPreviewIcon = document.querySelector("#ext-preview-icon");
+  els.extPreviewTitle = document.querySelector("#ext-preview-title");
+  els.extPreviewType = document.querySelector("#ext-preview-type");
+  els.extPreviewDownloads = document.querySelector("#ext-preview-downloads");
+  els.extPreviewAuthor = document.querySelector("#ext-preview-author");
+  els.extPreviewGalleryContainer = document.querySelector("#ext-preview-gallery-container");
+  els.extPreviewGallery = document.querySelector("#ext-preview-gallery");
+  els.tabPreviewDesc = document.querySelector("#tab-preview-desc");
+  els.tabPreviewVersions = document.querySelector("#tab-preview-versions");
+  els.panelPreviewDesc = document.querySelector("#panel-preview-desc");
+  els.panelPreviewVersions = document.querySelector("#panel-preview-versions");
+  els.extPreviewVersionsList = document.querySelector("#ext-preview-versions-list");
+  els.btnExtPreviewClose = document.querySelector("#btn-ext-preview-close");
 
   els.btnOpenBackups = document.querySelector("#btn-open-backups");
   els.btnBackupsBack = document.querySelector("#btn-backups-back");

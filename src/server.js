@@ -12,12 +12,22 @@ export function collectNewServerPayload() {
     throw new Error("La RAM debe ser un valor en GB mayor que cero.");
   }
 
+  const maxPlayers = Number.parseInt(els.createMaxPlayers.value, 10);
+
   return {
     server_name: els.serverName.value.trim(),
     server_jar_path: els.serverJarPath.value.trim(),
     parent_dir: els.serverParentDir.value.trim(),
     java_path: els.javaVersion.value.trim(),
     memory_gb: memoryGb,
+    world_name: els.createWorldName.value.trim() || "world",
+    gamemode: els.btnCreateGamemodeCycle.dataset.value || "survival",
+    difficulty: els.btnCreateDifficultyCycle.dataset.value || "normal",
+    max_players: Number.isFinite(maxPlayers) && maxPlayers > 0 ? maxPlayers : 20,
+    online_mode: els.createOnlineMode.checked,
+    hardcore: els.createHardcore.checked,
+    pvp: els.createPvp.checked,
+    allow_flight: els.createAllowFlight.checked,
   };
 }
 
@@ -30,6 +40,34 @@ export function resetNewServerForm() {
   if (els.sectionJarDownload) els.sectionJarDownload.hidden = true;
   if (els.downloadStatusHint) els.downloadStatusHint.textContent = "";
   if (els.memoryGb) els.memoryGb.value = "4";
+
+  // Reset tabs
+  if (els.btnTabCreateGame) {
+    els.btnTabCreateGame.classList.add("active");
+    els.btnTabCreateServer.classList.remove("active");
+    els.tabCreateGameContent.hidden = false;
+    els.tabCreateServerContent.hidden = true;
+  }
+
+  // Reset new game controls
+  if (els.createWorldName) els.createWorldName.value = "world";
+  if (els.btnCreateGamemodeCycle) {
+    els.btnCreateGamemodeCycle.dataset.value = "survival";
+    els.btnCreateGamemodeCycle.textContent = "Modo de juego: Supervivencia";
+    els.createGamemodeDesc.textContent = "Consigue recursos, fabrica herramientas, gana niveles de experiencia y cuida tu salud.";
+  }
+  if (els.btnCreateDifficultyCycle) {
+    els.btnCreateDifficultyCycle.dataset.value = "normal";
+    els.btnCreateDifficultyCycle.textContent = "Dificultad: Normal";
+    els.btnCreateDifficultyCycle.disabled = false;
+    els.createDifficultyDesc.textContent = "Aparecen monstruos. Daño estándar.";
+  }
+  if (els.createMaxPlayers) els.createMaxPlayers.value = "20";
+  if (els.createOnlineMode) els.createOnlineMode.checked = true;
+  if (els.createHardcore) els.createHardcore.checked = false;
+  if (els.createPvp) els.createPvp.checked = true;
+  if (els.createAllowFlight) els.createAllowFlight.checked = false;
+
   renderJavaOptions();
   updateControls();
 }
@@ -99,6 +137,16 @@ export async function openExistingServer() {
 export async function createServer() {
   const isDownload = els.radioJarSourceDownload && els.radioJarSourceDownload.checked;
   let payload = collectNewServerPayload();
+
+  let minecraft_version = null;
+  if (isDownload) {
+    minecraft_version = els.selectDownloadVersion.value;
+  } else {
+    const jarPath = els.serverJarPath.value.trim();
+    const match = jarPath.match(/1\.\d+(?:\.\d+)?/);
+    if (match) minecraft_version = match[0];
+  }
+  payload.minecraft_version = minecraft_version;
 
   appState.pendingCreateFlow = true;
   clearLogs();

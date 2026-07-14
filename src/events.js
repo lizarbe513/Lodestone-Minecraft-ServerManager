@@ -37,6 +37,7 @@ export async function registerTauriEvents() {
 }
 
 export function setupEvents() {
+  try {
   if (els.btnConfirmCancel) {
     els.btnConfirmCancel.addEventListener("click", () => {
       globals.pendingConfirmAction = null;
@@ -178,7 +179,83 @@ export function setupEvents() {
       );
     });
   }
+  if (els.btnTabCreateGame && els.btnTabCreateServer) {
+    const setCreateTab = (tab) => {
+      els.btnTabCreateGame.classList.toggle("active", tab === "game");
+      els.btnTabCreateServer.classList.toggle("active", tab === "server");
+      els.tabCreateGameContent.hidden = tab !== "game";
+      els.tabCreateServerContent.hidden = tab !== "server";
+    };
+    els.btnTabCreateGame.addEventListener("click", () => setCreateTab("game"));
+    els.btnTabCreateServer.addEventListener("click", () => setCreateTab("server"));
+  }
 
+  const gamemodes = ['survival', 'creative', 'adventure', 'spectator'];
+  const gamemodeTexts = {
+    survival: "Modo de juego: Supervivencia",
+    creative: "Modo de juego: Creativo",
+    adventure: "Modo de juego: Aventura",
+    spectator: "Modo de juego: Espectador"
+  };
+  const gamemodeDescs = {
+    survival: "Consigue recursos, fabrica herramientas, gana niveles de experiencia y cuida tu salud.",
+    creative: "Recursos ilimitados, vuelo libre y destrucción instantánea de bloques.",
+    adventure: "Igual que supervivencia, pero los bloques no se pueden colocar ni romper fácilmente.",
+    spectator: "Puedes volar y ver el mundo sin interactuar con él."
+  };
+
+  if (els.btnCreateGamemodeCycle) {
+    els.btnCreateGamemodeCycle.dataset.value = "survival";
+    els.btnCreateGamemodeCycle.addEventListener("click", () => {
+      let current = els.btnCreateGamemodeCycle.dataset.value || "survival";
+      let nextIdx = (gamemodes.indexOf(current) + 1) % gamemodes.length;
+      let next = gamemodes[nextIdx];
+      
+      els.btnCreateGamemodeCycle.dataset.value = next;
+      els.btnCreateGamemodeCycle.textContent = gamemodeTexts[next];
+      els.createGamemodeDesc.textContent = gamemodeDescs[next];
+    });
+  }
+
+  const difficulties = ['peaceful', 'easy', 'normal', 'hard'];
+  const difficultyTexts = {
+    peaceful: "Dificultad: Pacífico",
+    easy: "Dificultad: Fácil",
+    normal: "Dificultad: Normal",
+    hard: "Dificultad: Difícil"
+  };
+  const difficultyDescs = {
+    peaceful: "No aparecen monstruos. La salud se regenera automáticamente.",
+    easy: "Aparecen monstruos pero hacen poco daño.",
+    normal: "Aparecen monstruos. Daño estándar.",
+    hard: "Monstruos más agresivos y letales. El hambre puede matarte."
+  };
+
+  if (els.btnCreateDifficultyCycle) {
+    els.btnCreateDifficultyCycle.dataset.value = "normal";
+    els.btnCreateDifficultyCycle.addEventListener("click", () => {
+      let current = els.btnCreateDifficultyCycle.dataset.value || "normal";
+      let nextIdx = (difficulties.indexOf(current) + 1) % difficulties.length;
+      let next = difficulties[nextIdx];
+      
+      els.btnCreateDifficultyCycle.dataset.value = next;
+      els.btnCreateDifficultyCycle.textContent = difficultyTexts[next];
+      els.createDifficultyDesc.textContent = difficultyDescs[next];
+    });
+  }
+
+  if (els.createHardcore) {
+    els.createHardcore.addEventListener("change", () => {
+      if (els.createHardcore.checked) {
+        els.btnCreateDifficultyCycle.dataset.value = "hard";
+        els.btnCreateDifficultyCycle.textContent = difficultyTexts["hard"];
+        els.createDifficultyDesc.textContent = difficultyDescs["hard"];
+        els.btnCreateDifficultyCycle.disabled = true;
+      } else {
+        els.btnCreateDifficultyCycle.disabled = false;
+      }
+    });
+  }
   if (els.radioJarSourceLocal && els.radioJarSourceDownload) {
     const toggleSource = () => {
       const isLocal = els.radioJarSourceLocal.checked;
@@ -730,6 +807,29 @@ export function setupEvents() {
     });
   }
 
+  if (els.btnExtPreviewClose) {
+    els.btnExtPreviewClose.addEventListener("click", () => {
+      els.extensionPreviewDialog.close();
+    });
+  }
+
+  if (els.tabPreviewDesc && els.tabPreviewVersions) {
+    const setPreviewTab = (tab) => {
+      els.tabPreviewDesc.classList.toggle("active", tab === "desc");
+      els.tabPreviewVersions.classList.toggle("active", tab === "versions");
+      els.panelPreviewDesc.hidden = tab !== "desc";
+      els.panelPreviewVersions.hidden = tab !== "versions";
+    };
+    els.tabPreviewDesc.addEventListener("click", () => setPreviewTab("desc"));
+    els.tabPreviewVersions.addEventListener("click", () => setPreviewTab("versions"));
+  }
+
+  if (els.selectSearchProvider) {
+    els.selectSearchProvider.addEventListener("change", () => {
+      searchModrinth(els.inputSearchExtension.value);
+    });
+  }
+
   // EVENTOS DE COPIAS DE SEGURIDAD Y TAREAS
 
   const selectAdminTab = (activeButton) => {
@@ -825,4 +925,8 @@ export function setupEvents() {
 
   // Iniciar el programador de tareas
   startScheduler();
+  } catch (e) {
+    console.error(e);
+    alert("Error en setupEvents: " + e.stack);
+  }
 }

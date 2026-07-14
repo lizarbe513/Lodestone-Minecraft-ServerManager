@@ -34,6 +34,8 @@ pub struct ServerSession {
     pub memory_gb: u32,
     #[serde(default)]
     pub managed_by_app: bool,
+    #[serde(default)]
+    pub minecraft_version: Option<String>,
 }
 
 impl<'de> Deserialize<'de> for ServerSession {
@@ -53,6 +55,8 @@ impl<'de> Deserialize<'de> for ServerSession {
             memory_mb: Option<u32>,
             #[serde(default)]
             managed_by_app: bool,
+            #[serde(default)]
+            minecraft_version: Option<String>,
         }
 
         let raw = ServerSessionRaw::deserialize(deserializer)?;
@@ -69,6 +73,7 @@ impl<'de> Deserialize<'de> for ServerSession {
             java_path: raw.java_path,
             memory_gb,
             managed_by_app: raw.managed_by_app,
+            minecraft_version: raw.minecraft_version,
         })
     }
 }
@@ -80,6 +85,15 @@ pub struct NewServerRequest {
     pub parent_dir: String,
     pub java_path: String,
     pub memory_gb: u32,
+    pub world_name: Option<String>,
+    pub gamemode: Option<String>,
+    pub difficulty: Option<String>,
+    pub max_players: Option<u32>,
+    pub online_mode: Option<bool>,
+    pub hardcore: Option<bool>,
+    pub pvp: Option<bool>,
+    pub allow_flight: Option<bool>,
+    pub minecraft_version: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -132,3 +146,15 @@ pub struct ExtensionInfo {
     pub enabled: bool,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_deser_app_state() {
+        let content = std::fs::read_to_string("/home/leonardo/.config/norditex.minecraft-server-gui/app-state.json").unwrap();
+        match serde_json::from_str::<AppConfig>(&content) {
+            Ok(config) => println!("SUCCESS_JSON_TEST: {:?}", config),
+            Err(e) => panic!("FAILED_JSON_TEST: {}", e),
+        }
+    }
+}

@@ -411,3 +411,100 @@ input:focus + .slider {
         grid-template-columns: 1fr;
     }
 }
+
+/* Minecraft Java-style tabs & cycle buttons */
+.create-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.create-tab-btn {
+    padding: 0.75rem 1.8rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: #151e28;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.create-tab-btn:hover {
+    background: #1d2937;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.create-tab-btn.active {
+    background: #6dd3fb;
+    color: #081018;
+    border-color: #6dd3fb;
+    box-shadow: 0 0 10px rgba(109, 211, 251, 0.2);
+}
+
+.mc-cycle-btn {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    background: #1b2633;
+    color: #e8eef7;
+    border: 1px solid var(--border-color);
+    padding: 0.95rem 1rem;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.mc-cycle-btn:hover:not(:disabled) {
+    background: #253344;
+    border-color: #6dd3fb;
+}
+
+.mc-cycle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mc-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    min-height: 40px;
+    line-height: 1.4;
+}
+
+.checkbox-group-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.checkbox-group-wrapper label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 0.92rem;
+    cursor: pointer;
+    background: #121a24;
+    border: 1px solid #2b3a4c;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    user-select: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.checkbox-group-wrapper label:hover {
+    background: #18222f;
+    border-color: rgba(255,255,255,0.15);
+}
+
+.checkbox-group-wrapper input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+    margin: 0;
+}

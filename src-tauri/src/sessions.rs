@@ -101,6 +101,37 @@ fn parse_memory_token(token: &str) -> Option<u32> {
     None
 }
 
+pub fn detect_version_from_jar_name(jar_name: &str) -> String {
+    let mut current_version = String::new();
+    let chars: Vec<char> = jar_name.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i] == '1' && i + 2 < chars.len() && chars[i+1] == '.' && chars[i+2].is_ascii_digit() {
+            let mut j = i;
+            while j < chars.len() {
+                let c = chars[j];
+                if c.is_ascii_digit() || c == '.' {
+                    current_version.push(c);
+                    j += 1;
+                } else {
+                    break;
+                }
+            }
+            if current_version.ends_with('.') {
+                current_version.pop();
+            }
+            if current_version.contains('.') {
+                return current_version;
+            }
+            current_version.clear();
+            i = j;
+        } else {
+            i += 1;
+        }
+    }
+    "unknown".to_string()
+}
+
 fn infer_session_from_directory(server_dir: &Path) -> Result<ServerSession, String> {
     let server_name = server_dir
         .file_name()
@@ -178,6 +209,8 @@ fn infer_session_from_directory(server_dir: &Path) -> Result<ServerSession, Stri
         "No encontré un archivo `.jar` ni una configuración reconocible dentro de la carpeta seleccionada.".to_string()
     })?;
 
+    let minecraft_version = Some(detect_version_from_jar_name(&jar_file_name));
+
     Ok(ServerSession {
         server_name,
         server_dir: server_dir.to_string_lossy().to_string(),
@@ -185,6 +218,7 @@ fn infer_session_from_directory(server_dir: &Path) -> Result<ServerSession, Stri
         java_path,
         memory_gb,
         managed_by_app: false,
+        minecraft_version,
     })
 }
 
@@ -277,6 +311,7 @@ pub fn create_server_session(request: NewServerRequest) -> Result<ServerSession,
         let _ = fs::remove_file(&server_jar_path);
     }
 
+    let minecraft_version = request.minecraft_version;
     let session = ServerSession {
         server_name,
         server_dir: server_dir.to_string_lossy().to_string(),
@@ -284,10 +319,33 @@ pub fn create_server_session(request: NewServerRequest) -> Result<ServerSession,
         java_path,
         memory_gb,
         managed_by_app: true,
+        minecraft_version,
     };
 
     write_start_script(&session)?;
     save_session_metadata(&session)?;
+
+    // Escribir configuración server.properties inicial
+    let properties_content = format!(
+        "level-name={}\n\
+         gamemode={}\n\
+         difficulty={}\n\
+         max-players={}\n\
+         online-mode={}\n\
+         hardcore={}\n\
+         pvp={}\n\
+         allow-flight={}\n",
+        request.world_name.as_deref().unwrap_or("world"),
+        request.gamemode.as_deref().unwrap_or("survival"),
+        request.difficulty.as_deref().unwrap_or("normal"),
+        request.max_players.unwrap_or(20),
+        request.online_mode.unwrap_or(true),
+        request.hardcore.unwrap_or(false),
+        request.pvp.unwrap_or(true),
+        request.allow_flight.unwrap_or(false)
+    );
+    fs::write(server_dir.join("server.properties"), properties_content)
+        .map_err(|e| format!("No se pudo escribir el archivo server.properties: {e}"))?;
 
     Ok(session)
 }
@@ -371,6 +429,12 @@ pub fn update_server_session_config(
         jar_file_name
     };
 
+    let minecraft_version = if jar_file_name != session.jar_file_name {
+        Some(detect_version_from_jar_name(&jar_file_name))
+    } else {
+        session.minecraft_version.clone()
+    };
+
     let updated_session = ServerSession {
         server_name,
         server_dir: server_dir.to_string_lossy().to_string(),
@@ -378,6 +442,7 @@ pub fn update_server_session_config(
         java_path,
         memory_gb,
         managed_by_app: true,
+        minecraft_version,
     };
 
     write_start_script(&updated_session)?;
@@ -470,6 +535,7 @@ mod tests {
             java_path: "/usr/bin/java".into(),
             memory_gb: 2,
             managed_by_app: true,
+            minecraft_version: None,
         };
 
         let updated = update_server_session_config(

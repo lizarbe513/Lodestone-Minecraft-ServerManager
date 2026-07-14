@@ -239,6 +239,7 @@ mod tests {
             java_path: "C:/Program Files/Java/jre/bin/java.exe".into(),
             memory_gb: 2,
             managed_by_app: true,
+            minecraft_version: None,
         };
 
         let content = start_script_content_for_platform(&session, "windows");

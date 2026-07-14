@@ -297,10 +297,10 @@ export function updateControls() {
 }
 
 export function applySnapshot(snapshot) {
-  appState.activeSession = snapshot.active_session ?? null;
-  appState.javaVersions = snapshot.java_versions ?? [];
-  appState.eulaPending = snapshot.eula_pending ?? false;
-  appState.savedServers = snapshot.saved_servers ?? [];
+  appState.activeSession = snapshot.activeSession ?? snapshot.active_session ?? null;
+  appState.javaVersions = snapshot.javaVersions ?? snapshot.java_versions ?? [];
+  appState.eulaPending = snapshot.eulaPending ?? snapshot.eula_pending ?? false;
+  appState.savedServers = snapshot.savedServers ?? snapshot.saved_servers ?? [];
 
   renderJavaOptions(appState.activeSession?.java_path ?? null);
   renderActiveSession();

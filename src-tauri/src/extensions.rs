@@ -317,9 +317,17 @@ pub async fn install_extension(server_dir: &Path, download_url: &str, file_name:
 }
 
 pub fn detect_minecraft_version(server_dir: &Path, jar_name: &str) -> String {
+    if let Ok(metadata) = crate::sessions::load_session_metadata(server_dir) {
+        if let Some(version) = metadata.minecraft_version {
+            if !version.is_empty() && version != "unknown" {
+                return version;
+            }
+        }
+    }
+
     let jar_path = server_dir.join(jar_name);
     if !jar_path.exists() {
-        return "unknown".to_string();
+        return crate::sessions::detect_version_from_jar_name(jar_name);
     }
 
     if let Ok(file) = fs::File::open(&jar_path) {
@@ -364,6 +372,6 @@ pub fn detect_minecraft_version(server_dir: &Path, jar_name: &str) -> String {
         }
     }
 
-    "unknown".to_string()
+    crate::sessions::detect_version_from_jar_name(jar_name)
 }
 

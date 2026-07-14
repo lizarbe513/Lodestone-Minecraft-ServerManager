@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minecraft Server GUI</title>
     <link rel="stylesheet" href="styles.css" />
+    <script>
+    window.onerror = function(msg, url, line, col, error) {
+        var errStr = "ERROR: " + msg + " en " + url + ":" + line + ":" + col + "\n" + (error ? error.stack : "");
+        alert(errStr);
+        document.body.innerHTML += "<div style='position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:9999;padding:10px;font-family:monospace;white-space:pre-wrap;'>" + errStr + "</div>";
+    };
+    window.addEventListener("unhandledrejection", function(e) {
+        var errStr = "PROMISE REJECTION: " + (e.reason ? e.reason.stack || e.reason : e);
+        alert(errStr);
+        document.body.innerHTML += "<div style='position:fixed;top:50px;left:0;right:0;background:orange;color:white;z-index:9999;padding:10px;font-family:monospace;white-space:pre-wrap;'>" + errStr + "</div>";
+    });
+    </script>
     <script type="module" src="/main.js" defer></script>
 </head>
 
@@ -65,8 +77,7 @@
                     <div>
                         <h2>Crear nuevo servidor</h2>
                         <p class="hint">
-                            Configura el software del servidor, la carpeta,
-                            Java y la RAM antes de crearlo.
+                            Configura el servidor a tu gusto. Elige la pestaña "Partida" para opciones del juego y "Servidor" para especificaciones técnicas.
                         </p>
                     </div>
                     <button id="btn-create-back" type="button" class="secondary">
@@ -74,84 +85,135 @@
                     </button>
                 </div>
 
-                <div class="grid-form">
-                    <div class="field-group full-width">
-                        <label>Software (.jar)</label>
-                        <div class="row" style="gap: 16px; margin-bottom: 8px;">
-                            <label
-                                style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem; cursor: pointer;">
-                                <input type="radio" name="jar-source" value="local" checked> Archivo local
-                            </label>
-                            <label
-                                style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem; cursor: pointer;">
-                                <input type="radio" name="jar-source" value="download"> Descargar automáticamente
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="field-group full-width" id="section-jar-local">
-                        <label for="server-jar-path">Seleccionar archivo (.jar)</label>
-                        <div class="row responsive-row">
-                            <input id="server-jar-path" type="text"
-                                placeholder="Aún no has seleccionado un archivo .jar" readonly />
-                            <button id="btn-select-server-jar" type="button">
-                                Seleccionar .jar
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="field-group full-width" id="section-jar-download" hidden>
-                        <div class="row responsive-row">
-                            <div style="flex: 1;">
-                                <label for="download-software-type">Software</label>
-                                <select id="download-software-type" style="width: 100%;">
-                                    <option value="vanilla" selected>Vanilla (Oficial)</option>
-                                    <option value="paper">PaperMC (Optimizado, Plugins)</option>
-                                    <option value="purpur">Purpur (Súper Optimizado, Plugins)</option>
-                                    <option value="fabric">Fabric (Mods)</option>
-                                </select>
-                            </div>
-                            <div style="flex: 1;">
-                                <label for="download-software-version">Versión</label>
-                                <select id="download-software-version" style="width: 100%;">
-                                    <option value="">Cargando versiones...</option>
-                                </select>
-                            </div>
-                        </div>
-                        <p id="download-status-hint" class="hint" style="margin-top: 8px;"></p>
-                    </div>
-
-                    <div class="field-group full-width">
-                        <label for="server-parent-dir">Directorio donde se creará la carpeta del
-                            servidor</label>
-                        <div class="row responsive-row">
-                            <input id="server-parent-dir" type="text"
-                                placeholder="Aún no has seleccionado un directorio" readonly />
-                            <button id="btn-select-server-parent-dir" type="button">
-                                Seleccionar directorio
-                            </button>
-                        </div>
-                    </div>
-
+                <div class="grid-form" style="margin-bottom: 24px;">
                     <div class="field-group">
                         <label for="server-name">Nombre del servidor</label>
-                        <input id="server-name" type="text" placeholder="Ejemplo: survival-vanilla"
-                            autocomplete="off" />
+                        <input id="server-name" type="text" placeholder="Ejemplo: survival-amigos" autocomplete="off" />
+                        <p class="hint" style="margin-top: 4px; font-size: 0.8rem;">Se usará para el nombre de la carpeta.</p>
                     </div>
-
                     <div class="field-group">
-                        <label for="java-version">Versión de Java</label>
-                        <select id="java-version"></select>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="memory-gb">RAM asignada (GB)</label>
-                        <input id="memory-gb" type="number" min="1" step="1" value="4" />
+                        <label for="create-world-name">Nombre del mundo</label>
+                        <input id="create-world-name" type="text" placeholder="world" value="world" autocomplete="off" />
+                        <p class="hint" style="margin-top: 4px; font-size: 0.8rem;">Nombre del mundo (level-name) en el juego.</p>
                     </div>
                 </div>
 
-                <div class="row action-row top-space">
-                    <button id="btn-create-server" type="button">
+                <div class="create-tabs">
+                    <button type="button" id="btn-tab-create-game" class="create-tab-btn active">Partida</button>
+                    <button type="button" id="btn-tab-create-server" class="create-tab-btn">Servidor</button>
+                </div>
+
+                <!-- Tab Partida (Game Content) -->
+                <div id="tab-create-game-content">
+                    <div class="grid-form">
+                        <div class="field-group">
+                            <label>Modo de juego</label>
+                            <button type="button" id="btn-create-gamemode-cycle" class="mc-cycle-btn">Modo de juego: Supervivencia</button>
+                            <div id="create-gamemode-desc" class="mc-description">
+                                Consigue recursos, fabrica herramientas, gana niveles de experiencia y cuida tu salud.
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Dificultad</label>
+                            <button type="button" id="btn-create-difficulty-cycle" class="mc-cycle-btn">Dificultad: Normal</button>
+                            <div id="create-difficulty-desc" class="mc-description">
+                                Aparecen monstruos. Daño estándar.
+                            </div>
+                        </div>
+
+                        <div class="field-group full-width">
+                            <label for="create-max-players">Jugadores máximos</label>
+                            <input id="create-max-players" type="number" min="1" step="1" value="20" />
+                        </div>
+
+                        <div class="field-group full-width checkbox-group-wrapper">
+                            <label style="margin:0;">
+                                <input type="checkbox" id="create-online-mode" checked />
+                                Modo Online (Solo Premium)
+                            </label>
+                            <label style="margin:0;">
+                                <input type="checkbox" id="create-hardcore" />
+                                Modo Hardcore (Extremo)
+                            </label>
+                            <label style="margin:0;">
+                                <input type="checkbox" id="create-pvp" checked />
+                                Habilitar PVP (Peleas)
+                            </label>
+                            <label style="margin:0;">
+                                <input type="checkbox" id="create-allow-flight" />
+                                Permitir Volar (allow-flight)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Servidor (Server Content) -->
+                <div id="tab-create-server-content" hidden>
+                    <div class="grid-form">
+                        <div class="field-group full-width">
+                            <label>Software (.jar)</label>
+                            <div class="row" style="gap: 16px; margin-bottom: 8px;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem; cursor: pointer; margin:0;">
+                                    <input type="radio" name="jar-source" value="local" checked style="width:auto;margin:0;"> Archivo local
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem; cursor: pointer; margin:0;">
+                                    <input type="radio" name="jar-source" value="download" style="width:auto;margin:0;"> Descargar automáticamente
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="field-group full-width" id="section-jar-local">
+                            <label for="server-jar-path">Seleccionar archivo (.jar)</label>
+                            <div class="row responsive-row">
+                                <input id="server-jar-path" type="text" placeholder="Aún no has seleccionado un archivo .jar" readonly />
+                                <button id="btn-select-server-jar" type="button">Seleccionar .jar</button>
+                            </div>
+                        </div>
+
+                        <div class="field-group full-width" id="section-jar-download" hidden>
+                            <div class="row responsive-row">
+                                <div style="flex: 1;">
+                                    <label for="download-software-type">Software</label>
+                                    <select id="download-software-type" style="width: 100%;">
+                                        <option value="vanilla" selected>Vanilla (Oficial)</option>
+                                        <option value="paper">PaperMC (Optimizado, Plugins)</option>
+                                        <option value="purpur">Purpur (Súper Optimizado, Plugins)</option>
+                                        <option value="fabric">Fabric (Mods)</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="download-software-version">Versión</label>
+                                    <select id="download-software-version" style="width: 100%;">
+                                        <option value="">Cargando versiones...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p id="download-status-hint" class="hint" style="margin-top: 8px;"></p>
+                        </div>
+
+                        <div class="field-group full-width">
+                            <label for="server-parent-dir">Directorio base del servidor</label>
+                            <div class="row responsive-row">
+                                <input id="server-parent-dir" type="text" placeholder="Aún no has seleccionado un directorio" readonly />
+                                <button id="btn-select-server-parent-dir" type="button">Seleccionar directorio</button>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="java-version">Versión de Java</label>
+                            <select id="java-version"></select>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="memory-gb">RAM asignada (GB)</label>
+                            <input id="memory-gb" type="number" min="1" step="1" value="4" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row action-row top-space" style="justify-content: flex-end;">
+                    <button id="btn-create-server" type="button" style="background: #2cb67d; color: #fffffe;">
                         Crear servidor
                     </button>
                 </div>
@@ -592,6 +654,10 @@
 
                 <div id="section-search-extensions" hidden>
                     <div class="row responsive-row" style="margin-bottom: 20px; gap: 8px;">
+                        <select id="select-search-provider" style="width: auto; max-width: 140px; border-radius: 12px; padding: 0.85rem 1rem; border: 1px solid #2b3a4c; background: #121a24; color: #f2f6fb;">
+                            <option value="modrinth" selected>Modrinth</option>
+                            <option value="curseforge">CurseForge</option>
+                        </select>
                         <input id="input-search-extension" type="text" placeholder="Escribe el nombre de un plugin, mod o datapack" autocomplete="off" style="flex: 1;" />
                         <button id="btn-search-extension" type="button">Buscar</button>
                     </div>
@@ -665,6 +731,51 @@
         
         <div class="row action-row" style="justify-content: flex-end;">
             <button id="btn-ext-dialog-close" class="secondary" type="button">Cerrar</button>
+        </div>
+    </dialog>
+
+    <dialog id="extension-preview-dialog" class="panel"
+        style="margin: auto; max-width: 680px; width: 95%; max-height: 85vh; overflow-y: auto; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
+        <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px;">
+            <img id="ext-preview-icon" src="https://placehold.co/64x64?text=Mc" style="width: 72px; height: 72px; border-radius: 12px; background: rgba(0,0,0,0.2); object-fit: cover; flex-shrink: 0;" />
+            <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
+                <h3 id="ext-preview-title" style="margin: 0; font-size: 1.35rem; font-weight: 600; color: #fff;"></h3>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span id="ext-preview-type" style="font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase;"></span>
+                    <span id="ext-preview-downloads" style="font-size: 0.8rem; color: var(--text-secondary); opacity: 0.8;"></span>
+                    <span id="ext-preview-author" style="font-size: 0.8rem; color: var(--text-secondary); opacity: 0.6;"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery -->
+        <div id="ext-preview-gallery-container" style="margin-bottom: 20px;" hidden>
+            <h4 style="margin: 0 0 8px; font-size: 0.95rem; color: var(--text-secondary);">Galería / Capturas</h4>
+            <div id="ext-preview-gallery" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px;">
+                <!-- Screenshots injected here -->
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" style="display: flex; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+            <button id="tab-preview-desc" type="button" class="tab-btn active" style="font-size: 0.85rem; padding: 6px 14px; border-radius: 4px; cursor: pointer;">Descripción</button>
+            <button id="tab-preview-versions" type="button" class="tab-btn secondary" style="font-size: 0.85rem; padding: 6px 14px; border-radius: 4px; cursor: pointer;">Versiones y Descarga</button>
+        </div>
+
+        <!-- Description Panel -->
+        <div id="panel-preview-desc" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px; max-height: 250px; overflow-y: auto; padding: 12px; background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+            <!-- Body description injected here -->
+        </div>
+
+        <!-- Versions Panel -->
+        <div id="panel-preview-versions" hidden style="margin-bottom: 20px;">
+            <div id="ext-preview-versions-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+                <!-- Versions list injected here -->
+            </div>
+        </div>
+
+        <div class="row action-row" style="justify-content: flex-end;">
+            <button id="btn-ext-preview-close" class="secondary" type="button">Cerrar</button>
         </div>
     </dialog>
 
