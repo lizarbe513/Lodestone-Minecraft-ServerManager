@@ -96,6 +96,10 @@ export function initDom() {
 
   els.btnOpenPlayers = document.querySelector("#btn-open-players");
   els.btnPlayersBack = document.querySelector("#btn-players-back");
+  els.tabViewOnlinePlayers = document.querySelector("#tab-view-online-players");
+  els.tabViewAccessManagement = document.querySelector("#tab-view-access-management");
+  els.sectionOnlinePlayers = document.querySelector("#section-online-players");
+  els.sectionAccessManagement = document.querySelector("#section-access-management");
   els.btnOpenWorlds = document.querySelector("#btn-open-worlds");
   els.btnWorldsBack = document.querySelector("#btn-worlds-back");
   els.btnImportWorld = document.querySelector("#btn-import-world");

@@ -69,9 +69,16 @@ h1, h2, h3, h4, .eyebrow {
     margin-bottom: 4px;
 }
 
-.hint, .mc-description {
+.hint {
     color: var(--text-secondary);
     font-size: 0.95rem;
+}
+
+.mc-description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    min-height: 44px; /* Evita que el contenido de abajo se mueva al cambiar textos de diferente longitud */
+    display: block;
 }
 
 /* App Shell (Contenedor principal flex para llenar la altura) */
@@ -127,6 +134,11 @@ dialog.panel:not([open]) {
     display: none !important;
 }
 
+#page-create > .panel {
+    flex: none;
+    margin-bottom: auto;
+}
+
 /* Layout Específico: Página Inicio */
 #page-home {
     flex-direction: row;
@@ -164,24 +176,27 @@ dialog.panel:not([open]) {
     padding-right: 8px;
 }
 
-/* Botones Oficiales Mojang */
+/* Botones Oficiales Mojang (Estilo Bedrock) */
 button {
+    --shadow-depth: 4px;
     font-family: var(--font-title);
     font-size: 1.2rem;
     padding: 10px 20px;
-    border: 2px solid #000;
-    border-radius: 2px;
+    border: 2px solid #111;
+    border-radius: 0;
     cursor: pointer;
     text-transform: uppercase;
     font-weight: bold;
     color: var(--mc-white);
-    transition: all 0.1s;
+    transition: none; /* Presión rígida */
     text-align: center;
+    box-shadow: 0 4px 0 #111; /* Sombrita reflejada en el panel */
+    margin-bottom: 4px;
 }
-button:active:not(:disabled) {
-    transform: translateY(4px);
-    border-bottom-width: 2px !important;
-    margin-top: 2px;
+button:not(.tab-btn):not(.create-tab-btn):active:not(:disabled) {
+    transform: translateY(var(--shadow-depth));
+    border-bottom-color: transparent !important;
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4) !important;
 }
 button:disabled {
     opacity: 0.5;
@@ -191,50 +206,232 @@ button:disabled {
 
 .mc-btn-primary {
     background-color: var(--mc-green);
-    border-bottom: 6px solid var(--mc-green-shadow);
+    border-bottom: 4px solid var(--mc-green-shadow);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 2px 0 0 rgba(255, 255, 255, 0.2), 0 4px 0 #111;
     text-shadow: 2px 2px 0px rgba(0,0,0,0.4);
 }
 .mc-btn-primary:hover:not(:disabled) { background-color: var(--mc-green-hover); }
 
 .mc-btn-secondary {
     background-color: var(--mc-gray);
-    border-bottom: 6px solid var(--mc-gray-shadow);
+    border-bottom: 4px solid var(--mc-gray-shadow);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), inset 2px 0 0 rgba(255, 255, 255, 0.15), 0 4px 0 #111;
     text-shadow: 2px 2px 0px rgba(0,0,0,0.4);
 }
 .mc-btn-secondary:hover:not(:disabled) { background-color: var(--mc-gray-hover); }
 
 .mc-btn-danger {
     background-color: var(--mc-red);
-    border-bottom: 6px solid var(--mc-red-shadow);
+    border-bottom: 4px solid var(--mc-red-shadow);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 2px 0 0 rgba(255, 255, 255, 0.2), 0 4px 0 #111;
     text-shadow: 2px 2px 0px rgba(0,0,0,0.4);
 }
 .mc-btn-danger:hover:not(:disabled) { background-color: var(--mc-red-hover); }
 
 .mc-btn-warning {
     background-color: var(--mc-yellow);
-    border-bottom: 6px solid var(--mc-yellow-shadow);
-    color: #000;
+    border-bottom: 4px solid var(--mc-yellow-shadow);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 2px 0 0 rgba(255, 255, 255, 0.3), 0 4px 0 #111;
+    color: #111;
 }
 .mc-btn-warning:hover:not(:disabled) { background-color: #fce169; }
 
 .btn-small {
+    --shadow-depth: 2px;
     font-size: 1rem;
     padding: 6px 12px;
-    border-bottom-width: 4px;
+    border-bottom-width: 2px;
 }
 
 /* Ciclos (Botones interactivos del juego) */
 .mc-cycle-btn {
+    --shadow-depth: 2px;
     width: 100%;
     background-color: var(--mc-gray);
     border: 2px solid var(--mc-border);
-    border-bottom: 4px solid var(--mc-gray-shadow);
+    border-bottom: 2px solid var(--mc-gray-shadow);
     padding: 12px;
     font-size: 1.1rem;
-    box-shadow: inset 4px 4px 0px rgba(255, 255, 255, 0.25), inset -4px -4px 0px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 var(--shadow-depth) 0 -2px var(--mc-gray-shadow), 0 var(--shadow-depth) 0 #000, inset 4px 4px 0px rgba(255, 255, 255, 0.25), inset -4px -4px 0px rgba(0, 0, 0, 0.6);
+}
+
+/* Grupo de botones horizontales (Segmented Control estilo Bedrock) */
+.mc-btn-group {
+    display: flex;
+    width: 100%;
+    border: 2px solid #111;
+    background-color: #111;
+    gap: 2px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 0 #111;
+    margin-bottom: 4px;
+}
+
+.mc-btn-group-item {
+    flex: 1;
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    padding: 10px 4px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--mc-gray);
+    color: #e0e0e0;
+    box-sizing: border-box;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.4);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15), inset 2px 0 0 rgba(255, 255, 255, 0.1);
+    border-bottom: 4px solid var(--mc-gray-shadow);
+    transition: none;
+    text-align: center;
+    font-weight: normal;
+}
+
+.mc-btn-group-item:hover:not(:disabled) {
+    background-color: var(--mc-gray-hover);
+    color: #ffffff;
+}
+
+.mc-btn-group-item.active {
+    background-color: var(--mc-green);
+    border-bottom: 0px solid transparent;
+    transform: translateY(4px);
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4); /* Sombra interna arriba para efecto hundido */
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.mc-btn-group-item.active:hover:not(:disabled) {
+    background-color: var(--mc-green-hover);
+}
+
+.mc-btn-group-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Inputs y Selects */
+
+/* Toggle Switch estilo Bedrock (Checkboxes) */
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    width: 44px;
+    height: 24px;
+    background-color: #181818; /* Fondo oscuro (pista apagada) */
+    border: 2px solid #111;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.85); /* Sombra interna profunda */
+    margin: 0;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+input[type="checkbox"]:checked {
+    background-color: var(--mc-green); /* Pista verde (encendido) */
+    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.4);
+}
+
+/* Indicadores "|" y "O" de fondo (Bedrock UI) */
+input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    box-sizing: border-box;
+    top: 5px;
+    transition: none; /* Instantáneo, estilo retro pixelado */
+}
+
+/* Estado OFF: Círculo "O" en la derecha */
+input[type="checkbox"]::before {
+    right: 7px;
+    width: 8px;
+    height: 10px;
+    border: 2px solid #777777; /* Contorno gris apagado */
+    background: transparent;
+}
+
+/* Estado ON: Línea "|" en la izquierda */
+input[type="checkbox"]:checked::before {
+    left: 10px;
+    right: auto;
+    width: 2px;
+    height: 10px;
+    border: none;
+    background-color: #ffffff; /* Barra blanca encendida */
+}
+
+/* Pulgar (Thumb) del Toggle (Caja 3D Gris/Blanca) */
+input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    box-sizing: border-box;
+    top: -2px;
+    left: -2px;
+    width: 22px;
+    height: 24px;
+    background-color: #cfcfcf;
+    border: 2px solid #111;
+    border-bottom-width: 4px;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 2px 0 0 rgba(255, 255, 255, 0.4);
+    transition: transform 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+input[type="checkbox"]:hover::after {
+    background-color: #dfdfdf;
+}
+
+input[type="checkbox"]:checked::after {
+    transform: translateX(22px);
+    background-color: #cfcfcf; /* Gris claro en ambos estados, estilo Bedrock */
+}
+
+input[type="checkbox"]:checked:hover::after {
+    background-color: #dfdfdf;
+}
+
+/* Radio Buttons estilo Minecraft */
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    background-color: #111111;
+    border: 2px solid var(--mc-border);
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+    position: relative;
+    box-shadow: inset 2px 2px 0px rgba(0,0,0,0.6);
+    vertical-align: middle;
+    margin: 0;
+}
+
+input[type="radio"]:hover {
+    border-color: #ffffff;
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--mc-green);
+    border-radius: 50%;
+    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.2);
+}
+
+/* Ajustes de flex para labels que tienen checkboxes */
+label.switch-label, label[style*="justify-content: space-between"] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
 input[type="text"], input[type="number"] {
     font-family: var(--font-body);
     width: 100%;
@@ -272,9 +469,18 @@ select option {
     color: #ffffff;
     font-weight: normal;
 }
-input:focus, select:focus {
+/* Eliminar el outline azul nativo y usar un recuadro blanco de Minecraft */
+*:focus-visible {
+    outline: 2px solid var(--mc-white);
+    outline-offset: 1px;
+}
+*:focus:not(:focus-visible) {
     outline: none;
-    border-color: var(--mc-green);
+}
+input:focus, select:focus {
+    outline: 2px solid var(--mc-white);
+    outline-offset: 1px;
+    border-color: var(--mc-white);
 }
 input[readonly] {
     color: #888;
@@ -360,6 +566,10 @@ input[type="number"] {
     border-color: var(--mc-green);
 }
 
+#tab-create-game-content, #tab-create-server-content {
+    min-height: 250px; /* Mantiene la misma altura rígida reducida en escritorio */
+}
+
 /* Terminal / Log Output */
 .log-output {
     flex: 1;
@@ -437,11 +647,7 @@ input[type="number"] {
     font-family: var(--font-body);
     margin-bottom: 8px !important;
 }
-input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    accent-color: var(--mc-green);
-}
+/* Removido duplicado de input[type="checkbox"] para usar Bedrock Switch global */
 
 /* =======================================================
    NUEVAS CLASES: GRID Y RESPONSIVIDAD
@@ -459,6 +665,33 @@ input[type="checkbox"] {
     margin-bottom: 28px; /* Espaciado entre un bloque y el siguiente abajo */
     display: inline-flex; /* Prevents column splitting bugs in some browsers */
     width: 100%;
+}
+
+/* Estilos para Tablas hundidas tipo Minecraft */
+.minecraft-table {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid;
+    border-color: #0b1016 #3c4959 #3c4959 #0b1016; /* Efecto hundido / Inset border */
+    border-radius: 2px;
+    padding: 8px;
+    box-shadow: inset 0px 4px 8px rgba(0,0,0,0.5); /* Sombra interna para profundidad */
+}
+.minecraft-table::-webkit-scrollbar {
+    width: 12px;
+}
+.minecraft-table::-webkit-scrollbar-track {
+    background: #111;
+    border-left: 2px solid #2b3a4c;
+}
+.minecraft-table::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border: 2px solid #111;
+}
+
+/* Alineación de cabeceras en listados para que el grid no se vea chueco */
+.list-manager-section > div:first-child {
+    min-height: 52px;
+    align-items: flex-start !important; /* Alinear al principio si hay múltiples líneas */
 }
 
 /* =======================================================
@@ -503,6 +736,10 @@ input[type="checkbox"] {
     
     .grid-form.two-cols {
         flex-direction: column;
+    }
+
+    #tab-create-game-content, #tab-create-server-content {
+        min-height: 640px; /* Altura mínima cuando las columnas se apilan verticalmente */
     }
 
     .properties-grid {

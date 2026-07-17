@@ -72,6 +72,31 @@ export function setupEvents() {
     });
   }
 
+  // Pestañas de Jugadores
+  if (els.tabViewOnlinePlayers) {
+    els.tabViewOnlinePlayers.addEventListener("click", () => {
+      els.tabViewOnlinePlayers.classList.add("active");
+      els.tabViewOnlinePlayers.classList.remove("secondary");
+      els.tabViewAccessManagement.classList.remove("active");
+      els.tabViewAccessManagement.classList.add("secondary");
+      
+      els.sectionOnlinePlayers.hidden = false;
+      els.sectionAccessManagement.hidden = true;
+    });
+  }
+
+  if (els.tabViewAccessManagement) {
+    els.tabViewAccessManagement.addEventListener("click", () => {
+      els.tabViewAccessManagement.classList.add("active");
+      els.tabViewAccessManagement.classList.remove("secondary");
+      els.tabViewOnlinePlayers.classList.remove("active");
+      els.tabViewOnlinePlayers.classList.add("secondary");
+      
+      els.sectionAccessManagement.hidden = false;
+      els.sectionOnlinePlayers.hidden = true;
+    });
+  }
+
   if (els.btnOpenWorlds) {
     els.btnOpenWorlds.addEventListener("click", () => {
       navigateTo("worlds");
@@ -202,12 +227,6 @@ export function setupEvents() {
   }
 
   const gamemodes = ['survival', 'creative', 'adventure', 'spectator'];
-  const gamemodeTexts = {
-    survival: "Modo: Supervivencia",
-    creative: "Modo: Creativo",
-    adventure: "Modo: Aventura",
-    spectator: "Modo: Espectador"
-  };
   const gamemodeDescs = {
     survival: "Consigue recursos, fabrica herramientas, gana niveles de experiencia y cuida tu salud.",
     creative: "Recursos ilimitados, vuelo libre y destrucción instantánea de bloques.",
@@ -217,24 +236,18 @@ export function setupEvents() {
 
   if (els.btnCreateGamemodeCycle) {
     els.btnCreateGamemodeCycle.dataset.value = "survival";
-    els.btnCreateGamemodeCycle.addEventListener("click", () => {
-      let current = els.btnCreateGamemodeCycle.dataset.value || "survival";
-      let nextIdx = (gamemodes.indexOf(current) + 1) % gamemodes.length;
-      let next = gamemodes[nextIdx];
-      
-      els.btnCreateGamemodeCycle.dataset.value = next;
-      els.btnCreateGamemodeCycle.textContent = gamemodeTexts[next];
-      els.createGamemodeDesc.textContent = gamemodeDescs[next];
+    els.btnCreateGamemodeCycle.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.value;
+        els.btnCreateGamemodeCycle.dataset.value = val;
+        els.btnCreateGamemodeCycle.querySelectorAll('.mc-btn-group-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        els.createGamemodeDesc.textContent = gamemodeDescs[val];
+      });
     });
   }
 
   const difficulties = ['peaceful', 'easy', 'normal', 'hard'];
-  const difficultyTexts = {
-    peaceful: "Dificultad: Pacífico",
-    easy: "Dificultad: Fácil",
-    normal: "Dificultad: Normal",
-    hard: "Dificultad: Difícil"
-  };
   const difficultyDescs = {
     peaceful: "No aparecen monstruos. La salud se regenera automáticamente.",
     easy: "Aparecen monstruos pero hacen poco daño.",
@@ -244,14 +257,14 @@ export function setupEvents() {
 
   if (els.btnCreateDifficultyCycle) {
     els.btnCreateDifficultyCycle.dataset.value = "normal";
-    els.btnCreateDifficultyCycle.addEventListener("click", () => {
-      let current = els.btnCreateDifficultyCycle.dataset.value || "normal";
-      let nextIdx = (difficulties.indexOf(current) + 1) % difficulties.length;
-      let next = difficulties[nextIdx];
-      
-      els.btnCreateDifficultyCycle.dataset.value = next;
-      els.btnCreateDifficultyCycle.textContent = difficultyTexts[next];
-      els.createDifficultyDesc.textContent = difficultyDescs[next];
+    els.btnCreateDifficultyCycle.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.value;
+        els.btnCreateDifficultyCycle.dataset.value = val;
+        els.btnCreateDifficultyCycle.querySelectorAll('.mc-btn-group-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        els.createDifficultyDesc.textContent = difficultyDescs[val];
+      });
     });
   }
 
@@ -259,17 +272,42 @@ export function setupEvents() {
     els.createHardcore.addEventListener("change", () => {
       if (els.createHardcore.checked) {
         els.btnCreateDifficultyCycle.dataset.value = "hard";
-        els.btnCreateDifficultyCycle.textContent = difficultyTexts["hard"];
+        els.btnCreateDifficultyCycle.querySelectorAll('.mc-btn-group-item').forEach(b => {
+          b.classList.toggle('active', b.dataset.value === 'hard');
+          b.disabled = true;
+        });
         els.createDifficultyDesc.textContent = difficultyDescs["hard"];
-        els.btnCreateDifficultyCycle.disabled = true;
       } else {
-        els.btnCreateDifficultyCycle.disabled = false;
+        els.btnCreateDifficultyCycle.querySelectorAll('.mc-btn-group-item').forEach(b => {
+          b.disabled = false;
+        });
       }
     });
   }
+  const groupJarSource = document.querySelector("#group-jar-source");
+  if (groupJarSource) {
+    groupJarSource.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.value;
+        if (val === "local") {
+          els.radioJarSourceLocal.checked = true;
+          els.radioJarSourceLocal.dispatchEvent(new Event('change'));
+        } else {
+          els.radioJarSourceDownload.checked = true;
+          els.radioJarSourceDownload.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+  }
+
   if (els.radioJarSourceLocal && els.radioJarSourceDownload) {
     const toggleSource = () => {
       const isLocal = els.radioJarSourceLocal.checked;
+      if (groupJarSource) {
+        groupJarSource.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.value === (isLocal ? 'local' : 'download'));
+        });
+      }
       els.sectionJarLocal.hidden = !isLocal;
       els.sectionJarDownload.hidden = isLocal;
       updateControls();
@@ -281,22 +319,27 @@ export function setupEvents() {
     els.radioJarSourceDownload.addEventListener("change", toggleSource);
   }
 
+  const swDescs = {
+    vanilla: "Software oficial de Mojang. Ideal para juego base sin modificaciones.",
+    paper: "Papermc optimizado. Soporta plugins de Bukkit/Spigot.",
+    purpur: "Bifurcación de Paper de alto rendimiento con más de 250 opciones de optimización.",
+    fabric: "Cargador de mods rápido y ligero. Ideal para servidores modded modernos."
+  };
+
   if (els.btnCreateSoftwareCycle) {
-    const swTypes = ['vanilla', 'paper', 'purpur', 'fabric'];
-    const swNames = {
-      'vanilla': 'Vanilla (Oficial)',
-      'paper': 'PaperMC (Optimizado, Plugins)',
-      'purpur': 'Purpur (Súper Optimizado, Plugins)',
-      'fabric': 'Fabric (Mods)'
-    };
-    els.btnCreateSoftwareCycle.addEventListener("click", () => {
-      let current = els.btnCreateSoftwareCycle.dataset.value || "vanilla";
-      let nextIdx = (swTypes.indexOf(current) + 1) % swTypes.length;
-      let next = swTypes[nextIdx];
-      
-      els.btnCreateSoftwareCycle.dataset.value = next;
-      els.btnCreateSoftwareCycle.textContent = "Software: " + swNames[next];
-      loadDownloadVersions();
+    els.btnCreateSoftwareCycle.dataset.value = "vanilla";
+    els.btnCreateSoftwareCycle.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.value;
+        els.btnCreateSoftwareCycle.dataset.value = val;
+        els.btnCreateSoftwareCycle.querySelectorAll('.mc-btn-group-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const descEl = document.querySelector("#create-software-desc");
+        if (descEl) descEl.textContent = swDescs[val];
+        
+        loadDownloadVersions();
+      });
     });
   }
 
@@ -375,23 +418,42 @@ export function setupEvents() {
   }
 
   // Config Page File Source Selection
-  if (els.controlSourceLocal) {
-    els.controlSourceLocal.addEventListener("change", () => {
-      if (els.controlSourceLocal.checked) {
-        els.controlLocalContainer.style.display = "flex";
-        els.controlDownloadContainer.style.display = "none";
-      }
+  const groupControlJarSource = document.querySelector("#group-control-jar-source");
+  if (groupControlJarSource) {
+    groupControlJarSource.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.value;
+        if (val === "local") {
+          els.controlSourceLocal.checked = true;
+          els.controlSourceLocal.dispatchEvent(new Event('change'));
+        } else {
+          els.controlSourceDownload.checked = true;
+          els.controlSourceDownload.dispatchEvent(new Event('change'));
+        }
+      });
     });
   }
 
-  if (els.controlSourceDownload) {
-    els.controlSourceDownload.addEventListener("change", () => {
-      if (els.controlSourceDownload.checked) {
+  // Config Page File Source Selection
+  if (els.controlSourceLocal && els.controlSourceDownload) {
+    const syncControlVisual = () => {
+      const isLocal = els.controlSourceLocal.checked;
+      if (groupControlJarSource) {
+        groupControlJarSource.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.value === (isLocal ? 'local' : 'download'));
+        });
+      }
+      if (isLocal) {
+        els.controlLocalContainer.style.display = "flex";
+        els.controlDownloadContainer.style.display = "none";
+      } else {
         els.controlLocalContainer.style.display = "none";
         els.controlDownloadContainer.style.display = "block";
         loadControlDownloadVersions();
       }
-    });
+    };
+    els.controlSourceLocal.addEventListener("change", syncControlVisual);
+    els.controlSourceDownload.addEventListener("change", syncControlVisual);
   }
   
   if (els.controlEngineSelect) {

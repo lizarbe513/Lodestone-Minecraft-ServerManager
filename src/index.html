@@ -131,16 +131,26 @@
                         <div class="col-right">
                             <div class="field-group">
                                 <label>Modo de juego</label>
-                                <button type="button" id="btn-create-gamemode-cycle" class="mc-cycle-btn">Modo: Supervivencia</button>
-                                <div id="create-gamemode-desc" class="mc-description">
+                                <div id="btn-create-gamemode-cycle" class="mc-btn-group" data-value="survival">
+                                    <button type="button" class="mc-btn-group-item active" data-value="survival">Supervivencia</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="creative">Creativo</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="adventure">Aventura</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="spectator">Espectador</button>
+                                </div>
+                                <div id="create-gamemode-desc" class="mc-description" style="margin-top: 8px;">
                                     Consigue recursos, fabrica herramientas...
                                 </div>
                             </div>
 
                             <div class="field-group" style="margin-top: 12px;">
                                 <label>Dificultad</label>
-                                <button type="button" id="btn-create-difficulty-cycle" class="mc-cycle-btn">Dificultad: Normal</button>
-                                <div id="create-difficulty-desc" class="mc-description">
+                                <div id="btn-create-difficulty-cycle" class="mc-btn-group" data-value="normal">
+                                    <button type="button" class="mc-btn-group-item" data-value="peaceful">Pacífico</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="easy">Fácil</button>
+                                    <button type="button" class="mc-btn-group-item active" data-value="normal">Normal</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="hard">Difícil</button>
+                                </div>
+                                <div id="create-difficulty-desc" class="mc-description" style="margin-top: 8px;">
                                     Aparecen monstruos. Daño estándar.
                                 </div>
                             </div>
@@ -154,13 +164,15 @@
                         <div class="col-left">
                             <div class="field-group full-width">
                                 <label>Software (.jar)</label>
-                                <div class="row" style="gap: 16px; margin-bottom: 8px;">
-                                    <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem; cursor: pointer; margin:0;">
-                                        <input type="radio" name="jar-source" value="local" style="width:auto;margin:0;"> Archivo local
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem; cursor: pointer; margin:0;">
-                                        <input type="radio" name="jar-source" value="download" checked style="width:auto;margin:0;"> Descargar automáticamente
-                                    </label>
+                                <!-- Inputs radio ocultos para preservar la compatibilidad con el JS actual -->
+                                <div style="display: none;">
+                                    <input type="radio" name="jar-source" value="local">
+                                    <input type="radio" name="jar-source" value="download" checked>
+                                </div>
+                                <!-- Grupo de botones visuales -->
+                                <div id="group-jar-source" class="mc-btn-group" data-value="download" style="margin-bottom: 8px;">
+                                    <button type="button" class="mc-btn-group-item" data-value="local">Archivo local</button>
+                                    <button type="button" class="mc-btn-group-item active" data-value="download">Descargar automáticamente</button>
                                 </div>
                             </div>
 
@@ -174,9 +186,17 @@
 
                             <div class="field-group full-width" id="section-jar-download">
                                 <div class="row responsive-row">
-                                    <div style="flex: 1;">
+                                    <div style="flex: 2;">
                                         <label for="btn-create-software-cycle">Software</label>
-                                        <button type="button" id="btn-create-software-cycle" class="mc-btn-primary mc-cycle-btn" style="width: 100%; margin: 0;" data-value="vanilla">Software: Vanilla (Oficial)</button>
+                                        <div id="btn-create-software-cycle" class="mc-btn-group" data-value="vanilla">
+                                            <button type="button" class="mc-btn-group-item active" data-value="vanilla">Vanilla</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="paper">PaperMC</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="purpur">Purpur</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="fabric">Fabric</button>
+                                        </div>
+                                        <div id="create-software-desc" class="mc-description" style="margin-top: 8px;">
+                                            Software oficial de Mojang. Ideal para juego base sin modificaciones.
+                                        </div>
                                     </div>
                                     <div style="flex: 1;">
                                         <label for="download-software-version">Versión</label>
@@ -359,7 +379,7 @@
                             Tareas/Backups
                         </button>
                     </div>
-                    <div id="players-list" style="display: none;"></div>
+                    <!-- #players-list removido, movido a la página de jugadores -->
                 </div>
             </div>
         </section>
@@ -378,7 +398,7 @@
                 <div id="eula-text-container" style="max-height: 380px; overflow-y: auto; padding: 20px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; font-size: 0.95rem; margin-bottom: 24px; line-height: 1.6; color: rgba(255, 255, 255, 0.85); box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);">Cargando el texto del EULA...</div>
 
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 24px;">
-                    <input type="checkbox" id="checkbox-accept-eula" style="width: auto; cursor: pointer;" />
+                    <input type="checkbox" id="checkbox-accept-eula" style="cursor: pointer;" />
                     <label for="checkbox-accept-eula" style="font-weight: normal; cursor: pointer; user-select: none;">Acepto los términos y condiciones del EULA de Minecraft.</label>
                 </div>
 
@@ -403,69 +423,79 @@
                     <button id="btn-players-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 32px; margin-top: 16px;">
+                    <div id="players-tabs-container" class="tabs" style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                        <button id="tab-view-online-players" type="button" class="tab-btn active" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Jugadores Conectados</button>
+                        <button id="tab-view-access-management" type="button" class="tab-btn secondary" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Gestión de Accesos</button>
+                    </div>
 
-                    <!-- Ops -->
-                    <div class="list-manager-section">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3>Operadores (Ops)</h3>
-                            <div class="row" style="gap: 8px;">
-                                <input type="text" id="input-add-op" placeholder="Nombre de jugador"
-                                    style="margin: 0; padding: 6px 12px;" />
-                                <button id="btn-add-op" type="button" style="padding: 6px 12px;">Añadir</button>
-                            </div>
-                        </div>
-                        <div id="list-ops" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                    <!-- Pestaña Jugadores Conectados -->
+                    <div id="section-online-players">
+                        <div id="players-list" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto;">
+                            <!-- Aquí se renderiza la lista de jugadores conectados desde ui.js -->
                         </div>
                     </div>
 
-                    <!-- Whitelist -->
-                    <div class="list-manager-section" id="section-whitelist-container">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3>Lista Blanca (Whitelist) <span id="whitelist-status-badge"
-                                    style="font-size: 0.8rem; font-weight: normal; color: var(--error); margin-left: 8px;"></span>
-                            </h3>
-                            <div class="row" style="gap: 8px;">
-                                <input type="text" id="input-add-whitelist" placeholder="Nombre de jugador"
-                                    style="margin: 0; padding: 6px 12px;" />
-                                <button id="btn-add-whitelist" type="button" style="padding: 6px 12px;">Añadir</button>
-                            </div>
-                        </div>
-                        <div id="list-whitelist"
-                            style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;"></div>
-                    </div>
+                    <!-- Pestaña Gestión de Accesos -->
+                    <div id="section-access-management" hidden>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
 
-                    <!-- Banned Players -->
-                    <div class="list-manager-section">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3>Jugadores Baneados</h3>
-                            <div class="row" style="gap: 8px;">
-                                <input type="text" id="input-add-banned-player" placeholder="Nombre de jugador"
-                                    style="margin: 0; padding: 6px 12px;" />
-                                <button id="btn-add-banned-player" type="button" class="warning"
-                                    style="padding: 6px 12px;">Banear</button>
+                            <!-- Ops -->
+                            <div class="list-manager-section">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <h3>Operadores (Ops)</h3>
+                                    <div class="row" style="gap: 8px;">
+                                        <input type="text" id="input-add-op" placeholder="Nombre de jugador"
+                                            style="margin: 0; padding: 6px 12px;" />
+                                        <button id="btn-add-op" type="button" class="mc-btn-primary btn-small">Añadir</button>
+                                    </div>
+                                </div>
+                                <div id="list-ops" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;">
+                                </div>
                             </div>
-                        </div>
-                        <div id="list-banned-players"
-                            style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;"></div>
-                    </div>
 
-                    <!-- Banned IPs -->
-                    <div class="list-manager-section">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3>IPs Baneadas</h3>
-                            <div class="row" style="gap: 8px;">
-                                <input type="text" id="input-add-banned-ip" placeholder="Dirección IP"
-                                    style="margin: 0; padding: 6px 12px;" />
-                                <button id="btn-add-banned-ip" type="button" class="warning"
-                                    style="padding: 6px 12px;">Banear IP</button>
+                            <!-- Whitelist -->
+                            <div class="list-manager-section" id="section-whitelist-container">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <h3>Lista Blanca <span id="whitelist-status-badge"
+                                            style="font-size: 0.8rem; font-weight: normal; color: var(--error); margin-left: 8px;"></span>
+                                    </h3>
+                                    <div class="row" style="gap: 8px;">
+                                        <input type="text" id="input-add-whitelist" placeholder="Nombre de jugador"
+                                            style="margin: 0; padding: 6px 12px;" />
+                                        <button id="btn-add-whitelist" type="button" class="mc-btn-primary btn-small">Añadir</button>
+                                    </div>
+                                </div>
+                                <div id="list-whitelist" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;"></div>
                             </div>
-                        </div>
-                        <div id="list-banned-ips"
-                            style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;"></div>
-                    </div>
 
-                </div>
+                            <!-- Banned Players -->
+                            <div class="list-manager-section">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <h3>Jugadores Baneados</h3>
+                                    <div class="row" style="gap: 8px;">
+                                        <input type="text" id="input-add-banned-player" placeholder="Nombre de jugador"
+                                            style="margin: 0; padding: 6px 12px;" />
+                                        <button id="btn-add-banned-player" type="button" class="mc-btn-danger btn-small">Banear</button>
+                                    </div>
+                                </div>
+                                <div id="list-banned-players" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;"></div>
+                            </div>
+
+                            <!-- Banned IPs -->
+                            <div class="list-manager-section">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <h3>IPs Baneadas</h3>
+                                    <div class="row" style="gap: 8px;">
+                                        <input type="text" id="input-add-banned-ip" placeholder="Dirección IP"
+                                            style="margin: 0; padding: 6px 12px;" />
+                                        <button id="btn-add-banned-ip" type="button" class="mc-btn-danger btn-small">Banear</button>
+                                    </div>
+                                </div>
+                                <div id="list-banned-ips" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;"></div>
+                            </div>
+
+                        </div>
+                    </div>
             </div>
         </section>
 
@@ -522,22 +552,22 @@
 
                     <div class="field-group full-width">
                         <label>Versión</label>
-                        <div class="row responsive-row" style="margin-bottom: 12px;">
-                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem;">
-                                <input type="radio" name="control-software-source" id="control-source-local" value="local" checked style="width: auto; margin: 0;">
-                                Archivo local
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 0.95rem;">
-                                <input type="radio" name="control-software-source" id="control-source-download" value="download" style="width: auto; margin: 0;">
-                                Descargar automáticamente
-                            </label>
+                        <!-- Inputs radio ocultos para preservar la compatibilidad con el JS actual -->
+                        <div style="display: none;">
+                            <input type="radio" name="control-software-source" id="control-source-local" value="local" checked>
+                            <input type="radio" name="control-software-source" id="control-source-download" value="download">
+                        </div>
+                        <!-- Grupo de botones visuales -->
+                        <div id="group-control-jar-source" class="mc-btn-group" data-value="local" style="margin-bottom: 12px;">
+                            <button type="button" class="mc-btn-group-item active" data-value="local">Archivo local</button>
+                            <button type="button" class="mc-btn-group-item" data-value="download">Descargar automáticamente</button>
                         </div>
 
                         <!-- Local File Selection -->
                         <div id="control-local-container" class="row responsive-row">
                             <input id="control-server-jar-path" type="text" placeholder="Selecciona un archivo .jar" readonly />
-                            <button id="btn-control-select-jar" type="button">
-                                Seleccionar .jar
+                            <button id="btn-control-select-jar" type="button" class="mc-btn-primary">
+                                Seleccionar un .jar diferente
                             </button>
                         </div>
 
@@ -639,7 +669,7 @@
                             <option value="curseforge">CurseForge</option>
                         </select>
                         <input id="input-search-extension" type="text" placeholder="Escribe el nombre de un plugin, mod o datapack" autocomplete="off" style="flex: 1;" />
-                        <button id="btn-search-extension" type="button">Buscar</button>
+                        <button id="btn-search-extension" type="button" class="mc-btn-primary">Buscar</button>
                     </div>
                     <div id="list-search-results" style="display: grid; grid-template-columns: 1fr; gap: 16px;">
                         <p class="hint" style="text-align: center; margin: 16px 0;">Cargando sugerencias...</p>

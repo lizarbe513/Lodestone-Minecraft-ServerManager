@@ -140,38 +140,64 @@ export function createPropertyField(key, initialValue) {
   }
 
   if (key === 'difficulty') {
-    const select = document.createElement('select');
+    const group = document.createElement('div');
+    group.className = 'mc-btn-group';
+    const optLabels = {
+      peaceful: 'Pacífico',
+      easy: 'Fácil',
+      normal: 'Normal',
+      hard: 'Difícil'
+    };
     ['peaceful', 'easy', 'normal', 'hard'].forEach(opt => {
-      const o = document.createElement('option');
-      o.value = opt;
-      o.textContent = opt;
-      if (initialValue === opt) o.selected = true;
-      select.appendChild(o);
-    });
-    select.addEventListener('change', () => {
-      if (!globals.parsedProperties[key]) globals.parsedProperties[key] = { value: "", lineIndex: -1 };
-      globals.parsedProperties[key].value = select.value;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mc-btn-group-item';
+      if (initialValue === opt || (!initialValue && opt === 'normal')) {
+        btn.classList.add('active');
+      }
+      btn.textContent = optLabels[opt];
+      btn.dataset.value = opt;
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.mc-btn-group-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (!globals.parsedProperties[key]) globals.parsedProperties[key] = { value: "", lineIndex: -1 };
+        globals.parsedProperties[key].value = opt;
+      });
+      group.appendChild(btn);
     });
     container.appendChild(label);
-    container.appendChild(select);
+    container.appendChild(group);
     return container;
   }
 
   if (key === 'gamemode') {
-    const select = document.createElement('select');
+    const group = document.createElement('div');
+    group.className = 'mc-btn-group';
+    const optLabels = {
+      survival: 'Supervivencia',
+      creative: 'Creativo',
+      adventure: 'Aventura',
+      spectator: 'Espectador'
+    };
     ['survival', 'creative', 'adventure', 'spectator'].forEach(opt => {
-      const o = document.createElement('option');
-      o.value = opt;
-      o.textContent = opt;
-      if (initialValue === opt) o.selected = true;
-      select.appendChild(o);
-    });
-    select.addEventListener('change', () => {
-      if (!globals.parsedProperties[key]) globals.parsedProperties[key] = { value: "", lineIndex: -1 };
-      globals.parsedProperties[key].value = select.value;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mc-btn-group-item';
+      if (initialValue === opt || (!initialValue && opt === 'survival')) {
+        btn.classList.add('active');
+      }
+      btn.textContent = optLabels[opt];
+      btn.dataset.value = opt;
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.mc-btn-group-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (!globals.parsedProperties[key]) globals.parsedProperties[key] = { value: "", lineIndex: -1 };
+        globals.parsedProperties[key].value = opt;
+      });
+      group.appendChild(btn);
     });
     container.appendChild(label);
-    container.appendChild(select);
+    container.appendChild(group);
     return container;
   }
 

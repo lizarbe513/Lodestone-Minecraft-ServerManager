@@ -55,14 +55,26 @@ export function resetNewServerForm() {
   if (els.createWorldName) els.createWorldName.value = "world";
   if (els.btnCreateGamemodeCycle) {
     els.btnCreateGamemodeCycle.dataset.value = "survival";
-    els.btnCreateGamemodeCycle.textContent = "Modo: Supervivencia";
+    els.btnCreateGamemodeCycle.querySelectorAll('.mc-btn-group-item').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === 'survival');
+    });
     els.createGamemodeDesc.textContent = "Consigue recursos, fabrica herramientas, gana niveles de experiencia y cuida tu salud.";
   }
   if (els.btnCreateDifficultyCycle) {
     els.btnCreateDifficultyCycle.dataset.value = "normal";
-    els.btnCreateDifficultyCycle.textContent = "Dificultad: Normal";
-    els.btnCreateDifficultyCycle.disabled = false;
+    els.btnCreateDifficultyCycle.querySelectorAll('.mc-btn-group-item').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === 'normal');
+      b.disabled = false;
+    });
     els.createDifficultyDesc.textContent = "Aparecen monstruos. Daño estándar.";
+  }
+  if (els.btnCreateSoftwareCycle) {
+    els.btnCreateSoftwareCycle.dataset.value = "vanilla";
+    els.btnCreateSoftwareCycle.querySelectorAll('.mc-btn-group-item').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === 'vanilla');
+    });
+    const descEl = document.querySelector("#create-software-desc");
+    if (descEl) descEl.textContent = "Software oficial de Mojang. Ideal para juego base sin modificaciones.";
   }
   if (els.createMaxPlayers) els.createMaxPlayers.value = "20";
   if (els.createOnlineMode) els.createOnlineMode.checked = true;

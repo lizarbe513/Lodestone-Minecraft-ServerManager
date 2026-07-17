@@ -6,17 +6,19 @@ import { updateMetrics, clearMetrics } from "./metrics.js";
 
 export function navigateTo(page) {
   appState.currentPage = page;
-  if (els.pageHome) els.pageHome.hidden = page !== "home";
-  if (els.pageCreate) els.pageCreate.hidden = page !== "create";
-  if (els.pageControl) els.pageControl.hidden = page !== "control";
-  if (els.pageProperties) els.pageProperties.hidden = page !== "properties";
-  if (els.pageConfig) els.pageConfig.hidden = page !== "config";
-  if (els.pagePlayers) els.pagePlayers.hidden = page !== "players";
-  if (els.pageWorlds) els.pageWorlds.hidden = page !== "worlds";
-  if (els.pageEula) els.pageEula.hidden = page !== "eula";
-  if (els.pageExtensions) els.pageExtensions.hidden = page !== "extensions";
-  if (els.pageBackups) els.pageBackups.hidden = page !== "backups";
-  updateControls();
+  setTimeout(() => {
+    if (els.pageHome) els.pageHome.hidden = page !== "home";
+    if (els.pageCreate) els.pageCreate.hidden = page !== "create";
+    if (els.pageControl) els.pageControl.hidden = page !== "control";
+    if (els.pageProperties) els.pageProperties.hidden = page !== "properties";
+    if (els.pageConfig) els.pageConfig.hidden = page !== "config";
+    if (els.pagePlayers) els.pagePlayers.hidden = page !== "players";
+    if (els.pageWorlds) els.pageWorlds.hidden = page !== "worlds";
+    if (els.pageEula) els.pageEula.hidden = page !== "eula";
+    if (els.pageExtensions) els.pageExtensions.hidden = page !== "extensions";
+    if (els.pageBackups) els.pageBackups.hidden = page !== "backups";
+    updateControls();
+  }, 120); // Retardo para que el botón juegue su animación de subida antes de ocultarse
 }
 
 export function renderHomeHint() {
@@ -94,6 +96,7 @@ export async function syncControlConfigForm() {
   // Set default view to "Local File"
   if (els.controlSourceLocal) {
     els.controlSourceLocal.checked = true;
+    els.controlSourceLocal.dispatchEvent(new Event('change')); // Sincroniza visualmente con el grupo de botones
     els.controlLocalContainer.style.display = "flex";
     els.controlDownloadContainer.style.display = "none";
     els.controlEngineSelect.disabled = true;
@@ -107,16 +110,21 @@ export async function syncControlConfigForm() {
       });
       
       const supportedEngines = ["vanilla", "paper", "purpur", "fabric"];
+      const btnDownload = document.querySelector("#group-control-jar-source button[data-value='download']");
       if (supportedEngines.includes(engine)) {
         els.controlEngineSelect.value = engine;
         els.controlSourceDownload.disabled = false;
+        if (btnDownload) btnDownload.disabled = false;
       } else {
         els.controlSourceDownload.disabled = true;
         els.controlEngineSelect.value = "vanilla";
+        if (btnDownload) btnDownload.disabled = true;
       }
     } catch (e) {
       console.error("Error detecting engine for config:", e);
       els.controlSourceDownload.disabled = true;
+      const btnDownload = document.querySelector("#group-control-jar-source button[data-value='download']");
+      if (btnDownload) btnDownload.disabled = true;
     }
   }
 }
