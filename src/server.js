@@ -246,6 +246,50 @@ export async function createServer() {
         await invoke("descargar_servidor_jar", { url, destino: tempDest });
         payload.server_jar_path = tempDest;
         payload.minecraft_version = version.includes('|') ? version.split('|')[0] : version;
+      } else if (appState.mrpackToInstall && appState.mrpackToInstall.url && (appState.mrpackToInstall.url.includes("curse") || appState.mrpackToInstall.url.includes("forgecdn") || /^\d+$/.test(appState.selectedModpackId))) {
+        showFeedback("Descargando software de servidor y modpack de CurseForge...", "info");
+        const software = els.btnCreateSoftwareCycle.dataset.value;
+        const version = els.selectDownloadVersion.value;
+        let url = "";
+        let jarName = "";
+
+        if (software === "paper") {
+          url = await getPaperDownloadUrl(version);
+          jarName = `paper-${version}.jar`;
+        } else if (software === "vanilla") {
+          url = await getVanillaDownloadUrl(version);
+          jarName = `vanilla-${version}.jar`;
+        } else if (software === "purpur") {
+          url = await getPurpurDownloadUrl(version);
+          jarName = `purpur-${version}.jar`;
+        } else if (software === "fabric") {
+          url = await getFabricDownloadUrl(version);
+          jarName = `fabric-${version}.jar`;
+        } else if (software === "forge") {
+          const [mcVersion, forgeVersion] = version.split('|');
+          url = await getForgeDownloadUrl(mcVersion, forgeVersion);
+          jarName = `forge-${mcVersion}-${forgeVersion}-installer.jar`;
+        } else if (software === "neoforge") {
+          const neoVersion = version.includes('|') ? version.split('|')[1] : version;
+          url = await getNeoForgeDownloadUrl(neoVersion);
+          jarName = `neoforge-${neoVersion}-installer.jar`;
+        }
+
+        if (url) {
+          const tempDest = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + "temp_" + jarName;
+          showFeedback(`Descargando ${software} ${version}...`, "info");
+          await invoke("descargar_servidor_jar", { url, destino: tempDest });
+          payload.server_jar_path = tempDest;
+        }
+
+        payload.minecraft_version = version.includes('|') ? version.split('|')[0] : version;
+
+        const modpackZipName = appState.mrpackToInstall.filename || "curseforge_modpack.zip";
+        const tempZipDest = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + "temp_" + modpackZipName;
+        showFeedback(`Descargando archivo de modpack (${modpackZipName})...`, "info");
+        await invoke("descargar_servidor_jar", { url: appState.mrpackToInstall.url, destino: tempZipDest });
+        appState.localZipModpackPath = tempZipDest;
+        appState.mrpackToInstall = null;
       } else {
         showFeedback("Obteniendo información del modpack...", "info");
         const urlVersion = `https://api.modrinth.com/v2/project/${appState.selectedModpackId}/version`;

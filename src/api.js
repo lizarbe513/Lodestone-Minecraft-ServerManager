@@ -43,17 +43,72 @@ export async function getFabricDownloadUrl(version) {
 }
 
 export async function fetchForgeVersions() {
-  const res = await fetch("https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json");
-  const data = await res.json();
-  const versions = [];
-  // promotions_slim tiene "promos": { "1.20.1-recommended": "47.2.0", ... }
-  for (const key of Object.keys(data.promos)) {
-    if (key.endsWith("-recommended")) {
-      const mcVersion = key.replace("-recommended", "");
-      versions.push({ mcVersion, forgeVersion: data.promos[key] });
+  let data = null;
+  const targetUrl = "https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json";
+
+  try {
+    const res = await fetch(targetUrl);
+    if (res.ok) data = await res.json();
+  } catch (e) {
+    console.warn("Direct Forge fetch failed (likely CORS)", e);
+  }
+
+  const defaultPromos = {
+    "1.21.4-recommended": "54.1.14",
+    "1.21.3-recommended": "53.1.0",
+    "1.21.1-recommended": "52.1.0",
+    "1.21-latest": "51.0.33",
+    "1.20.6-recommended": "50.2.0",
+    "1.20.4-recommended": "49.2.0",
+    "1.20.3-latest": "49.0.2",
+    "1.20.2-recommended": "48.1.0",
+    "1.20.1-recommended": "47.4.10",
+    "1.20-latest": "46.0.14",
+    "1.19.4-recommended": "45.4.0",
+    "1.19.3-recommended": "44.1.0",
+    "1.19.2-recommended": "43.5.0",
+    "1.19.1-latest": "42.0.9",
+    "1.19-recommended": "41.1.0",
+    "1.18.2-recommended": "40.3.0",
+    "1.18.1-recommended": "39.1.0",
+    "1.17.1-recommended": "37.1.1",
+    "1.16.5-recommended": "36.2.34",
+    "1.16.4-recommended": "35.1.4",
+    "1.16.3-recommended": "34.1.0",
+    "1.15.2-recommended": "31.2.57",
+    "1.14.4-recommended": "28.2.26",
+    "1.12.2-recommended": "14.23.5.2859",
+    "1.12.1-recommended": "14.22.1.2478",
+    "1.12-recommended": "14.21.1.2387",
+    "1.11.2-recommended": "13.20.1.2588",
+    "1.10.2-recommended": "12.18.3.2511",
+    "1.9.4-recommended": "12.17.0.2317",
+    "1.8.9-recommended": "11.15.1.2318",
+    "1.7.10-recommended": "10.13.4.1614"
+  };
+
+  const versionsMap = new Map();
+  const promos = (data && data.promos && Object.keys(data.promos).length > 0) ? data.promos : defaultPromos;
+
+  for (const key of Object.keys(promos)) {
+    if (key.endsWith("-latest")) {
+      const mcVersion = key.replace("-latest", "");
+      versionsMap.set(mcVersion, promos[key]);
     }
   }
-  // Reverse sort to show latest first
+
+  for (const key of Object.keys(promos)) {
+    if (key.endsWith("-recommended")) {
+      const mcVersion = key.replace("-recommended", "");
+      versionsMap.set(mcVersion, promos[key]);
+    }
+  }
+
+  const versions = [];
+  for (const [mcVersion, forgeVersion] of versionsMap.entries()) {
+    versions.push({ mcVersion, forgeVersion });
+  }
+
   return versions.reverse();
 }
 
@@ -64,16 +119,26 @@ export async function getForgeDownloadUrl(mcVersion, forgeVersion) {
 export async function fetchNeoForgeVersions() {
   const res = await fetch("https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge");
   const data = await res.json();
-  const versions = data.versions.filter(v => !v.includes("alpha") && !v.includes("beta"));
-  // Agrupar por versión de MC inferida (21.x -> 1.21, 20.4.x -> 1.20.4)
+  const versions = data.versions || [];
+  
   const mapped = versions.map(v => {
-    let mc = "1." + v.split(".")[0];
-    if (v.startsWith("20.4")) mc = "1.20.4";
-    if (v.startsWith("20.3")) mc = "1.20.3";
-    if (v.startsWith("20.2")) mc = "1.20.2";
+    let clean = v.replace(/-(alpha|beta).*/, "");
+    let parts = clean.split(".");
+    let mc = "";
+    if (parts[0] === "47" && parts[1] === "1") mc = "1.20.1";
+    else if (parts[0] === "20") {
+      mc = "1.20." + (parts[1] || "0");
+    } else if (parts[0] === "21") {
+      if (!parts[1] || parts[1] === "0") mc = "1.21";
+      else mc = "1.21." + parts[1];
+    } else if (parts[0] === "26") {
+      mc = "1.26." + (parts[1] || "0");
+    } else {
+      mc = "1." + parts[0];
+    }
     return { mcVersion: mc, neoVersion: v };
   });
-  // Filtrar duplicados de mcVersion para dejar solo la más reciente
+
   const unique = [];
   const seen = new Set();
   for (let i = mapped.length - 1; i >= 0; i--) {
@@ -82,7 +147,7 @@ export async function fetchNeoForgeVersions() {
       unique.push(mapped[i]);
     }
   }
-  return unique; // Descending order usually from Maven, so end of array is latest
+  return unique;
 }
 
 export async function getNeoForgeDownloadUrl(neoVersion) {
