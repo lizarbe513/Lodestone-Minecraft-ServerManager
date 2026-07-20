@@ -16,10 +16,8 @@ button {
     margin-bottom: 4px;
 }
 button:not(.tab-btn):not(.create-tab-btn):active:not(:disabled) {
-    margin-top: var(--shadow-depth);
-    margin-bottom: calc(4px - var(--shadow-depth));
-    border-bottom-color: transparent !important;
-    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(2px);
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4), 0 2px 0 #111 !important;
 }
 button:disabled {
     opacity: 0.5;
@@ -125,9 +123,9 @@ button:disabled {
 .mc-btn-group-item:active:not(:disabled),
 .mc-btn-group-item.active {
     background-color: var(--mc-green);
-    border-bottom: 0px solid transparent;
-    transform: translateY(4px);
+    border-bottom: 4px solid var(--mc-green-shadow);
     box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4); /* Sombra interna arriba para efecto hundido */
+    transform: translateY(2px);
     color: #ffffff;
     font-weight: normal;
 }

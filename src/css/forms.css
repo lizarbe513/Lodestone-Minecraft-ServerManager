@@ -217,23 +217,17 @@ select option {
     color: #ffffff;
     font-weight: normal;
 }
-/* Eliminar el outline azul nativo y usar un recuadro verde de Minecraft */
-*:focus-visible {
-    outline: 2px solid var(--mc-green);
-    outline-offset: 1px;
+/* Eliminar recuadro de enfoque persistente en botones al hacer clic */
+button:focus, .mc-btn-group-item:focus, .tab-btn:focus, .create-tab-btn:focus {
+    outline: none !important;
 }
 
-input:focus-visible, select:focus-visible, button:focus-visible, .mc-btn-group-item:focus-visible {
-    outline: 2px solid var(--mc-green);
-    outline-offset: 1px;
-}
-*:focus:not(:focus-visible) {
-    outline: none;
-}
-input:focus, select:focus {
-    outline: 2px solid var(--mc-green);
-    outline-offset: 1px;
-    border-color: var(--mc-green);
+/* Recuadro verde único para campos de entrada de texto, selección y textareas al enfocarlos */
+input:focus, select:focus, textarea:focus {
+    border-color: var(--mc-green) !important;
+    outline: 2px solid var(--mc-green) !important;
+    outline-offset: 0px !important;
+    box-shadow: none !important;
 }
 input[readonly] {
     color: #888;

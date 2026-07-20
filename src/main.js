@@ -5,28 +5,20 @@ import { invoke } from "./api.js";
 import { applySnapshot, navigateTo } from "./ui.js";
 import { showFeedback, appendLog, normalizeError } from "./utils.js";
 import { appState } from "./state.js";
-
 import { initAudio } from "./audio.js";
+import { initTheme } from "./theme.js";
 
 async function loadInitialState() {
   const snapshot = await invoke("obtener_estado_aplicacion");
   applySnapshot(snapshot);
 
-  if (appState.activeSession) {
-    navigateTo("control");
-    showFeedback(
-      `Se cargó el panel de control del último servidor usado: ${appState.activeSession.server_name}.`,
-      "info",
-    );
-  } else {
-    navigateTo("home");
-    showFeedback("Selecciona una opción para comenzar.", "info");
-  }
+  navigateTo("home");
+  showFeedback("Selecciona una opción para comenzar.", "info");
 }
 async function loadViews() {
   const container = document.getElementById("app-container");
   if (!container) return;
-  const views = ["home", "create", "control"];
+  const views = ["home", "create", "control", "customization"];
   for (const view of views) {
     try {
       const response = await fetch(`views/${view}.html?v=${Date.now()}`);
@@ -41,6 +33,7 @@ async function loadViews() {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  initTheme();
   await loadViews();
   initDom();
   initMetrics();

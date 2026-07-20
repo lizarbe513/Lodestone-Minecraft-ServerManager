@@ -2,6 +2,8 @@ import { invoke, listen, open, fetchForgeVersions, fetchNeoForgeVersions } from 
 import { els } from "./dom.js";
 import { appState, globals } from "./state.js";
 import { setStatus, updateControls, navigateTo, applySnapshot } from "./ui.js";
+import { AVAILABLE_THEMES, getCurrentTheme, setTheme } from "./theme.js";
+import { getSfxVolume, setSfxVolume, getTypingVolume, setTypingVolume, playClickSound, playTypingSound } from "./audio.js";
 import { showFeedback, appendLog, normalizeError, requestConfirm } from "./utils.js";
 import { handleServerLogLine, resetNewServerForm, browseServerJar, browseServerParentDir, createServer, startCurrentServer, stopServer, sendCommand, saveServerConfig, acceptEulaAndRestart, loadAndShowEula, openExistingServer } from "./server.js";
 import { parsePropertiesContent, renderPropertiesUI, buildPropertiesPayload } from "./properties.js";
@@ -216,6 +218,21 @@ export function setupEvents() {
         "Configura el software, el directorio, el nombre, Java y la RAM del nuevo servidor.",
         "info",
       );
+    });
+  }
+
+  if (els.btnHomeCustomization) {
+    els.btnHomeCustomization.addEventListener("click", () => {
+      renderThemeCards();
+      initSfxVolumeControl();
+      navigateTo("customization");
+      showFeedback("Personaliza la paleta de colores y el volumen de efectos de sonido.", "info");
+    });
+  }
+
+  if (els.btnCustomizationBack) {
+    els.btnCustomizationBack.addEventListener("click", () => {
+      navigateTo("home");
     });
   }
 
@@ -1633,6 +1650,75 @@ export function setupEvents() {
         modpackConfirmed = true;
         updateModpackUIState();
       }
+    });
+  }
+
+  function renderThemeCards() {
+    if (!els.themeCardsContainer) return;
+    const currentTheme = getCurrentTheme();
+    
+    els.themeCardsContainer.innerHTML = AVAILABLE_THEMES.map(theme => {
+      const isActive = theme.id === currentTheme;
+      return `
+        <div class="minecraft-table theme-card" data-theme-id="${theme.id}" style="padding: 16px; display: flex; flex-direction: column; gap: 12px; border: 2px solid ${isActive ? 'var(--mc-green)' : 'var(--mc-border)'}; background-color: var(--bg-panel); cursor: pointer; border-radius: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4 style="margin: 0; color: var(--mc-yellow); font-size: 1.1rem;">${theme.name}</h4>
+            ${isActive ? '<span class="status-badge" data-status="running" style="padding: 2px 8px; font-size: 0.8rem;">ACTIVO</span>' : ''}
+          </div>
+          <p class="hint" style="margin: 0; font-size: 0.85rem; flex: 1;">${theme.description}</p>
+          
+          <div style="display: flex; height: 28px; border: 2px solid #111; border-radius: 4px; overflow: hidden; margin-top: 4px;">
+            <div style="flex: 1; background-color: ${theme.previewBg};" title="Fondo"></div>
+            <div style="flex: 1; background-color: ${theme.previewAccent};" title="Acento"></div>
+            <div style="flex: 1; background-color: ${theme.previewText};" title="Texto"></div>
+          </div>
+
+          <button type="button" class="${isActive ? 'mc-btn-primary' : 'mc-btn-secondary'} btn-small" style="width: 100%; margin-top: 8px;">
+            ${isActive ? 'ACTIVADO' : 'SELECCIONAR'}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    els.themeCardsContainer.querySelectorAll('.theme-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const themeId = card.dataset.themeId;
+        setTheme(themeId);
+        renderThemeCards();
+        showFeedback(`Tema cambiado a: ${AVAILABLE_THEMES.find(t => t.id === themeId).name}`, "info");
+      });
+    });
+  }
+
+  function initSfxVolumeControl() {
+    const sfxVol = getSfxVolume();
+    const sfxPct = Math.round(sfxVol * 100);
+    if (els.inputSfxVolume) els.inputSfxVolume.value = sfxPct;
+    if (els.labelSfxVolume) els.labelSfxVolume.textContent = `${sfxPct}%`;
+
+    const typingVol = getTypingVolume();
+    const typingPct = Math.round(typingVol * 100);
+    if (els.inputTypingVolume) els.inputTypingVolume.value = typingPct;
+    if (els.labelTypingVolume) els.labelTypingVolume.textContent = `${typingPct}%`;
+  }
+
+  if (els.inputSfxVolume) {
+    els.inputSfxVolume.addEventListener("input", (e) => {
+      const pct = parseInt(e.target.value);
+      setSfxVolume(pct / 100);
+      if (els.labelSfxVolume) els.labelSfxVolume.textContent = `${pct}%`;
+      playClickSound();
+    });
+  }
+
+  // El botón "Probar Clic" ya produce su clic natural al hacer mousedown
+
+  if (els.inputTypingVolume) {
+    els.inputTypingVolume.addEventListener("input", (e) => {
+      const pct = parseInt(e.target.value);
+      setTypingVolume(pct / 100);
+      if (els.labelTypingVolume) els.labelTypingVolume.textContent = `${pct}%`;
+      playTypingSound();
     });
   }
 

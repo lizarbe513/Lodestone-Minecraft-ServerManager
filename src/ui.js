@@ -17,6 +17,7 @@ export function navigateTo(page) {
     if (els.pageEula) els.pageEula.hidden = page !== "eula";
     if (els.pageExtensions) els.pageExtensions.hidden = page !== "extensions";
     if (els.pageBackups) els.pageBackups.hidden = page !== "backups";
+    if (els.pageCustomization) els.pageCustomization.hidden = page !== "customization";
     updateControls();
   }, 120); // Retardo para que el botón juegue su animación de subida antes de ocultarse
 }
