@@ -4,6 +4,7 @@ mod extensions;
 mod backups;
 mod java;
 mod models;
+mod mrpack;
 mod runtime;
 mod server_files;
 mod sessions;
@@ -49,6 +50,7 @@ fn crear_e_iniciar_servidor(
 ) -> Result<AppSnapshot, String> {
     ensure_server_is_idle(&state.runtime)?;
 
+    let start_immediately = request.start_immediately.unwrap_or(true);
     let session = create_server_session(request)?;
     update_active_session(&app_handle, &state.runtime, Some(session.clone()))?;
 
@@ -61,7 +63,9 @@ fn crear_e_iniciar_servidor(
         ),
     )?;
 
-    spawn_server_process(&app_handle, &state.runtime, session)?;
+    if start_immediately {
+        spawn_server_process(&app_handle, &state.runtime, session)?;
+    }
 
     let runtime_guard = state
         .runtime
@@ -127,6 +131,27 @@ fn aceptar_eula_y_reiniciar(
     let session_dir = PathBuf::from(&session.server_dir);
 
     ensure_eula_accepted(&session_dir)?;
+    
+    let child_alive = {
+        let runtime_guard = state.runtime.lock().unwrap();
+        runtime_guard.child.is_some()
+    };
+    
+    if child_alive {
+        let _ = crate::runtime::send_console_command(&state.runtime, "true");
+        let mut runtime_guard = state.runtime.lock().unwrap();
+        runtime_guard.status = crate::models::ServerStatus::Starting;
+        runtime_guard.eula_pending = false;
+        
+        emit_log(
+            &app_handle,
+            LogKind::System,
+            "EULA aceptado interactivamente. Continuando arranque del servidor...",
+        )?;
+        
+        return Ok(build_snapshot(&runtime_guard));
+    }
+
     emit_log(
         &app_handle,
         LogKind::System,
@@ -228,6 +253,43 @@ fn abrir_carpeta_servidor(state: tauri::State<AppState>) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+#[tauri::command]
+fn abrir_carpeta_por_ruta(ruta: String) -> Result<(), String> {
+    let path = PathBuf::from(&ruta);
+    if !path.is_dir() {
+        return Err("La carpeta no existe o no es válida.".into());
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("No se pudo abrir la carpeta en Windows: {}", e))?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("No se pudo abrir la carpeta en macOS: {}", e))?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("No se pudo abrir la carpeta en Linux: {}", e))?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+fn salir_aplicacion(app_handle: tauri::AppHandle) {
+    app_handle.exit(0);
 }
 
 #[tauri::command]
@@ -552,7 +614,12 @@ pub fn run() {
             crear_backup_completo,
             listar_backups,
             restaurar_backup,
-            eliminar_backup
+            eliminar_backup,
+            mrpack::parse_mrpack,
+            mrpack::extract_mrpack_overrides,
+            abrir_carpeta_por_ruta,
+            salir_aplicacion,
+            mrpack::extraer_zip
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

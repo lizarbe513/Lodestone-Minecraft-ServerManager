@@ -1,0 +1,48 @@
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+html {
+    font-size: 100%;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: var(--font-body);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    font-size: 1.1rem;
+}
+
+h1, h2, h3, h4, .eyebrow {
+    font-family: var(--font-title) !important;
+    margin-top: 0;
+    color: var(--mc-white);
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    color: var(--mc-green);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.hint {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.mc-description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    min-height: 44px; /* Evita que el contenido de abajo se mueva al cambiar textos de diferente longitud */
+    display: block;
+}

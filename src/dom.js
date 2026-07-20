@@ -15,6 +15,8 @@ export function initDom() {
   els.btnHomeCreate = document.querySelector("#btn-home-create");
   els.btnHomeOpenExisting = document.querySelector("#btn-home-open-existing");
   els.btnHomeOpenLast = document.querySelector("#btn-home-open-last");
+  els.btnHomeExit = document.querySelector("#btn-home-exit");
+  els.btnHomeOpenDir = document.querySelector("#btn-home-open-dir");
   els.btnCreateBack = document.querySelector("#btn-create-back");
   els.btnSelectServerJar = document.querySelector("#btn-select-server-jar");
   els.btnSelectServerParentDir = document.querySelector("#btn-select-server-parent-dir");
@@ -46,6 +48,7 @@ export function initDom() {
   els.serverParentDir = document.querySelector("#server-parent-dir");
   els.serverName = document.querySelector("#server-name");
   els.javaVersion = document.querySelector("#java-version");
+  els.btnCreateJavaCycle = document.querySelector("#btn-create-java-cycle");
   els.memoryGb = document.querySelector("#memory-gb");
   els.inputCommand = document.querySelector("#input-command");
   els.summaryServerName = document.querySelector("#summary-server-name");
@@ -78,8 +81,51 @@ export function initDom() {
   els.createWorldName = document.querySelector("#create-world-name");
   els.btnTabCreateGame = document.querySelector("#btn-tab-create-game");
   els.btnTabCreateServer = document.querySelector("#btn-tab-create-server");
+  els.btnTabCreateModpacks = document.querySelector("#btn-tab-create-modpacks");
   els.tabCreateGameContent = document.querySelector("#tab-create-game-content");
   els.tabCreateServerContent = document.querySelector("#tab-create-server-content");
+  els.tabCreateModpacksContent = document.querySelector("#tab-create-modpacks-content");
+  
+  els.groupModpackSource = document.querySelector("#group-modpack-source");
+  els.sectionModpackDownloadLeft = document.querySelector("#section-modpack-download-left");
+  els.sectionModpackDownloadRight = document.querySelector("#section-modpack-download-right");
+  els.inputCreateModpackSearch = document.querySelector("#input-create-modpack-search");
+  els.btnCreateModpackDoSearch = document.querySelector("#btn-create-modpack-do-search");
+  els.createModpackSearchResults = document.querySelector("#create-modpack-search-results");
+  els.createModpackSelectedInfo = document.querySelector("#create-modpack-selected-info");
+  els.btnCreateModpackDownload = document.querySelector("#btn-create-modpack-download");
+  els.btnCreateModpackClearLocal = document.querySelector("#btn-create-modpack-clear-local");
+  els.createModpackTitle = document.querySelector("#create-modpack-title");
+  els.createModpackAuthor = document.querySelector("#create-modpack-author");
+  els.createModpackDesc = document.querySelector("#create-modpack-desc");
+  els.createModpackGalleryImg = document.querySelector("#create-modpack-gallery-img");
+  els.createModpackGalleryImgWrapper = document.querySelector("#create-modpack-gallery-img-wrapper");
+  els.createModpackGalleryTitle = document.querySelector("#create-modpack-gallery-title");
+  els.createModpackGalleryLine = document.querySelector("#create-modpack-gallery-line");
+  els.createModpackGalleryControls = document.querySelector("#create-modpack-gallery-controls");
+  els.btnGalleryPrev = document.querySelector("#btn-gallery-prev");
+  els.btnGalleryNext = document.querySelector("#btn-gallery-next");
+  // Nuevos elementos para Modpack Selected State
+  els.stateModpackExplore = document.querySelector("#state-modpack-explore");
+  els.stateModpackSelected = document.querySelector("#state-modpack-selected");
+  els.modpackSelectedTitleLeft = document.querySelector("#modpack-selected-title-left");
+  els.modpackSelectedAuthorLeft = document.querySelector("#modpack-selected-author-left");
+  els.modpackSelectedThumbnailFinal = document.querySelector("#modpack-selected-thumbnail-final");
+  els.btnCreateModpackClearFinal = document.querySelector("#btn-create-modpack-clear-final");
+  els.modpackSelectedSourceLabel = document.querySelector("#modpack-selected-source-label");
+  els.modpackSelectedTitleFinal = document.querySelector("#modpack-selected-title-final");
+  els.modpackSelectedAuthorFinal = document.querySelector("#modpack-selected-author-final");
+  els.modpackSelectedDescFinal = document.querySelector("#modpack-selected-desc-final");
+  els.btnCreateModpackConfirm = document.querySelector("#btn-create-modpack-confirm");
+  els.btnModpackPagePrev = document.querySelector("#btn-modpack-page-prev");
+  els.btnModpackPageNext = document.querySelector("#btn-modpack-page-next");
+  els.labelModpackPage = document.querySelector("#label-modpack-page");
+  els.createModpackLocalPath = document.querySelector("#create-modpack-local-path");
+  els.btnCreateModpackSelectLocal = document.querySelector("#btn-create-modpack-select-local");
+  els.sectionModpackLocalPreviewRight = document.querySelector("#section-modpack-local-preview-right");
+  els.createModpackLocalThumbnail = document.querySelector("#create-modpack-local-thumbnail");
+
+  els.sectionModpackLocalLeft = document.querySelector("#section-modpack-local-left");
   els.btnCreateGamemodeCycle = document.querySelector("#btn-create-gamemode-cycle");
   els.createGamemodeDesc = document.querySelector("#create-gamemode-desc");
   els.btnCreateDifficultyCycle = document.querySelector("#btn-create-difficulty-cycle");
@@ -89,6 +135,7 @@ export function initDom() {
   els.createHardcore = document.querySelector("#create-hardcore");
   els.createPvp = document.querySelector("#create-pvp");
   els.createAllowFlight = document.querySelector("#create-allow-flight");
+  els.createWorldPreview = document.querySelector("#create-world-preview");
   els.statRam = document.querySelector("#stat-ram");
   els.statCpu = document.querySelector("#stat-cpu");
   els.playersCount = document.querySelector("#players-count");

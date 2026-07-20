@@ -5,8 +5,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minecraft Server GUI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=VT323&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="css/fonts.css?v=3" />
+    <link rel="stylesheet" href="css/variables.css?v=3" />
+    <link rel="stylesheet" href="css/typography.css?v=3" />
+    <link rel="stylesheet" href="css/layout.css?v=3" />
+    <link rel="stylesheet" href="css/pages.css?v=3" />
+    <link rel="stylesheet" href="css/buttons.css?v=3" />
+    <link rel="stylesheet" href="css/forms.css?v=3" />
+    <link rel="stylesheet" href="css/components.css?v=3" />
+
     <script>
     window.onerror = function(msg, url, line, col, error) {
         var errStr = "ERROR: " + msg + " en " + url + ":" + line + ":" + col + "\n" + (error ? error.stack : "");
@@ -43,346 +50,12 @@
             Selecciona una opción para comenzar.
         </p>
 
-        <section id="page-home" class="page-section">
-            <div class="panel home-panel centered-panel">
-                <h2>Bienvenido</h2>
-                <p class="hint home-copy">
-                    Elige si quieres crear un servidor nuevo o abrir un
-                    servidor existente.
-                </p>
-                <div class="stack-actions">
-                    <button id="btn-home-open-last" type="button" class="mc-btn-primary" hidden>
-                        Último
-                    </button>
-                    <button id="btn-home-create" type="button" class="mc-btn-primary">
-                        Crear
-                    </button>
-                    <button id="btn-home-open-existing" type="button" class="mc-btn-secondary" style="opacity: 0.8;">
-                        Abrir
-                    </button>
-                </div>
-                <p id="home-session-hint" class="hint" hidden></p>
-            </div>
+        <div id="app-container"></div>
 
-            <div class="panel centered-panel" style="margin-top: 18px; text-align: left;">
-                <h2 style="text-align: center; margin-bottom: 12px;">Servidores Guardados</h2>
-                <div id="list-saved-servers" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
-                    <p class="hint" style="text-align: center; margin: 16px 0;">Cargando servidores guardados...</p>
-                </div>
-            </div>
-        </section>
 
-        <section id="page-create" class="page-section" hidden>
-            <div class="panel">
-                <div class="panel-heading">
-                    <div>
-                        <h2>Crear nuevo servidor</h2>
-                        <p class="hint">
-                            Configura el servidor a tu gusto. Elige la pestaña "Partida" para opciones del juego y "Servidor" para especificaciones técnicas.
-                        </p>
-                    </div>
-                    <button id="btn-create-back" type="button" class="mc-btn-secondary">
-                        Volver
-                    </button>
-                </div>
+        
 
-                <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
-                    <div class="field-group" style="text-align: center;">
-                        <label for="server-name">Nombre del servidor</label>
-                        <input id="server-name" type="text" placeholder="Ejemplo: survival-amigos" autocomplete="off" style="text-align: center;" />
-                        <p class="hint" style="margin-top: 4px; font-size: 0.8rem;">Se usará para el nombre de la carpeta.</p>
-                    </div>
-                    <div class="field-group" style="text-align: center;">
-                        <label for="create-world-name">Nombre del mundo</label>
-                        <input id="create-world-name" type="text" placeholder="world" value="world" autocomplete="off" style="text-align: center;" />
-                        <p class="hint" style="margin-top: 4px; font-size: 0.8rem;">Nombre del mundo (level-name) en el juego.</p>
-                    </div>
-                </div>
-
-                <div class="create-tabs">
-                    <button type="button" id="btn-tab-create-game" class="create-tab-btn active">Partida</button>
-                    <button type="button" id="btn-tab-create-server" class="create-tab-btn">Servidor</button>
-                </div>
-
-                <!-- Tab Partida (Game Content) -->
-                <div id="tab-create-game-content">
-                    <div class="grid-form two-cols">
-                        <div class="col-left">
-                            <div class="field-group" style="margin-bottom: 12px;">
-                                <label for="create-max-players">Máximo de jugadores</label>
-                                <input id="create-max-players" type="number" min="1" step="1" value="20" style="width: 100%;" />
-                            </div>
-                            <div class="field-group full-width checkbox-group-wrapper" style="display: flex; flex-direction: column; gap: 12px;">
-                                <label style="margin:0;">
-                                    <input type="checkbox" id="create-hardcore" />
-                                    Hardcore
-                                </label>
-                                <label style="margin:0;">
-                                    <input type="checkbox" id="create-pvp" checked />
-                                    PVP
-                                </label>
-                                <label style="margin:0;">
-                                    <input type="checkbox" id="create-allow-flight" />
-                                    Volar
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="col-right">
-                            <div class="field-group">
-                                <label>Modo de juego</label>
-                                <div id="btn-create-gamemode-cycle" class="mc-btn-group" data-value="survival">
-                                    <button type="button" class="mc-btn-group-item active" data-value="survival">Supervivencia</button>
-                                    <button type="button" class="mc-btn-group-item" data-value="creative">Creativo</button>
-                                    <button type="button" class="mc-btn-group-item" data-value="adventure">Aventura</button>
-                                    <button type="button" class="mc-btn-group-item" data-value="spectator">Espectador</button>
-                                </div>
-                                <div id="create-gamemode-desc" class="mc-description" style="margin-top: 8px;">
-                                    Consigue recursos, fabrica herramientas...
-                                </div>
-                            </div>
-
-                            <div class="field-group" style="margin-top: 12px;">
-                                <label>Dificultad</label>
-                                <div id="btn-create-difficulty-cycle" class="mc-btn-group" data-value="normal">
-                                    <button type="button" class="mc-btn-group-item" data-value="peaceful">Pacífico</button>
-                                    <button type="button" class="mc-btn-group-item" data-value="easy">Fácil</button>
-                                    <button type="button" class="mc-btn-group-item active" data-value="normal">Normal</button>
-                                    <button type="button" class="mc-btn-group-item" data-value="hard">Difícil</button>
-                                </div>
-                                <div id="create-difficulty-desc" class="mc-description" style="margin-top: 8px;">
-                                    Aparecen monstruos. Daño estándar.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab Servidor (Server Content) -->
-                <div id="tab-create-server-content" hidden>
-                    <div class="grid-form two-cols">
-                        <div class="col-left">
-                            <div class="field-group full-width">
-                                <label>Software (.jar)</label>
-                                <!-- Inputs radio ocultos para preservar la compatibilidad con el JS actual -->
-                                <div style="display: none;">
-                                    <input type="radio" name="jar-source" value="local">
-                                    <input type="radio" name="jar-source" value="download" checked>
-                                </div>
-                                <!-- Grupo de botones visuales -->
-                                <div id="group-jar-source" class="mc-btn-group" data-value="download" style="margin-bottom: 8px;">
-                                    <button type="button" class="mc-btn-group-item" data-value="local">Archivo local</button>
-                                    <button type="button" class="mc-btn-group-item active" data-value="download">Descargar automáticamente</button>
-                                </div>
-                            </div>
-
-                            <div class="field-group full-width" id="section-jar-local" hidden>
-                                <label for="server-jar-path">Seleccionar archivo (.jar)</label>
-                                <div class="row responsive-row">
-                                    <input id="server-jar-path" type="text" placeholder="Aún no has seleccionado un archivo .jar" readonly />
-                                    <button id="btn-select-server-jar" type="button" class="mc-btn-primary">Seleccionar .jar</button>
-                                </div>
-                            </div>
-
-                            <div class="field-group full-width" id="section-jar-download">
-                                <div class="row responsive-row">
-                                    <div style="flex: 2;">
-                                        <label for="btn-create-software-cycle">Software</label>
-                                        <div id="btn-create-software-cycle" class="mc-btn-group" data-value="vanilla">
-                                            <button type="button" class="mc-btn-group-item active" data-value="vanilla">Vanilla</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="paper">PaperMC</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="purpur">Purpur</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="fabric">Fabric</button>
-                                        </div>
-                                        <div id="create-software-desc" class="mc-description" style="margin-top: 8px;">
-                                            Software oficial de Mojang. Ideal para juego base sin modificaciones.
-                                        </div>
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <label for="download-software-version">Versión</label>
-                                        <select id="download-software-version" style="width: 100%;">
-                                            <option value="">Cargando versiones...</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <p id="download-status-hint" class="hint" style="margin-top: 8px;"></p>
-                            </div>
-
-                            <div class="field-group full-width">
-                                <label for="server-parent-dir">Directorio base del servidor</label>
-                                <div class="row responsive-row">
-                                    <input id="server-parent-dir" type="text" placeholder="Aún no has seleccionado un directorio" readonly />
-                                    <button id="btn-select-server-parent-dir" type="button" class="mc-btn-primary">Seleccionar directorio</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-right">
-                            <div class="row responsive-row">
-                                <div class="field-group" style="flex: 1;">
-                                    <label for="java-version">Versión de Java</label>
-                                    <select id="java-version"></select>
-                                </div>
-                                <div class="field-group" style="flex: 1;">
-                                    <label for="memory-gb">RAM asignada (GB)</label>
-                                    <input id="memory-gb" type="number" min="1" step="1" value="4" />
-                                </div>
-                            </div>
-
-                            <div class="field-group full-width checkbox-group-wrapper" style="margin-top: 12px;">
-                                <label style="margin:0;">
-                                    <input type="checkbox" id="create-online-mode" checked />
-                                    Online (Premium)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row action-row top-space" style="justify-content: center;">
-                    <button id="btn-create-server" type="button" class="mc-btn-primary">
-                        Crear servidor
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <section id="page-control" class="page-section" hidden>
-            <div class="console-wrapper">
-                <div class="panel" style="flex: 1; min-height: 0;">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Terminal del servidor</h2>
-                            <p class="hint">
-                                La terminal solo se muestra en esta página.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="row responsive-row">
-                        <input id="input-command" type="text" placeholder="Escribe un comando para la consola del servidor"
-                            autocomplete="off" />
-                        <button id="btn-send-command" type="button" class="mc-btn-primary">
-                            Enviar comando
-                        </button>
-                    </div>
-
-                    <div id="log-output" class="log-output top-space" aria-live="polite"></div>
-                </div>
-            </div>
-
-            <div class="actions-wrapper">
-                <div class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Control de servidor</h2>
-                            <p class="hint">
-                                Gestiona el servidor, revisa la terminal y envía comandos desde aquí.
-                            </p>
-                        </div>
-                        <div class="row responsive-row">
-                            <button id="btn-toggle-config-panel" type="button" class="mc-btn-secondary btn-small">
-                                Configuración
-                            </button>
-                            <button id="btn-open-properties" type="button" class="mc-btn-secondary btn-small">
-                                Propiedades
-                            </button>
-                            <button id="btn-control-back" type="button" class="mc-btn-secondary btn-small">
-                                Volver
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="summary-grid">
-                        <div>
-                            <span class="summary-label">Servidor</span>
-                            <strong id="summary-server-name">—</strong>
-                        </div>
-                        <div>
-                            <span class="summary-label">Carpeta</span>
-                            <strong id="summary-server-dir">—</strong>
-                        </div>
-                        <div>
-                            <span class="summary-label">Software</span>
-                            <strong id="summary-jar-file">—</strong>
-                        </div>
-                        <div>
-                            <span class="summary-label">Java</span>
-                            <strong id="summary-java-path">—</strong>
-                        </div>
-                        <div>
-                            <span class="summary-label">RAM</span>
-                            <strong id="summary-memory">—</strong>
-                        </div>
-                    </div>
-
-                    <div class="row action-row">
-                        <button id="btn-control-start" type="button" class="mc-btn-primary">
-                            Iniciar
-                        </button>
-                        <button id="btn-control-stop" type="button" class="mc-btn-danger">
-                            Detener
-                        </button>
-                        <button id="btn-control-open-folder" type="button" class="mc-btn-secondary btn-small">
-                            Abrir
-                        </button>
-                        <button id="btn-control-delete-server" type="button" class="mc-btn-secondary btn-small">
-                            Borrar
-                        </button>
-                        <button id="btn-control-eula" type="button" class="mc-btn-warning" hidden>
-                            EULA
-                        </button>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Rendimiento</h2>
-                        </div>
-                    </div>
-                    <div class="row responsive-row" style="gap: 12px; margin-top: 4px;">
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.9rem;">
-                                <span style="color: var(--text-secondary);">CPU</span>
-                                <strong id="chart-cpu-val" style="color: #00d2ff;">--%</strong>
-                            </div>
-                            <canvas id="chart-cpu" style="width: 100%; height: 80px; border-radius: 4px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);"></canvas>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.9rem;">
-                                <span style="color: var(--text-secondary);">RAM</span>
-                                <strong id="chart-ram-val" style="color: #d15eff;">-- MB</strong>
-                            </div>
-                            <canvas id="chart-ram" style="width: 100%; height: 80px; border-radius: 4px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-heading" style="margin-bottom: 12px;">
-                        <div>
-                            <h2>Herramientas Rápidas</h2>
-                        </div>
-                    </div>
-                    <div class="tools-grid">
-                        <button id="btn-open-players" type="button" class="mc-btn-secondary btn-small">
-                            Jugadores (<span id="players-count">0</span>)
-                        </button>
-                        <button id="btn-open-worlds" type="button" class="mc-btn-secondary btn-small">
-                            Mundos
-                        </button>
-                        <button id="btn-open-extensions" type="button" class="mc-btn-secondary btn-small">
-                            Mods/Plugins
-                        </button>
-                        <button id="btn-open-backups" type="button" class="mc-btn-secondary btn-small">
-                            Tareas/Backups
-                        </button>
-                    </div>
-                    <!-- #players-list removido, movido a la página de jugadores -->
-                </div>
-            </div>
-        </section>
+        
 
         <section id="page-eula" class="page-section" hidden>
             <div class="panel">
@@ -580,6 +253,8 @@
                                     <option value="paper">Paper (Recomendado)</option>
                                     <option value="purpur">Purpur</option>
                                     <option value="fabric">Fabric</option>
+                                    <option value="forge">Forge</option>
+                                    <option value="neoforge">NeoForge</option>
                                 </select>
                             </div>
                             <div class="field-group">
@@ -594,6 +269,7 @@
                         </div>
                     </div>
                 </div>
+
 
                 <div class="row action-row top-space">
                     <button id="btn-control-save-config" type="button" class="mc-btn-primary">

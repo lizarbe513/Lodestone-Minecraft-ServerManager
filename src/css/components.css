@@ -1,0 +1,371 @@
+/* Tabs */
+.create-tabs, .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+.create-tab-btn, .tab-btn {
+    background: var(--bg-panel);
+    border: 2px solid var(--mc-border);
+    border-bottom: none;
+    padding: 8px 16px;
+    color: var(--text-secondary);
+    border-radius: 0;
+    margin-bottom: -2px; /* Solapar con borde inferior */
+    transition: all 0.15s ease-in-out;
+    position: relative;
+    cursor: pointer;
+}
+.create-tab-btn:hover, .tab-btn:hover {
+    color: var(--mc-white);
+    background: rgba(255, 255, 255, 0.08);
+}
+.create-tab-btn:active, .tab-btn:active,
+.create-tab-btn.active, .tab-btn.active {
+    background: var(--mc-green) !important;
+    color: var(--mc-white) !important;
+    border-color: var(--mc-green-shadow) !important;
+    transform: translateY(2px);
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+#tab-create-game-content, #tab-create-server-content, #tab-create-modpacks-content {
+    border: none;
+    padding: 4px 0;
+    background: transparent;
+    box-shadow: none;
+    margin-top: 0;
+    position: relative;
+    z-index: 1;
+}
+
+#tab-create-server-content .col-left, #tab-create-modpacks-content .col-left {
+    flex: 7;
+}
+#tab-create-server-content .col-right, #tab-create-modpacks-content .col-right {
+    flex: 3;
+}
+
+
+/* Terminal / Log Output */
+.log-output {
+    flex: 1;
+    background: #000;
+    border: 2px solid var(--mc-border);
+    font-family: var(--font-pixel);
+    font-size: 1rem;
+    padding: 12px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-radius: 0;
+}
+.log-output.top-space {
+    margin-top: 24px;
+}
+.log-line { margin: 2px 0; }
+.log-stdout { color: #ddd; }
+.log-stderr { color: #ff5555; }
+.log-system { color: #55ff55; }
+
+/* Status Badges */
+.status-card {
+    text-align: right;
+}
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    border-radius: 0;
+    font-weight: bold;
+    margin-top: 4px;
+}
+.status-badge[data-status="offline"] { background: var(--mc-gray); color: #ccc; }
+.status-badge[data-status="running"] { background: var(--mc-green); color: #fff; }
+.status-badge[data-status="starting"] { background: var(--mc-yellow); color: #000; }
+.status-badge[data-status="waiting_eula"] { background: var(--mc-red); color: #fff; }
+
+#server-status-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/* Listas desplazables (Scrolls Internos) */
+#list-saved-servers, #list-worlds, #list-installed-extensions, #list-search-results, 
+#eula-text-container, #players-list, #properties-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 4px;
+}
+
+/* Scrolls personalizados/* Panel lateral derecho (Scroll custom) */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #1e1e1e;
+    border-left: 2px solid #111;
+}
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border: 2px solid #111;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Tablas hundidas y listas de jugadores */
+.minecraft-table {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid #555;
+    border-top-color: #333;
+    border-left-color: #333;
+    border-bottom-color: #777;
+    border-right-color: #777;
+    padding: 8px;
+    box-shadow: inset 0px 4px 8px rgba(0,0,0,0.6);
+}
+
+/* Cards de modpacks/extensiones */
+.extension-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #333;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    height: 130px;
+    max-height: 130px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.extension-card:hover {
+    border-color: var(--mc-green) !important;
+}
+.extension-card.selected {
+    border-color: var(--mc-green) !important;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* Miniaturas de mundo y modpacks */
+.world-preview-thumbnail, .modpack-preview-thumbnail {
+    width: 256px;
+    height: 144px;
+    background-color: #1a5b8f; /* Azul representativo del boceto */
+    border: 2px solid #555;
+    border-top-color: #333;
+    border-left-color: #333;
+    border-bottom-color: #777;
+    border-right-color: #777;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    image-rendering: pixelated;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.world-preview-thumbnail.hardcore-mode {
+    border-color: #111 !important;
+    box-shadow: inset 0 0 0 4px #F42323, inset 0 0 10px rgba(0,0,0,0.8) !important;
+}
+
+/* Capa Base y Top para el Corazón Animado (Fade Suave) */
+.world-preview-thumbnail.hardcore-mode::before,
+.world-preview-thumbnail.hardcore-mode::after {
+    content: '';
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 26px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Base: Corazón Rojo */
+.world-preview-thumbnail.hardcore-mode::before {
+    background-image: url('../assets/heart_hardcore.svg');
+}
+
+/* Cima: Corazón Blanco (Animado) */
+.world-preview-thumbnail.hardcore-mode::after {
+    background-image: url('../assets/heart_hardcore_white.svg');
+    animation: pulsate-hardcore-heart-smooth 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulsate-hardcore-heart-smooth {
+    0%, 20% { opacity: 0; }
+    80%, 100% { opacity: 1; }
+}
+
+/* Checkboxes estilo Minecraft */
+.checkbox-group-wrapper label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    margin-bottom: 8px !important;
+}
+/* Removido duplicado de input[type="checkbox"] para usar Bedrock Switch global */
+
+/* =======================================================
+   NUEVAS CLASES: GRID Y RESPONSIVIDAD
+   ======================================================= */
+
+.properties-grid {
+    column-count: 3; /* 3 columnas por defecto en pantallas grandes */
+    column-gap: 24px;
+    margin-top: 24px; /* Espacio con respecto a las pestañas superiores */
+    margin-bottom: 24px;
+}
+
+.properties-grid > .panel {
+    break-inside: avoid;
+    margin-bottom: 28px; /* Espaciado entre un bloque y el siguiente abajo */
+    display: inline-flex; /* Prevents column splitting bugs in some browsers */
+    width: 100%;
+}
+
+/* Estilos para Tablas hundidas tipo Minecraft */
+.minecraft-table {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid;
+    border-color: #0b1016 #3c4959 #3c4959 #0b1016; /* Efecto hundido / Inset border */
+    border-radius: 2px;
+    padding: 8px;
+    box-shadow: inset 0px 4px 8px rgba(0,0,0,0.5); /* Sombra interna para profundidad */
+}
+.minecraft-table::-webkit-scrollbar {
+    width: 12px;
+}
+.minecraft-table::-webkit-scrollbar-track {
+    background: #111;
+    border-left: 2px solid #2b3a4c;
+}
+.minecraft-table::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border: 2px solid #111;
+}
+
+/* Alineación de cabeceras en listados para que el grid no se vea chueco */
+.list-manager-section > div:first-child {
+    min-height: 52px;
+    align-items: flex-start !important; /* Alinear al principio si hay múltiples líneas */
+}
+
+/* =======================================================
+   RESPONSIVIDAD Y MEDIA QUERIES (TILING Y PANTALLAS PEQUEÑAS)
+   ======================================================= */
+
+@media (max-width: 1300px) {
+    .properties-grid {
+        column-count: 2; /* 2 columnas en pantallas medianas */
+    }
+}
+
+@media (max-width: 950px) {
+    #page-control {
+        flex-direction: column;
+    }
+    
+    .console-wrapper {
+        flex: none;
+        height: 400px;
+        min-height: 300px;
+        width: 100%;
+    }
+    
+    .actions-wrapper {
+        flex: none;
+        width: 100%;
+        overflow-y: visible;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 900px) {
+    .grid-form.two-cols {
+        flex-direction: column;
+    }
+
+    #tab-create-game-content, #tab-create-server-content {
+        min-height: 640px;
+    }
+
+    .properties-grid {
+        column-count: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .row.responsive-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .row.responsive-row > * {
+        width: 100%;
+    }
+}
+
+
+
+.create-vertical-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+}
+
+.create-basic-panel {
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 0;
+    padding: 8px 0;
+}
+
+.create-config-panel {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    height: 480px;
+}
+
+#tab-create-game-content,
+#tab-create-server-content,
+#tab-create-modpacks-content {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    min-height: 0;
+}
+
+/* Adaptación responsive para pantallas pequeñas */
+@media (max-width: 900px) {
+    #page-create .panel {
+        height: auto;
+    }
+    .create-basic-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .create-basic-panel > div {
+        width: 100% !important;
+    }
+}
+

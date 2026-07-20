@@ -174,7 +174,7 @@ pub fn send_console_command(
         .lock()
         .map_err(|_| "No se pudo acceder al proceso del servidor.".to_string())?;
 
-    if runtime_guard.status != ServerStatus::Running {
+    if runtime_guard.status != ServerStatus::Running && runtime_guard.status != ServerStatus::WaitingEula {
         return Err("El servidor aún no está listo para recibir comandos.".into());
     }
 
@@ -358,6 +358,21 @@ pub fn spawn_server_process(
                                 &runtime_for_task,
                                 &text,
                             );
+                            
+                            // Detectar si el servidor se cuelga esperando EULA por stdin
+                            if text.contains("agreement to Minecraft's EULA") || text.contains("EULA:") {
+                                if let Ok(mut rg) = runtime_for_task.lock() {
+                                    rg.status = ServerStatus::WaitingEula;
+                                    rg.eula_pending = true;
+                                }
+                                emit_runtime_status(&app_handle_for_task, ServerStatus::WaitingEula);
+                                emit_runtime_log(
+                                    &app_handle_for_task,
+                                    LogKind::System,
+                                    "El servidor requiere aceptar el EULA (Interactivo detectado).",
+                                );
+                            }
+                            
                             emit_runtime_log(&app_handle_for_task, LogKind::Stdout, text);
                         }
                         CommandEvent::Stderr(bytes) => {
@@ -377,7 +392,11 @@ pub fn spawn_server_process(
                             }
 
                             let session_dir = PathBuf::from(&session_for_task.server_dir);
-                            if eula_needs_acceptance(&session_dir) {
+                            let was_waiting_eula = if let Ok(rg) = runtime_for_task.lock() {
+                                rg.status == ServerStatus::WaitingEula && rg.eula_pending
+                            } else { false };
+                            
+                            if eula_needs_acceptance(&session_dir) || was_waiting_eula {
                                 if let Ok(mut runtime_guard) = runtime_for_task.lock() {
                                     runtime_guard.status = ServerStatus::WaitingEula;
                                     runtime_guard.eula_pending = true;
@@ -387,7 +406,7 @@ pub fn spawn_server_process(
                                 emit_runtime_log(
                                     &app_handle_for_task,
                                     LogKind::System,
-                                    "El servidor generó `eula.txt`. Acepta el EULA para continuar.",
+                                    "Falta aceptar el EULA para continuar.",
                                 );
                             } else {
                                 if let Ok(mut runtime_guard) = runtime_for_task.lock() {

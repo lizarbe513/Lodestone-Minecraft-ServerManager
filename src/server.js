@@ -1,4 +1,4 @@
-import { invoke, open, getPaperDownloadUrl, getVanillaDownloadUrl, getPurpurDownloadUrl, getFabricDownloadUrl } from "./api.js";
+import { invoke, open, getPaperDownloadUrl, getVanillaDownloadUrl, getPurpurDownloadUrl, getFabricDownloadUrl, getForgeDownloadUrl, getNeoForgeDownloadUrl } from "./api.js";
 import { els } from "./dom.js";
 import { appState, connectedPlayers } from "./state.js";
 import { triggerStartTasks } from "./backups.js";
@@ -42,13 +42,17 @@ export function resetNewServerForm() {
   }
   if (els.downloadStatusHint) els.downloadStatusHint.textContent = "";
   if (els.memoryGb) els.memoryGb.value = "4";
+  
+  if (els.btnCreateModpackClearFinal) els.btnCreateModpackClearFinal.click();
 
   // Reset tabs
   if (els.btnTabCreateGame) {
     els.btnTabCreateGame.classList.add("active");
     els.btnTabCreateServer.classList.remove("active");
+    els.btnTabCreateModpacks.classList.remove("active");
     els.tabCreateGameContent.hidden = false;
     els.tabCreateServerContent.hidden = true;
+    els.tabCreateModpacksContent.hidden = true;
   }
 
   // Reset new game controls
@@ -153,19 +157,156 @@ export async function createServer() {
   let payload = collectNewServerPayload();
 
   let minecraft_version = null;
-  if (isDownload) {
+  if (appState.selectedModpackId) {
+    // Si hay un modpack, se usará la versión del modpack
+    payload.start_immediately = false;
+  } else if (isDownload) {
     minecraft_version = els.selectDownloadVersion.value;
+    payload.minecraft_version = minecraft_version;
   } else {
     const jarPath = els.serverJarPath.value.trim();
     const match = jarPath.match(/1\.\d+(?:\.\d+)?/);
     if (match) minecraft_version = match[0];
+    payload.minecraft_version = minecraft_version;
   }
-  payload.minecraft_version = minecraft_version;
 
   appState.pendingCreateFlow = true;
   clearLogs();
 
-  if (isDownload) {
+  if (appState.selectedModpackId) {
+    try {
+      if (appState.selectedModpackId === "local_mrpack") {
+        const mr = appState.mrpackToInstall;
+        const mrpackIndexRaw = await invoke("parse_mrpack", { path: mr.mrpackPath });
+        const mrpackIndex = JSON.parse(mrpackIndexRaw);
+        const mcVer = mrpackIndex.dependencies.minecraft;
+        payload.minecraft_version = mcVer;
+        
+        let engine = "fabric";
+        let engineVer = mrpackIndex.dependencies.fabric || mrpackIndex.dependencies["fabric-loader"];
+        if (mrpackIndex.dependencies.forge) { engine = "forge"; engineVer = mrpackIndex.dependencies.forge; }
+        else if (mrpackIndex.dependencies.neoforge) { engine = "neoforge"; engineVer = mrpackIndex.dependencies.neoforge; }
+        
+        showFeedback(`Motor detectado en mrpack local: ${engine} ${engineVer || ''}. Preparando motor...`, "info");
+        let url = "";
+        let jarName = "";
+        if (engine === "fabric") {
+          url = await getFabricDownloadUrl(mcVer);
+          jarName = `fabric-${mcVer}.jar`;
+        } else if (engine === "forge") {
+          url = await getForgeDownloadUrl(mcVer, engineVer);
+          jarName = `forge-${mcVer}-${engineVer}-installer.jar`;
+        } else if (engine === "neoforge") {
+          url = await getNeoForgeDownloadUrl(engineVer);
+          jarName = `neoforge-${engineVer}-installer.jar`;
+        }
+        
+        const tempDest = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + "temp_" + jarName;
+        await invoke("descargar_servidor_jar", { url: url, destino: tempDest });
+        payload.server_jar_path = tempDest;
+        
+        appState.mrpackToInstall = {
+          mrpackPath: mr.mrpackPath,
+          files: mrpackIndex.files,
+          serverName: payload.server_name,
+          parentDir: payload.parent_dir
+        };
+      } else if (appState.selectedModpackId === "local_zip") {
+        showFeedback("Preparando servidor para modpack local (.zip)...", "info");
+        const software = els.btnCreateSoftwareCycle.dataset.value;
+        const version = els.selectDownloadVersion.value;
+        let url = "";
+        let jarName = "";
+        
+        if (software === "paper") {
+          url = await getPaperDownloadUrl(version);
+          jarName = `paper-${version}.jar`;
+        } else if (software === "vanilla") {
+          url = await getVanillaDownloadUrl(version);
+          jarName = `vanilla-${version}.jar`;
+        } else if (software === "purpur") {
+          url = await getPurpurDownloadUrl(version);
+          jarName = `purpur-${version}.jar`;
+        } else if (software === "fabric") {
+          url = await getFabricDownloadUrl(version);
+          jarName = `fabric-${version}.jar`;
+        } else if (software === "forge") {
+          const [mcVersion, forgeVersion] = version.split('|');
+          url = await getForgeDownloadUrl(mcVersion, forgeVersion);
+          jarName = `forge-${mcVersion}-${forgeVersion}-installer.jar`;
+        } else if (software === "neoforge") {
+          url = await getNeoForgeDownloadUrl(version);
+          jarName = `neoforge-${version}-installer.jar`;
+        }
+        
+        const tempDest = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + "temp_" + jarName;
+        await invoke("descargar_servidor_jar", { url, destino: tempDest });
+        payload.server_jar_path = tempDest;
+        payload.minecraft_version = version.includes('|') ? version.split('|')[0] : version;
+      } else {
+        showFeedback("Obteniendo información del modpack...", "info");
+        const urlVersion = `https://api.modrinth.com/v2/project/${appState.selectedModpackId}/version`;
+        const response = await fetch(urlVersion, { headers: { "User-Agent": "norditex/minecraft-server-gui (gemini-agent)" } });
+        const versions = await response.json();
+        
+        const selectedSoftware = els.btnCreateSoftwareCycle.dataset.value;
+        const validVersions = versions.filter(v => v.loaders.includes(selectedSoftware));
+        
+        if (validVersions.length === 0) {
+            throw new Error(`Este modpack no tiene ninguna versión compatible con ${selectedSoftware}.`);
+        }
+        
+        const bestVersion = validVersions.find(v => v.files.some(f => f.primary && f.filename.endsWith(".mrpack"))) || validVersions[0];
+        const mrpackFile = bestVersion.files.find(f => f.filename.endsWith(".mrpack")) || bestVersion.files[0];
+        
+        const tempMrpack = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + mrpackFile.filename;
+        showFeedback(`Descargando modpack ${mrpackFile.filename}...`, "info");
+        await invoke("descargar_servidor_jar", { url: mrpackFile.url, destino: tempMrpack });
+        
+        showFeedback("Procesando modpack...", "info");
+        const mrpackIndexRaw = await invoke("parse_mrpack", { path: tempMrpack });
+        const mrpackIndex = JSON.parse(mrpackIndexRaw);
+        
+        const mcVer = mrpackIndex.dependencies.minecraft;
+        payload.minecraft_version = mcVer;
+        
+        let engine = "fabric";
+        let engineVer = mrpackIndex.dependencies.fabric || mrpackIndex.dependencies["fabric-loader"];
+        if (mrpackIndex.dependencies.forge) { engine = "forge"; engineVer = mrpackIndex.dependencies.forge; }
+        else if (mrpackIndex.dependencies.neoforge) { engine = "neoforge"; engineVer = mrpackIndex.dependencies.neoforge; }
+        
+        showFeedback(`Motor detectado: ${engine} ${engineVer || ''}. Preparando motor...`, "info");
+        let url = "";
+        let jarName = "";
+        if (engine === "fabric") {
+          url = await getFabricDownloadUrl(mcVer);
+          jarName = `fabric-${mcVer}.jar`;
+        } else if (engine === "forge") {
+          url = await getForgeDownloadUrl(mcVer, engineVer);
+          jarName = `forge-${mcVer}-${engineVer}-installer.jar`;
+        } else if (engine === "neoforge") {
+          url = await getNeoForgeDownloadUrl(engineVer);
+          jarName = `neoforge-${engineVer}-installer.jar`;
+        }
+        
+        const tempDest = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + "temp_" + jarName;
+        await invoke("descargar_servidor_jar", { url: url, destino: tempDest });
+        payload.server_jar_path = tempDest;
+        
+        appState.mrpackToInstall = {
+          mrpackPath: tempMrpack,
+          files: mrpackIndex.files,
+          serverName: payload.server_name,
+          parentDir: payload.parent_dir
+        };
+      }
+    } catch (err) {
+      appState.pendingCreateFlow = false;
+      showFeedback(`Error procesando modpack: ${err.message || err}`, "error");
+      appendLog("stderr", err.message || err);
+      return;
+    }
+  } else if (isDownload) {
     showFeedback("Obteniendo información de descarga...", "info");
     const software = els.btnCreateSoftwareCycle.dataset.value;
     const version = els.selectDownloadVersion.value;
@@ -185,6 +326,13 @@ export async function createServer() {
       } else if (software === "fabric") {
         url = await getFabricDownloadUrl(version);
         jarName = `fabric-${version}.jar`;
+      } else if (software === "forge") {
+        const [mcVersion, forgeVersion] = version.split('|');
+        url = await getForgeDownloadUrl(mcVersion, forgeVersion);
+        jarName = `forge-${mcVersion}-${forgeVersion}-installer.jar`;
+      } else if (software === "neoforge") {
+        url = await getNeoForgeDownloadUrl(version);
+        jarName = `neoforge-${version}-installer.jar`;
       }
 
       if (!url) throw new Error("No se pudo obtener la URL de descarga.");
@@ -203,14 +351,57 @@ export async function createServer() {
     }
   }
 
-  showFeedback("Creando servidor y ejecutando el arranque inicial...", "info");
+  showFeedback("Creando servidor...", "info");
   const snapshot = await invoke("crear_e_iniciar_servidor", {
     request: payload,
   });
   applySnapshot(snapshot);
+  
+  if (appState.mrpackToInstall) {
+    showFeedback("Extrayendo overrides y descargando mods del modpack...", "info");
+    const mr = appState.mrpackToInstall;
+    const serverDir = mr.parentDir + (mr.parentDir.endsWith("/") || mr.parentDir.endsWith("\\") ? "" : "/") + mr.serverName;
+    
+    try {
+      await invoke("extract_mrpack_overrides", { path: mr.mrpackPath, destDir: serverDir });
+      
+      let downloaded = 0;
+      const filesToDownload = mr.files.filter(f => !f.env || f.env.server !== "unsupported");
+      
+      for (const file of filesToDownload) {
+        const url = file.downloads[0];
+        const dest = serverDir + "/" + file.path;
+        showFeedback(`Descargando mod ${downloaded + 1}/${filesToDownload.length}...`, "info");
+        await invoke("descargar_servidor_jar", { url, destino: dest });
+        downloaded++;
+      }
+      
+      showFeedback("Modpack instalado correctamente. Iniciando servidor...", "success");
+      
+      // Finalmente, como start_immediately era false, iniciamos
+      await invoke("iniciar_servidor_actual");
+      
+    } catch(e) {
+      showFeedback("Error instalando mods del modpack: " + (e.message || e), "error");
+    }
+    appState.mrpackToInstall = null;
+  } else if (appState.localZipModpackPath) {
+    showFeedback("Extrayendo archivos del modpack local (.zip)...", "info");
+    const zipPath = appState.localZipModpackPath;
+    const serverDir = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + payload.server_name;
+    try {
+      await invoke("extraer_zip", { path: zipPath, destDir: serverDir });
+      showFeedback("Modpack local (.zip) extraído correctamente. Iniciando servidor...", "success");
+      await invoke("iniciar_servidor_actual");
+    } catch(e) {
+      showFeedback("Error extrayendo modpack local: " + (e.message || e), "error");
+    }
+    appState.localZipModpackPath = null;
+  }
+  
   appState.pendingCreateFlow = false;
   navigateTo("control");
-  showFeedback("Servidor creado. Revisa la terminal para ver el progreso de inicio.", "success");
+  showFeedback("Servidor creado y listo. Revisa la terminal.", "success");
 }
 
 export async function startCurrentServer() {
@@ -288,6 +479,13 @@ export async function saveServerConfig() {
       } else if (software === "fabric") {
         url = await getFabricDownloadUrl(version);
         jarName = `fabric-${version}.jar`;
+      } else if (software === "forge") {
+        const [mcVersion, forgeVersion] = version.split('|');
+        url = await getForgeDownloadUrl(mcVersion, forgeVersion);
+        jarName = `forge-${mcVersion}-${forgeVersion}-installer.jar`;
+      } else if (software === "neoforge") {
+        url = await getNeoForgeDownloadUrl(version);
+        jarName = `neoforge-${version}-installer.jar`;
       }
 
       if (!url) throw new Error("No se pudo obtener la URL de descarga.");

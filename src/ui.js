@@ -38,8 +38,7 @@ export function renderHomeHint() {
   }
 
   btn.textContent = `Abrir último servidor: ${appState.activeSession.server_name}`;
-  hint.hidden = false;
-  hint.textContent = `Último servidor guardado: ${appState.activeSession.server_name}`;
+  hint.hidden = true;
 }
 
 export function renderJavaOptions(selectedPath = null, targetSelect = null) {
@@ -74,6 +73,11 @@ export function renderJavaOptions(selectedPath = null, targetSelect = null) {
     select.value = rememberedPath;
   } else {
     select.selectedIndex = 0;
+  }
+
+  if (select === els.javaVersion && els.btnCreateJavaCycle) {
+    const activeOption = select.options[select.selectedIndex];
+    els.btnCreateJavaCycle.textContent = activeOption ? activeOption.textContent : "No Java Version Selected";
   }
 }
 
@@ -325,50 +329,68 @@ export function renderSavedServers() {
   const servers = [...(appState.savedServers || [])].reverse();
   els.listSavedServers.innerHTML = "";
 
+  // Actualizar botón de directorio en el footer del home
+  if (els.btnHomeOpenDir) {
+    if (servers.length > 0) {
+      els.btnHomeOpenDir.dataset.serverDir = servers[0].server_dir;
+      els.btnHomeOpenDir.hidden = false;
+    } else {
+      els.btnHomeOpenDir.hidden = true;
+    }
+  }
+
   if (servers.length === 0) {
-    els.listSavedServers.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No tienes servidores guardados.</p>';
+    els.listSavedServers.innerHTML = '<p class="hint" style="text-align:center;margin:20px 0;">No tienes servidores guardados.</p>';
     return;
   }
 
   servers.forEach(server => {
     const card = document.createElement("div");
-    card.style = "display: flex; flex-direction: column; padding: 16px; background: var(--bg-hover); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 8px;";
+    card.className = "home-server-card";
 
+    // ── Fila principal: nombre + botón Abrir ──
     const header = document.createElement("div");
-    header.style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;";
+    header.className = "home-card-header";
 
-    const name = document.createElement("h3");
-    name.style = "margin: 0; font-size: 1.1rem; color: #fff;";
+    const name = document.createElement("p");
+    name.className = "home-card-name";
     name.textContent = server.server_name;
+    name.title = server.server_name;
 
     const actions = document.createElement("div");
-    actions.style = "display: flex; gap: 8px;";
+    actions.className = "home-card-actions";
 
     const btnOpen = document.createElement("button");
     btnOpen.className = "mc-btn-primary btn-small";
     btnOpen.textContent = "Abrir";
+    btnOpen.title = `Abrir "${server.server_name}"`;
     btnOpen.onclick = async () => {
+      btnOpen.disabled = true;
+      btnOpen.textContent = "...";
       try {
-        showFeedback(`Abriendo servidor "${server.server_name}"...`, "info");
+        showFeedback(`Abriendo "${server.server_name}"...`, "info");
         const snapshot = await invoke("abrir_servidor_existente", { serverDir: server.server_dir });
         applySnapshot(snapshot);
         navigateTo("control");
         showFeedback(`Servidor "${server.server_name}" abierto.`, "success");
       } catch (err) {
         showFeedback(`Error al abrir: ${err}`, "error");
+        btnOpen.disabled = false;
+        btnOpen.textContent = "Abrir";
       }
     };
 
+    // Botón Ocultar (icono compacto)
     const btnRemove = document.createElement("button");
     btnRemove.className = "mc-btn-warning btn-small";
     btnRemove.textContent = "Ocultar";
+    btnRemove.title = "Quitar de la lista (los archivos no se borran)";
     btnRemove.onclick = () => {
       requestConfirm(
         "Ocultar Servidor",
-        `¿Estás seguro de que quieres quitar "${server.server_name}" de la lista de acceso rápido? (Sus archivos permanecerán intactos).`,
+        `¿Quitar "${server.server_name}" de la lista? Sus archivos permanecerán intactos.`,
         async () => {
           try {
-            showFeedback("Ocultando servidor...", "info");
             const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: false });
             applySnapshot(snapshot);
             showFeedback("Servidor ocultado.", "success");
@@ -379,35 +401,33 @@ export function renderSavedServers() {
       );
     };
 
+    // Botón Borrar
     const btnDelete = document.createElement("button");
     btnDelete.className = "mc-btn-danger btn-small";
     btnDelete.textContent = "Borrar";
-    
-    // Disable if it's the active server and it's busy
+    btnDelete.title = "Borrar servidor permanentemente";
+
     const isActiveServer = appState.activeSession && appState.activeSession.server_dir === server.server_dir;
     const isBusy = appState.status === "starting" || appState.status === "running";
     if (isActiveServer && isBusy) {
-        btnDelete.disabled = true;
-        btnDelete.title = "No puedes borrar un servidor mientras está encendido.";
+      btnDelete.disabled = true;
+      btnDelete.title = "No puedes borrar un servidor mientras está encendido.";
     }
 
     btnDelete.onclick = () => {
       requestConfirm(
         "Borrar Servidor",
-        `¿Estás seguro de que quieres borrar el servidor "${server.server_name}"?\n\nLa carpeta del servidor y todos sus mundos se moverán a la papelera.`,
+        `¿Borrar "${server.server_name}"?\n\nLa carpeta se moverá a la papelera.`,
         async () => {
           try {
-            showFeedback("Borrando servidor (moviendo a papelera)...", "info");
+            showFeedback("Borrando servidor...", "info");
             const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: true });
-            
-            // Clean up active session if it's the one we just deleted
             if (appState.activeSession && appState.activeSession.server_dir === server.server_dir) {
-                appState.activeSession = null;
-                navigateTo("home"); // Ensure we stay/go home
+              appState.activeSession = null;
+              navigateTo("home");
             }
-            
             applySnapshot(snapshot);
-            showFeedback("El servidor ha sido movido a la papelera.", "success");
+            showFeedback("Servidor movido a la papelera.", "success");
           } catch (e) {
             showFeedback(`Error al borrar: ${e}`, "error");
           }
@@ -421,23 +441,16 @@ export function renderSavedServers() {
     header.appendChild(name);
     header.appendChild(actions);
 
-    const body = document.createElement("div");
-    body.style = "font-size: 0.9rem; color: #aeb9c8;";
-
-    const dir = document.createElement("div");
-    dir.style = "word-break: break-all; margin-bottom: 4px; font-family: monospace; font-size: 0.8rem; opacity: 0.7;";
-    dir.textContent = server.server_dir;
-
+    // ── Fila secundaria: detalles compactos ──
     const details = document.createElement("div");
-    details.style = "display: flex; gap: 12px; font-size: 0.85rem; flex-wrap: wrap;";
-    details.innerHTML = `<span><strong>RAM:</strong> ${server.memory_gb} GB</span>
-                         <span><strong>Java:</strong> ${server.java_path.split("/").pop()}</span>
-                         <span><strong>Software:</strong> ${server.jar_file_name}</span>`;
+    details.className = "home-card-details";
+    const software = server.jar_file_name || "—";
+    const ram = server.memory_gb ? `${server.memory_gb} GB` : "—";
+    details.textContent = `${software} · ${ram} RAM`;
+    details.title = server.server_dir;
 
-    body.appendChild(dir);
-    body.appendChild(details);
     card.appendChild(header);
-    card.appendChild(body);
+    card.appendChild(details);
     els.listSavedServers.appendChild(card);
   });
 }

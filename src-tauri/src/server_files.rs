@@ -23,22 +23,31 @@ fn start_script_name_for_platform(platform: &str) -> &'static str {
 
 fn start_script_content_for_platform(session: &ServerSession, platform: &str) -> String {
     let memory_mb = session.memory_gb.saturating_mul(1024);
-
+    let is_installer = session.jar_file_name.ends_with("-installer.jar");
+    
     match platform {
-        "windows" => format!(
-            "@echo off\nset \"JAVA_EXE={} \"\n\n\"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar {} nogui\n",
-            session.java_path.replace('/', "\\"),
-            memory_mb,
-            memory_mb,
-            session.jar_file_name
-        ),
-        _ => format!(
-            "#!/usr/bin/env sh\n{} -Xmx{}M -Xms{}M -jar {} nogui\n",
-            quote_for_shell(&session.java_path),
-            memory_mb,
-            memory_mb,
-            quote_for_shell(&session.jar_file_name)
-        ),
+        "windows" => {
+            let mut script = format!("@echo off\nset \"JAVA_EXE={}\"\n\n", session.java_path.replace('/', "\\"));
+            if is_installer {
+                script.push_str(&format!("if exist \"{}\" (\n  echo Ejecutando instalador...\n  \"%JAVA_EXE%\" -jar \"{}\" --installServer\n  ren \"{}\" \"{}.done\"\n)\n\n", session.jar_file_name, session.jar_file_name, session.jar_file_name, session.jar_file_name));
+                script.push_str(&format!("if exist \"run.bat\" (\n  echo -Xmx{}M -Xms{}M > user_jvm_args.txt\n  call run.bat\n) else (\n  \"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar \"{}\" nogui\n)\n", memory_mb, memory_mb, memory_mb, memory_mb, session.jar_file_name.replace("-installer.jar", ".jar")));
+            } else {
+                script.push_str(&format!("\"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar {} nogui\n", memory_mb, memory_mb, session.jar_file_name));
+            }
+            script
+        },
+        _ => {
+            let mut script = format!("#!/usr/bin/env sh\n");
+            let java_q = quote_for_shell(&session.java_path);
+            let jar_q = quote_for_shell(&session.jar_file_name);
+            if is_installer {
+                script.push_str(&format!("if [ -f {} ]; then\n  echo \"Ejecutando instalador...\"\n  {} -jar {} --installServer\n  mv {} {}.done\nfi\n\n", jar_q, java_q, jar_q, jar_q, jar_q));
+                script.push_str(&format!("if [ -f \"run.sh\" ]; then\n  echo \"-Xmx{}M -Xms{}M\" > user_jvm_args.txt\n  sh run.sh\nelse\n  {} -Xmx{}M -Xms{}M -jar {} nogui\nfi\n", memory_mb, memory_mb, java_q, memory_mb, memory_mb, quote_for_shell(&session.jar_file_name.replace("-installer.jar", ".jar"))));
+            } else {
+                script.push_str(&format!("{} -Xmx{}M -Xms{}M -jar {} nogui\n", java_q, memory_mb, memory_mb, jar_q));
+            }
+            script
+        }
     }
 }
 

@@ -1,0 +1,295 @@
+<section id="page-create" class="page-section" hidden>
+            <div class="panel create-main-container">
+                <div class="panel-heading" style="margin-bottom: 8px;">
+                    <div>
+                        <h2>Crear nuevo servidor</h2>
+                        <p class="hint">
+                            Configura el servidor a tu gusto. Elige la pestaña "Partida" para opciones del juego y "Servidor" para especificaciones técnicas.
+                        </p>
+                    </div>
+                    <button id="btn-create-back" type="button" class="mc-btn-secondary">
+                        Volver
+                    </button>
+                </div>
+                <div class="create-vertical-container">
+                    <!-- TOP PANEL: Nombre de servidor y Vista previa (60%) -->
+                    <div class="create-basic-panel" style="margin: 0; padding: 8px 0;">
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                            <div class="field-group">
+                                <label for="server-name">Nombre del servidor</label>
+                                <input id="server-name" type="text" placeholder="Ejemplo: survival-amigos" autocomplete="off" />
+                                <p class="hint" style="margin-top: 4px; font-size: 0.8rem;">Se usará para el nombre de la carpeta.</p>
+                            </div>
+                            <div class="field-group">
+                                <label for="create-world-name">Nombre del mundo</label>
+                                <input id="create-world-name" type="text" placeholder="world" value="world" autocomplete="off" />
+                                <p class="hint" style="margin-top: 4px; font-size: 0.8rem;">Nombre del mundo (level-name) en el juego.</p>
+                            </div>
+                            <div class="field-group checkbox-group-wrapper" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); border: 2px solid #555; padding: 12px 16px; margin-top: 16px; box-sizing: border-box; width: 100%;">
+                                <div style="display: flex; flex-direction: column; gap: 4px; max-width: 80%;">
+                                    <span style="font-family: var(--font-title); font-size: 1.3rem; color: var(--text-primary); text-transform: uppercase;">Extremo</span>
+                                    <span style="font-family: var(--font-body); font-size: 0.9rem; color: var(--text-secondary);">No puedes reaparecer si mueres. ¡Buena suerte! ¡La vas a necesitar!</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <input type="checkbox" id="create-hardcore" class="hardcore-switch" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <div id="create-world-preview" class="world-preview-thumbnail" style="background-image: url('assets/world_preview.png'); width: 480px; height: 270px; margin: 12px 40px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- BOTTOM PANEL: Paneles de configuración -->
+                    <div class="create-tabs" style="margin-bottom: 0;">
+                        <button type="button" id="btn-tab-create-game" class="create-tab-btn active">Partida</button>
+                        <button type="button" id="btn-tab-create-server" class="create-tab-btn">Servidor</button>
+                        <button type="button" id="btn-tab-create-modpacks" class="create-tab-btn">Modpacks</button>
+                    </div>
+                    <div class="create-config-panel panel-hollow">
+                        <!-- Tab Partida (Game Content) -->
+                        <div id="tab-create-game-content">
+                            <div class="grid-form two-cols">
+                                <div class="col-left">
+                                    <div class="field-group" style="margin-bottom: 12px;">
+                                        <label for="create-max-players">Máximo de jugadores</label>
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            <button type="button" class="mc-btn-primary btn-small" id="btn-create-max-players-dec" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">-</button>
+                                            <input id="create-max-players" type="number" min="1" step="1" value="20" style="width: 100%; text-align: center; margin: 0; padding: 6px;" />
+                                            <button type="button" class="mc-btn-primary btn-small" id="btn-create-max-players-inc" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="field-group full-width checkbox-group-wrapper" style="display: flex; flex-direction: column; gap: 12px;">
+                                        <label style="margin:0;">
+                                            <input type="checkbox" id="create-pvp" checked />
+                                            PVP
+                                        </label>
+                                        <label style="margin:0;">
+                                            <input type="checkbox" id="create-allow-flight" />
+                                            Volar
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-right flex-2">
+                                    <div class="field-group">
+                                        <label>Modo de juego</label>
+                                        <div id="btn-create-gamemode-cycle" class="mc-btn-group" data-value="survival">
+                                            <button type="button" class="mc-btn-group-item active" data-value="survival">Supervivencia</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="creative">Creativo</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="adventure">Aventura</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="spectator">Espectador</button>
+                                        </div>
+                                        <div id="create-gamemode-desc" class="mc-description" style="margin-top: 8px;">
+                                            Consigue recursos, fabrica herramientas...
+                                        </div>
+                                    </div>
+
+                                    <div class="field-group" style="margin-top: 12px;">
+                                        <label>Dificultad</label>
+                                        <div id="btn-create-difficulty-cycle" class="mc-btn-group" data-value="normal">
+                                            <button type="button" class="mc-btn-group-item" data-value="peaceful">Pacífico</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="easy">Fácil</button>
+                                            <button type="button" class="mc-btn-group-item active" data-value="normal">Normal</button>
+                                            <button type="button" class="mc-btn-group-item" data-value="hard">Difícil</button>
+                                        </div>
+                                        <div id="create-difficulty-desc" class="mc-description" style="margin-top: 8px;">
+                                            Aparecen monstruos. Daño estándar.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Servidor (Server Content) -->
+                        <div id="tab-create-server-content" hidden>
+                            <div class="grid-form two-cols">
+                                <div class="col-left">
+                                    <div class="field-group full-width">
+                                        <label>Software (.jar)</label>
+                                        <!-- Inputs radio ocultos para preservar la compatibilidad con el JS actual -->
+                                        <div style="display: none;">
+                                            <input type="radio" name="jar-source" value="local">
+                                            <input type="radio" name="jar-source" value="download" checked>
+                                        </div>
+                                        <!-- Grupo de botones visuales -->
+                                        <div id="group-jar-source" class="mc-btn-group" data-value="download" style="margin-bottom: 8px;">
+                                            <button type="button" class="mc-btn-group-item" data-value="local">Archivo local</button>
+                                            <button type="button" class="mc-btn-group-item active" data-value="download">Descargar automáticamente</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="field-group full-width" id="section-jar-local" hidden>
+                                        <label for="server-jar-path">Seleccionar archivo (.jar)</label>
+                                        <div class="row responsive-row">
+                                            <input id="server-jar-path" type="text" placeholder="Aún no has seleccionado un archivo .jar" readonly />
+                                            <button id="btn-select-server-jar" type="button" class="mc-btn-primary">Seleccionar .jar</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="field-group full-width" id="section-jar-download">
+                                        <div style="margin-bottom: 12px;">
+                                            <label for="btn-create-software-cycle">Motor</label>
+                                            <div id="btn-create-software-cycle" class="mc-btn-group" style="display: flex; flex-wrap: wrap;" data-value="vanilla">
+                                                <button type="button" class="mc-btn-group-item active" data-value="vanilla">Vanilla</button>
+                                                <button type="button" class="mc-btn-group-item" data-value="paper">PaperMC</button>
+                                                <button type="button" class="mc-btn-group-item" data-value="purpur">Purpur</button>
+                                                <button type="button" class="mc-btn-group-item" data-value="fabric">Fabric</button>
+                                                <button type="button" class="mc-btn-group-item" data-value="forge">Forge</button>
+                                                <button type="button" class="mc-btn-group-item" data-value="neoforge">NeoForge</button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label for="download-software-version">Versión</label>
+                                            <select id="download-software-version" class="mc-select" style="width: 100%;">
+                                                <option value="">Cargando versiones...</option>
+                                            </select>
+                                        </div>
+                                        <p id="download-status-hint" class="hint" style="margin-top: 8px;"></p>
+                                    </div>
+
+                                    <div class="field-group full-width" style="margin-top: 12px;">
+                                        <label>Versión de Java</label>
+                                        <select id="java-version" style="display: none;"></select>
+                                        <button type="button" id="btn-create-java-cycle" class="mc-btn-secondary" style="width: 100%; text-align: center; justify-content: center;">Java: Cargando...</button>
+                                    </div>
+                                </div>
+
+                                <div class="col-right">
+                                    <div class="field-group full-width">
+                                        <label for="server-parent-dir">Directorio base</label>
+                                        <div class="row responsive-row">
+                                            <input id="server-parent-dir" type="text" placeholder="Selecciona la ruta donde se guardará" readonly />
+                                            <button id="btn-select-server-parent-dir" type="button" class="mc-btn-primary">Seleccionar carpeta</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="field-group" style="margin-top: 12px;">
+                                        <label for="memory-gb">RAM asignada (GB)</label>
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            <button type="button" class="mc-btn-primary btn-small" id="btn-memory-gb-dec" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">-</button>
+                                            <input id="memory-gb" type="number" min="1" step="1" value="4" style="width: 100%; text-align: center; margin: 0; padding: 6px;" />
+                                            <button type="button" class="mc-btn-primary btn-small" id="btn-memory-gb-inc" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">+</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="field-group full-width checkbox-group-wrapper" style="margin-top: 12px;">
+                                        <label style="margin:0;">
+                                            <input type="checkbox" id="create-online-mode" checked />
+                                            Online (Premium)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                     <!-- Tab Modpacks (Game Content) -->
+                <div id="tab-create-modpacks-content" hidden>
+                    <!-- Estado A: Exploración -->
+                    <div id="state-modpack-explore" class="grid-form two-cols">
+                        <!-- Columna Izquierda (70%) - Selección y Búsqueda -->
+                        <div class="col-left">
+                            <!-- Opciones de Búsqueda y Resultados (Descargar/Modrinth) -->
+                            <div id="section-modpack-download-left" style="display: flex; flex-direction: column; gap: 12px;">
+                                <div class="row" style="gap: 8px; margin-bottom: 4px;">
+                                    <input id="input-create-modpack-search" type="text" placeholder="Buscar modpacks (ej. Better MC)..." style="flex: 1;" />
+                                    <button id="btn-create-modpack-do-search" type="button" class="mc-btn-primary">Buscar</button>
+                                </div>
+                                <!-- Cuadrícula 3x2 y controles dentro del mismo recuadro -->
+                                <div class="minecraft-table" style="display: flex; flex-direction: column; gap: 16px; min-height: 220px; background: rgba(0,0,0,0.2); padding: 16px;">
+                                    <div id="create-modpack-search-results" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; flex: 1;">
+                                        <p class="hint" style="grid-column: 1 / -1; text-align: center;">Usa el buscador para encontrar modpacks.</p>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="display: flex; gap: 12px; align-items: center;">
+                                            <button type="button" class="mc-btn-primary btn-small" id="btn-modpack-page-prev" style="margin: 0; padding: 6px 12px; font-family: monospace;">&lt;</button>
+                                            <span id="label-modpack-page" style="font-family: var(--font-title); font-size: 1.1rem;">Página 1</span>
+                                            <button type="button" class="mc-btn-primary btn-small" id="btn-modpack-page-next" style="margin: 0; padding: 6px 12px; font-family: monospace;">&gt;</button>
+                                        </div>
+                                        <button id="btn-create-modpack-download" type="button" class="mc-btn-primary" disabled style="padding: 8px 24px; font-size: 1.1rem; opacity: 0.5;">Seleccionar Modpack</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formulario de Selección Local (Izquierda) -->
+                            <div id="section-modpack-local-left" style="display: none; flex-direction: column; gap: 12px;">
+                                <div class="field-group full-width">
+                                    <label for="create-modpack-local-path">Seleccionar Modpack (.zip)</label>
+                                    <div class="row responsive-row">
+                                        <input id="create-modpack-local-path" type="text" placeholder="Aún no has seleccionado un archivo .zip" readonly style="flex: 1;" />
+                                        <button id="btn-create-modpack-select-local" type="button" class="mc-btn-primary">Seleccionar .zip</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha (30%) - Selección de Modo y Detalles -->
+                        <div class="col-right" style="display: flex; flex-direction: column; gap: 16px;">
+                            <div class="field-group full-width" style="margin-bottom: 0;">
+                                <div id="group-modpack-source" class="mc-btn-group" data-value="download">
+                                    <button type="button" class="mc-btn-group-item active" data-value="download">Modrinth</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="local">Archivo Local</button>
+                                </div>
+                            </div>
+
+                            <!-- Detalle del Modpack Seleccionado (Descarga) -->
+                            <div id="create-modpack-selected-info" class="minecraft-table" style="display: flex; padding: 16px; flex-direction: column; gap: 16px; box-sizing: border-box; height: 100%;">
+                                <h3 id="create-modpack-title" style="margin: 0; color: var(--mc-yellow); font-size: 1.1rem; flex-shrink: 0;">Ningún modpack seleccionado</h3>
+                                <span id="create-modpack-author" style="display: none; color: var(--mc-white); font-size: 0.85rem; opacity: 0.8; margin-top: 4px; flex-shrink: 0;"></span>
+                                <div style="flex: 1; display: flex; gap: 12px; overflow: hidden; align-items: stretch; min-height: 0;">
+                                    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; min-height: 0;">
+                                        <p id="create-modpack-desc" class="hint" style="margin: 0; font-size: 0.85rem; overflow-y: auto; flex: 1;">Selecciona un modpack de la lista para continuar.</p>
+                                        <div id="create-modpack-gallery-img-wrapper" style="display: none; flex: 1; position: relative; min-height: 0; min-width: 0;">
+                                            <img id="create-modpack-gallery-img" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; border: 2px solid var(--mc-yellow); box-sizing: border-box; border-radius: 4px; padding: 4px;" />
+                                        </div>
+                                        <span id="create-modpack-gallery-title" style="display: none; text-align: center; color: var(--mc-yellow); font-size: 0.9rem; margin-top: 8px; flex-shrink: 0;"></span>
+                                        <div id="create-modpack-gallery-line" style="display: none; width: 80%; height: 6px; background-color: var(--mc-green); border-radius: 4px; margin: 8px auto 4px auto; flex-shrink: 0;"></div>
+                                    </div>
+                                    <div id="create-modpack-gallery-controls" style="display: none; flex-direction: column; justify-content: center; gap: 8px; flex-shrink: 0;">
+                                        <button type="button" class="mc-btn-primary btn-small" id="btn-gallery-prev" style="margin: 0; padding: 8px 12px; font-family: monospace;" disabled>&lt;</button>
+                                        <button type="button" class="mc-btn-primary btn-small" id="btn-gallery-next" style="margin: 0; padding: 8px 12px; font-family: monospace;">&gt;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado B: Seleccionado (El Mockup) -->
+                    <div id="state-modpack-selected" class="grid-form two-cols" style="display: none; align-items: stretch;">
+                        <!-- Izquierda: Miniatura, título arriba, creador abajo y botón eliminar -->
+                        <div class="col-left minecraft-table" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; min-height: 250px;">
+                            <h3 id="modpack-selected-title-left" style="color: var(--mc-yellow); font-size: 1.1rem; margin: 0 0 12px 0; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Título del Modpack</h3>
+                            <div id="modpack-selected-thumbnail-final" class="modpack-preview-thumbnail" style="width: 170px; height: 170px; background-size: cover; background-position: center; border: 4px solid var(--mc-green); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); flex-shrink: 0;"></div>
+                            <span id="modpack-selected-author-left" style="color: var(--mc-white); font-size: 0.9rem; margin-top: 12px; text-align: center; opacity: 0.85;">Por: Creador</span>
+                            <button id="btn-create-modpack-clear-final" type="button" class="mc-btn-danger" style="position: absolute; bottom: 12px; right: 12px; padding: 6px 12px;">Cancelar</button>
+                        </div>
+                        
+                        <!-- Derecha: Info y Confirmar -->
+                        <div class="col-right minecraft-table" style="display: flex; flex-direction: column; gap: 16px; padding: 24px;">
+                            <div class="field-group full-width" style="margin-bottom: 0;">
+                                <div class="mc-btn-group">
+                                    <button type="button" class="mc-btn-group-item active" style="pointer-events: none;" id="modpack-selected-source-label">Origen: Modrinth</button>
+                                </div>
+                            </div>
+                            
+                            <div style="flex: 1; display: flex; flex-direction: column;">
+                                <h3 id="modpack-selected-title-final" style="color: var(--mc-white); font-size: 1.4rem; margin-bottom: 4px; border-bottom: 4px solid #555; padding-bottom: 8px;">Título</h3>
+                                <span id="modpack-selected-author-final" style="color: var(--mc-yellow); font-size: 0.95rem; margin-bottom: 8px; opacity: 0.9;">Creado por: Creador</span>
+                                <p id="modpack-selected-desc-final" class="hint" style="font-size: 1rem; flex: 1; line-height: 1.5; border-bottom: 4px solid #444; padding-bottom: 8px; margin-bottom: 12px;">Descripción...</p>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button id="btn-create-modpack-confirm" type="button" class="mc-btn-primary" style="padding: 12px 24px; font-size: 1.2rem; width: 100%;">Configurar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div></div>
+                </div>
+
+                <div class="row action-row top-space" style="justify-content: flex-end; margin-top: 16px; width: 100%;">
+                    <button id="btn-create-server" type="button" class="mc-btn-primary" style="padding: 10px 24px;">
+                        Crear servidor
+                    </button>
+                </div>
+            </div>
+        </section>

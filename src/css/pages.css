@@ -1,0 +1,163 @@
+/* ── Página Inicio ─────────────────────────────────────────── */
+#page-home {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: stretch;
+}
+
+/* Panel izquierdo: acciones principales */
+.home-panel {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+}
+.home-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px 15% 20px;
+}
+.home-btn-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.home-btn-large {
+    font-size: 1.2rem;
+    padding: 20px 16px;
+    width: 100%;
+    max-width: none;
+    letter-spacing: 1px;
+}
+.home-footer-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    gap: 10px;
+}
+.home-btn-footer {
+    padding: 14px 28px;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+}
+
+/* Panel derecho: accesos rápidos */
+.home-servers-panel {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    margin-top: 50px;
+}
+.home-servers-title {
+    margin: 0 0 12px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    text-align: center;
+}
+.home-servers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 2px;
+}
+
+/* Tarjeta de acceso rápido */
+.home-server-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: background 0.12s, border-color 0.12s;
+}
+.home-server-card:hover {
+    background: rgba(0,0,0,0.48);
+    border-color: rgba(255,255,255,0.13);
+}
+.home-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+.home-card-name {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+.home-card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    align-items: center;
+}
+.home-card-details {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Modo vertical: panel de servidores debajo */
+@media (max-width: 780px) {
+    #page-home {
+        flex-direction: column;
+    }
+    .home-panel, .home-servers-panel {
+        flex: none;
+        width: 100%;
+    }
+    .home-servers-panel {
+        max-height: 280px;
+    }
+    .home-main-content {
+        padding: 28px 8% 16px;
+    }
+}
+
+
+
+/* Layout Específico: Panel de Control */
+#page-control {
+    flex-direction: row;
+    gap: 24px;
+}
+/* Consola Izquierda (70%) */
+.console-wrapper {
+    flex: 7;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+/* Acciones Derecha (30%) */
+.actions-wrapper {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+

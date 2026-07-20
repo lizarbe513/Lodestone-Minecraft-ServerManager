@@ -1,0 +1,33 @@
+:root {
+    /* Paleta Oficial minecraft.net */
+    --bg-dark: #111111;
+    --bg-slate: #1a1a1a;
+    --bg-panel: #262626;
+    
+    --mc-green: #4a8f29;
+    --mc-green-shadow: #2e5c1a;
+    --mc-green-hover: #56a730;
+    
+    --mc-red: #b02e26;
+    --mc-red-shadow: #731e19;
+    --mc-red-hover: #c9352c;
+    
+    --mc-gray: #4a4a4a;
+    --mc-gray-shadow: #2c2c2c;
+    --mc-gray-hover: #5c5c5c;
+    
+    --mc-yellow: #f8c52d;
+    --mc-yellow-shadow: #b38b1c;
+    
+    --mc-white: #ffffff;
+    --mc-border: #3b3b3b;
+    --text-primary: #e8eef7;
+    --text-secondary: #aeb9c8;
+
+    /* Fuentes con fallbacks locales seguros para carga offline */
+    --font-pixel: "VT323", "Minecraftia", monospace;
+    --font-modern: 'Outfit', 'Inter', system-ui, sans-serif;
+    
+    --font-title: var(--font-pixel);
+    --font-body: var(--font-pixel);
+}

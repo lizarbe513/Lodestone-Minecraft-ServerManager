@@ -13,6 +13,9 @@ export const appState = {
   currentPage: "home",
   pendingCreateFlow: false,
   savedServers: [],
+  localZipModpackPath: null,
+  modpackGallery: [],
+  galleryIndex: -1,
 };
 
 export const connectedPlayers = new Set();

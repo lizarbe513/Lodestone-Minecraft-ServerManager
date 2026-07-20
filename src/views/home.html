@@ -1,0 +1,36 @@
+<section id="page-home" class="page-section">
+            <!-- Panel principal: Acciones de inicio -->
+            <div class="panel home-panel">
+                <div class="home-main-content">
+                    <h2>Inicio</h2>
+                    <p class="hint">
+                        Crea, Abre un servidor o entra al abierto más recientemente.
+                    </p>
+                    <div class="home-btn-stack">
+                        <button id="btn-home-create" type="button" class="mc-btn-primary home-btn-large">
+                            CREAR
+                        </button>
+                        <button id="btn-home-open-existing" type="button" class="mc-btn-secondary home-btn-large">
+                            ABRIR
+                        </button>
+                        <button id="btn-home-open-last" type="button" class="mc-btn-primary home-btn-large" hidden>
+                            ABRIR ÚLTIMO SERVIDOR
+                        </button>
+                    </div>
+                    <p id="home-session-hint" class="hint" style="margin-top: 12px; text-align: center;" hidden></p>
+                </div>
+                <div class="home-footer-actions">
+                    <button id="btn-home-exit" type="button" class="mc-btn-danger home-btn-footer">
+                        Salir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel secundario: Accesos directos -->
+            <div class="panel home-servers-panel">
+                <h3>Accesos rápidos</h3>
+                <div id="list-saved-servers" class="home-servers-list">
+                    <p class="hint" style="text-align: center; margin: 20px 0;">Cargando servidores guardados...</p>
+                </div>
+            </div>
+        </section>

@@ -6,6 +6,8 @@ import { applySnapshot, navigateTo } from "./ui.js";
 import { showFeedback, appendLog, normalizeError } from "./utils.js";
 import { appState } from "./state.js";
 
+import { initAudio } from "./audio.js";
+
 async function loadInitialState() {
   const snapshot = await invoke("obtener_estado_aplicacion");
   applySnapshot(snapshot);
@@ -21,10 +23,28 @@ async function loadInitialState() {
     showFeedback("Selecciona una opción para comenzar.", "info");
   }
 }
+async function loadViews() {
+  const container = document.getElementById("app-container");
+  if (!container) return;
+  const views = ["home", "create", "control"];
+  for (const view of views) {
+    try {
+      const response = await fetch(`views/${view}.html?v=${Date.now()}`);
+      if (response.ok) {
+        const html = await response.text();
+        container.insertAdjacentHTML('beforeend', html);
+      }
+    } catch (e) {
+      console.error(`Error loading view ${view}:`, e);
+    }
+  }
+}
 
 window.addEventListener("DOMContentLoaded", async () => {
+  await loadViews();
   initDom();
   initMetrics();
+  initAudio();
   setupEvents();
 
   try {

@@ -94,6 +94,7 @@ pub struct NewServerRequest {
     pub pvp: Option<bool>,
     pub allow_flight: Option<bool>,
     pub minecraft_version: Option<String>,
+    pub start_immediately: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]

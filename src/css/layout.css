@@ -1,0 +1,133 @@
+
+/* App Shell (Contenedor principal flex para llenar la altura) */
+.app-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 30px;
+    height: 100%;
+    overflow: hidden;
+}
+
+#app-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+/* Paneles (Cards) planos tipo minecraft.net */
+.panel {
+    background: var(--bg-slate);
+    border: 2px solid #000;
+    border-radius: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset -4px -4px 0px rgba(0,0,0,0.5), inset 4px 4px 0px rgba(255,255,255,0.15);
+}
+
+dialog.panel:not([open]) {
+    display: none !important;
+}
+
+.panel-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+/* Secciones: Las páginas ocupan todo el espacio restante */
+.page-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    gap: 16px;
+}
+.page-section[hidden] {
+    display: none !important;
+}
+
+#page-create {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+}
+
+#page-create .create-main-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: min-content;
+    box-sizing: border-box;
+}
+
+.panel-hollow {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid #1a1a1a;
+    box-shadow: inset 4px 4px 12px rgba(0,0,0,0.6), inset -2px -2px 8px rgba(255,255,255,0.03);
+    padding: 16px;
+}
+/* Grillas y Formularios Flexibles */
+.grid-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+    flex: 1;
+}
+.grid-form.two-cols {
+    flex-direction: row;
+    align-items: stretch;
+}
+.col-left, .col-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.col-right.flex-2 {
+    flex: 2;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+}
+.action-row {
+    margin-top: auto; /* Empuja las acciones al fondo */
+    padding-top: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.stack-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.stack-actions button {
+    width: 100%;
+    max-width: 320px;
+    align-self: center;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
