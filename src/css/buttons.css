@@ -130,6 +130,10 @@ button:disabled {
     font-weight: normal;
 }
 
+.mc-btn-group-item:active:not(:disabled) {
+    transform: translateY(4px) !important;
+}
+
 .mc-btn-group-item.active:hover:not(:disabled) {
     background-color: var(--mc-green-hover);
 }
