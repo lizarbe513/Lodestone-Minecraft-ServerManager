@@ -214,6 +214,21 @@ fn parse_datapack_dir(path: &Path) -> Option<ExtensionInfo> {
     })
 }
 
+fn is_extension_file(path: &Path, valid_ext: &str) -> bool {
+    if !path.is_file() {
+        return false;
+    }
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    if name.ends_with(valid_ext) {
+        return true;
+    }
+    let disabled_ext = format!("{}.disabled", valid_ext);
+    if name.ends_with(&disabled_ext) {
+        return true;
+    }
+    false
+}
+
 pub fn get_extensions(server_dir: &Path) -> Result<Vec<ExtensionInfo>, String> {
     let mut extensions = Vec::new();
 
@@ -223,8 +238,9 @@ pub fn get_extensions(server_dir: &Path) -> Result<Vec<ExtensionInfo>, String> {
         if let Ok(entries) = fs::read_dir(plugins_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
-                if path.is_file() && path.extension().map_or(false, |ext| ext == "jar") {
-                    if let Some(info) = parse_plugin_jar(&path) {
+                if is_extension_file(&path, ".jar") {
+                    if let Some(mut info) = parse_plugin_jar(&path) {
+                        info.enabled = !info.file_name.ends_with(".disabled");
                         extensions.push(info);
                     }
                 }
@@ -238,8 +254,9 @@ pub fn get_extensions(server_dir: &Path) -> Result<Vec<ExtensionInfo>, String> {
         if let Ok(entries) = fs::read_dir(mods_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
-                if path.is_file() && path.extension().map_or(false, |ext| ext == "jar") {
-                    if let Some(info) = parse_mod_jar(&path) {
+                if is_extension_file(&path, ".jar") {
+                    if let Some(mut info) = parse_mod_jar(&path) {
+                        info.enabled = !info.file_name.ends_with(".disabled");
                         extensions.push(info);
                     }
                 }
@@ -254,12 +271,14 @@ pub fn get_extensions(server_dir: &Path) -> Result<Vec<ExtensionInfo>, String> {
         if let Ok(entries) = fs::read_dir(datapacks_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
-                if path.is_file() && path.extension().map_or(false, |ext| ext == "zip") {
-                    if let Some(info) = parse_datapack_zip(&path) {
+                if is_extension_file(&path, ".zip") {
+                    if let Some(mut info) = parse_datapack_zip(&path) {
+                        info.enabled = !info.file_name.ends_with(".disabled");
                         extensions.push(info);
                     }
                 } else if path.is_dir() {
-                    if let Some(info) = parse_datapack_dir(&path) {
+                    if let Some(mut info) = parse_datapack_dir(&path) {
+                        info.enabled = !info.file_name.ends_with(".disabled");
                         extensions.push(info);
                     }
                 }
@@ -268,6 +287,33 @@ pub fn get_extensions(server_dir: &Path) -> Result<Vec<ExtensionInfo>, String> {
     }
 
     Ok(extensions)
+}
+
+pub fn toggle_extension(server_dir: &Path, file_name: &str, extension_type: &str) -> Result<bool, String> {
+    let folder_path = if extension_type == "datapack" {
+        let active_world = crate::worlds::get_active_world(server_dir);
+        server_dir.join(&active_world).join("datapacks")
+    } else {
+        let folder = if extension_type == "plugin" { "plugins" } else { "mods" };
+        server_dir.join(folder)
+    };
+
+    let file_path = folder_path.join(file_name);
+    if !file_path.exists() {
+        return Err("El archivo de la extensión no existe.".to_string());
+    }
+
+    if file_name.ends_with(".disabled") {
+        let new_file_name = file_name.strip_suffix(".disabled").unwrap();
+        let new_path = folder_path.join(new_file_name);
+        fs::rename(&file_path, &new_path).map_err(|e| format!("Error al activar la extensión: {}", e))?;
+        Ok(true)
+    } else {
+        let new_file_name = format!("{}.disabled", file_name);
+        let new_path = folder_path.join(new_file_name);
+        fs::rename(&file_path, &new_path).map_err(|e| format!("Error al desactivar la extensión: {}", e))?;
+        Ok(false)
+    }
 }
 
 pub fn delete_extension(server_dir: &Path, file_name: &str, extension_type: &str) -> Result<(), String> {

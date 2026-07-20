@@ -222,12 +222,27 @@ button:focus, .mc-btn-group-item:focus, .tab-btn:focus, .create-tab-btn:focus {
     outline: none !important;
 }
 
-/* Recuadro verde único para campos de entrada de texto, selección y textareas al enfocarlos */
-input:focus, select:focus, textarea:focus {
+/* Recuadro verde único solo para campos de entrada de texto, números, selección y textareas al enfocarlos */
+input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
     border-color: var(--mc-green) !important;
     outline: 2px solid var(--mc-green) !important;
     outline-offset: 0px !important;
     box-shadow: none !important;
+}
+
+/* Desactivar cualquier borde de selección o recuadro de enfoque en todos los switches (checkboxes y radios) */
+input[type="checkbox"],
+input[type="checkbox"]:focus,
+input[type="checkbox"]:active,
+input[type="checkbox"]:focus-visible,
+input[type="radio"],
+input[type="radio"]:focus,
+input[type="radio"]:active,
+input[type="radio"]:focus-visible {
+    outline: none !important;
+    outline-style: none !important;
+    outline-width: 0 !important;
+    border-color: #111 !important;
 }
 input[readonly] {
     color: #888;

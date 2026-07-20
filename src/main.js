@@ -7,6 +7,7 @@ import { showFeedback, appendLog, normalizeError } from "./utils.js";
 import { appState } from "./state.js";
 import { initAudio } from "./audio.js";
 import { initTheme } from "./theme.js";
+import { initOverscrollGlow } from "./overscroll.js";
 
 async function loadInitialState() {
   const snapshot = await invoke("obtener_estado_aplicacion");
@@ -38,6 +39,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   initDom();
   initMetrics();
   initAudio();
+  initOverscrollGlow();
   setupEvents();
 
   try {

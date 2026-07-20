@@ -24,6 +24,10 @@ export function initDom() {
   els.inputTypingVolume = document.querySelector("#input-typing-volume");
   els.labelTypingVolume = document.querySelector("#label-typing-volume");
   els.inputTestTyping = document.querySelector("#input-test-typing");
+  els.checkOverscrollEnabled = document.querySelector("#check-overscroll-enabled");
+  els.inputCustomAccentColor = document.querySelector("#input-custom-accent-color");
+  els.selectFontStyle = document.querySelector("#select-font-style");
+  els.selectFontScale = document.querySelector("#select-font-scale");
   els.btnHomeOpenLast = document.querySelector("#btn-home-open-last");
   els.btnHomeExit = document.querySelector("#btn-home-exit");
   els.btnHomeOpenDir = document.querySelector("#btn-home-open-dir");
@@ -97,6 +101,7 @@ export function initDom() {
   els.tabCreateModpacksContent = document.querySelector("#tab-create-modpacks-content");
   
   els.groupModpackSource = document.querySelector("#group-modpack-source");
+  els.btnModpackProviderCycle = document.querySelector("#btn-modpack-provider-cycle");
   els.sectionModpackDownloadLeft = document.querySelector("#section-modpack-download-left");
   els.sectionModpackDownloadRight = document.querySelector("#section-modpack-download-right");
   els.inputCreateModpackSearch = document.querySelector("#input-create-modpack-search");
@@ -191,6 +196,7 @@ export function initDom() {
   els.tabCategoryMods = document.querySelector("#tab-category-mods");
   els.tabCategoryDatapacks = document.querySelector("#tab-category-datapacks");
   els.tabViewInstalled = document.querySelector("#tab-view-installed");
+  els.tabViewDisabled = document.querySelector("#tab-view-disabled");
   els.tabViewSearch = document.querySelector("#tab-view-search");
   els.sectionInstalledExtensions = document.querySelector("#section-installed-extensions");
   els.sectionSearchExtensions = document.querySelector("#section-search-extensions");
@@ -206,6 +212,8 @@ export function initDom() {
   els.extensionsCategories = document.querySelector("#extensions-categories");
 
   els.selectSearchProvider = document.querySelector("#select-search-provider");
+  els.btnSearchProviderCycle = document.querySelector("#btn-search-provider-cycle");
+  els.inputSearchExtension = document.querySelector("#input-search-extension");
   els.extensionPreviewDialog = document.querySelector("#extension-preview-dialog");
   els.extPreviewIcon = document.querySelector("#ext-preview-icon");
   els.extPreviewTitle = document.querySelector("#ext-preview-title");

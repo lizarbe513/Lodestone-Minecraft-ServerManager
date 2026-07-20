@@ -51,7 +51,7 @@
             Selecciona una opción para comenzar.
         </p>
 
-        <div id="app-container"></div>
+        <div id="app-container">
 
 
         
@@ -97,9 +97,9 @@
                     <button id="btn-players-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
                 </div>
 
-                    <div id="players-tabs-container" class="tabs" style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-                        <button id="tab-view-online-players" type="button" class="tab-btn active" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Jugadores Conectados</button>
-                        <button id="tab-view-access-management" type="button" class="tab-btn secondary" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Gestión de Accesos</button>
+                    <div id="players-tabs-container" class="tabs">
+                        <button id="tab-view-online-players" type="button" class="tab-btn active">JUGADORES CONECTADOS</button>
+                        <button id="tab-view-access-management" type="button" class="tab-btn">GESTIÓN DE ACCESOS</button>
                     </div>
 
                     <!-- Pestaña Jugadores Conectados -->
@@ -295,8 +295,8 @@
                 </div>
 
                 <div class="create-tabs">
-                    <button type="button" id="btn-tab-prop-game" class="create-tab-btn active">Partida</button>
-                    <button type="button" id="btn-tab-prop-server" class="create-tab-btn">Servidor</button>
+                    <button type="button" id="btn-tab-prop-game" class="create-tab-btn active">PARTIDA</button>
+                    <button type="button" id="btn-tab-prop-server" class="create-tab-btn">SERVIDOR</button>
                 </div>
 
                 <div id="tab-prop-game-content">
@@ -312,7 +312,7 @@
             <div class="panel">
                 <div class="panel-heading">
                     <div>
-                        <h2>Gestión de Plugins, Mods y Datapacks</h2>
+                        <h2>Gestión de Complementos</h2>
                         <p class="hint">Instala, desinstala y administra los complementos de tu servidor.</p>
                     </div>
                     <button id="btn-extensions-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
@@ -321,16 +321,17 @@
                 <p id="extensions-engine-hint" class="hint" style="margin-top: -12px; margin-bottom: 20px; font-weight: 500; font-size: 0.95rem; color: #fff;"></p>
 
                 <!-- Categorías superiores (Plugins, Mods, Datapacks) -->
-                <div id="extensions-categories" class="tabs" style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-                    <button id="tab-category-plugins" type="button" class="tab-btn active" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Plugins</button>
-                    <button id="tab-category-mods" type="button" class="tab-btn secondary" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Mods</button>
-                    <button id="tab-category-datapacks" type="button" class="tab-btn secondary" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Datapacks</button>
+                <div id="extensions-categories" class="tabs">
+                    <button id="tab-category-plugins" type="button" class="tab-btn active">PLUGINS</button>
+                    <button id="tab-category-mods" type="button" class="tab-btn">MODS</button>
+                    <button id="tab-category-datapacks" type="button" class="tab-btn">DATAPACKS</button>
                 </div>
 
-                <!-- Sub-pestañas (Ver Instalados vs Buscar/Descargar) -->
-                <div class="tabs" style="display: flex; gap: 12px; margin-bottom: 24px; padding-bottom: 8px;">
-                    <button id="tab-view-installed" type="button" class="tab-btn active" style="font-size: 0.9rem; padding: 6px 16px; border-radius: 4px; cursor: pointer;">Ver Instalados</button>
-                    <button id="tab-view-search" type="button" class="tab-btn secondary" style="font-size: 0.9rem; padding: 6px 16px; border-radius: 4px; cursor: pointer;">Buscar / Descargar</button>
+                <!-- Sub-pestañas (Activados vs Desactivados vs Buscar/Descargar) -->
+                <div class="tabs">
+                    <button id="tab-view-installed" type="button" class="tab-btn active">ACTIVADOS</button>
+                    <button id="tab-view-disabled" type="button" class="tab-btn">DESACTIVADOS</button>
+                    <button id="tab-view-search" type="button" class="tab-btn">BUSCAR / DESCARGAR</button>
                 </div>
 
                 <div id="section-installed-extensions">
@@ -340,13 +341,16 @@
                 </div>
 
                 <div id="section-search-extensions" hidden>
-                    <div class="row responsive-row" style="margin-bottom: 20px; gap: 8px;">
-                        <select id="select-search-provider" style="width: auto; max-width: 140px; border-radius: 12px; padding: 0.85rem 1rem; border: 1px solid #2b3a4c; background: #121a24; color: #f2f6fb;">
+                    <div class="row responsive-row" style="margin-bottom: 20px; gap: 8px; align-items: stretch;">
+                        <select id="select-search-provider" style="display: none;">
                             <option value="modrinth" selected>Modrinth</option>
                             <option value="curseforge">CurseForge</option>
                         </select>
-                        <input id="input-search-extension" type="text" placeholder="Escribe el nombre de un plugin, mod o datapack" autocomplete="off" style="flex: 1;" />
-                        <button id="btn-search-extension" type="button" class="mc-btn-primary">Buscar</button>
+                        <button id="btn-search-provider-cycle" type="button" class="mc-cycle-btn btn-small" style="width: auto; min-width: 140px; margin: 0; height: 42px; box-sizing: border-box;">
+                            MODRINTH
+                        </button>
+                        <input id="input-search-extension" type="text" placeholder="Escribe el nombre de un plugin, mod o datapack" autocomplete="off" style="flex: 1; margin: 0; height: 42px; box-sizing: border-box;" />
+                        <button id="btn-search-extension" type="button" class="mc-btn-primary" style="height: 42px; margin: 0; box-sizing: border-box;">Buscar</button>
                     </div>
                     <div id="list-search-results" style="display: grid; grid-template-columns: 1fr; gap: 16px;">
                         <p class="hint" style="text-align: center; margin: 16px 0;">Cargando sugerencias...</p>
@@ -368,9 +372,9 @@
                 </div>
 
                 <!-- Pestañas Backups vs Tareas -->
-                <div class="tabs" style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-                    <button id="tab-backups-list" type="button" class="tab-btn active" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Copias de Seguridad</button>
-                    <button id="tab-tasks-list" type="button" class="tab-btn secondary" style="padding: 6px 16px; border-radius: 4px; cursor: pointer;">Tareas Programadas</button>
+                <div class="tabs">
+                    <button id="tab-backups-list" type="button" class="tab-btn active">COPIAS DE SEGURIDAD</button>
+                    <button id="tab-tasks-list" type="button" class="tab-btn">TAREAS PROGRAMADAS</button>
                 </div>
 
                 <!-- Sección Copias de Seguridad -->
@@ -392,8 +396,8 @@
                         <p class="hint" style="text-align: center; margin: 16px 0;">No hay tareas programadas.</p>
                     </div>
                 </div>
-            </div>
         </section>
+        </div>
     </main>
 
     <dialog id="confirm-dialog" class="panel"
@@ -444,9 +448,9 @@
         </div>
 
         <!-- Tabs -->
-        <div class="tabs" style="display: flex; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-            <button id="tab-preview-desc" type="button" class="tab-btn active" style="font-size: 0.85rem; padding: 6px 14px; border-radius: 4px; cursor: pointer;">Descripción</button>
-            <button id="tab-preview-versions" type="button" class="tab-btn secondary" style="font-size: 0.85rem; padding: 6px 14px; border-radius: 4px; cursor: pointer;">Versiones y Descarga</button>
+        <div class="tabs">
+            <button id="tab-preview-desc" type="button" class="tab-btn active">DESCRIPCIÓN</button>
+            <button id="tab-preview-versions" type="button" class="tab-btn">VERSIONES Y DESCARGA</button>
         </div>
 
         <!-- Description Panel -->

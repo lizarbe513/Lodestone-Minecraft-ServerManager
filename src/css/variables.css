@@ -24,10 +24,69 @@
     --text-primary: #e8eef7;
     --text-secondary: #aeb9c8;
 
+    /* Configuración Dinámica de Personalización */
+    --panel-backdrop-blur: 0px;
+    --panel-border-radius: 0px;
+    --app-font-scale: 100%;
+
     /* Fuentes con fallbacks locales seguros para carga offline */
     --font-pixel: "VT323", "Minecraftia", monospace;
     --font-modern: 'Outfit', 'Inter', system-ui, sans-serif;
     
     --font-title: var(--font-pixel);
     --font-body: var(--font-pixel);
+}
+
+/* Temas preestablecidos */
+[data-theme="light"] {
+    --bg-dark: #d5dae2;
+    --bg-slate: #e2e7f0;
+    --bg-panel: #ffffff;
+    --mc-border: #b0b8c4;
+    --text-primary: #181c24;
+    --text-secondary: #4a5568;
+    --mc-gray: #718096;
+    --mc-gray-shadow: #4a5568;
+    --mc-gray-hover: #4a5568;
+}
+
+[data-theme="nether"] {
+    --bg-dark: #140505;
+    --bg-slate: #230a0a;
+    --bg-panel: #340f0f;
+    --mc-border: #5c1818;
+    --mc-green: #298f6d;
+    --mc-green-shadow: #185742;
+    --mc-green-hover: #35a781;
+    --text-primary: #ffe3e3;
+    --text-secondary: #dca8a8;
+}
+
+[data-theme="end"] {
+    --bg-dark: #090614;
+    --bg-slate: #130d24;
+    --bg-panel: #1d1536;
+    --mc-border: #3c2a68;
+    --mc-green: #9333ea;
+    --mc-green-shadow: #6b21a8;
+    --mc-green-hover: #a855f7;
+    --text-primary: #f3e8ff;
+    --text-secondary: #c084fc;
+}
+
+[data-theme="emerald"] {
+    --bg-dark: #04140d;
+    --bg-slate: #092419;
+    --bg-panel: #0e3626;
+    --mc-border: #1a5c42;
+    --mc-green: #10b981;
+    --mc-green-shadow: #047857;
+    --mc-green-hover: #34d399;
+    --text-primary: #ecfdf5;
+    --text-secondary: #6ee7b7;
+}
+
+/* Escala de texto global */
+html {
+    font-size: var(--app-font-scale);
 }

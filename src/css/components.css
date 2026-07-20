@@ -1,31 +1,37 @@
 /* Tabs */
 .create-tabs, .tabs {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     margin-bottom: 16px;
     flex-shrink: 0;
 }
 .create-tab-btn, .tab-btn {
-    background: var(--bg-panel);
-    border: 2px solid var(--mc-border);
-    border-bottom: none;
-    padding: 8px 16px;
-    color: var(--text-secondary);
+    font-family: var(--font-title);
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: normal;
+    background: var(--mc-gray);
+    border: 2px solid #111;
+    border-bottom: 4px solid var(--mc-gray-shadow);
+    padding: 8px 18px;
+    color: var(--mc-white);
     border-radius: 0;
-    margin-bottom: -2px; /* Solapar con borde inferior */
-    transition: all 0.15s ease-in-out;
+    margin-bottom: 0;
+    transition: none;
     position: relative;
     cursor: pointer;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15), inset 2px 0 0 rgba(255, 255, 255, 0.1);
 }
 .create-tab-btn:hover, .tab-btn:hover {
     color: var(--mc-white);
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--mc-gray-hover);
 }
 .create-tab-btn:active, .tab-btn:active,
 .create-tab-btn.active, .tab-btn.active {
     background: var(--mc-green) !important;
     color: var(--mc-white) !important;
-    border-color: var(--mc-green-shadow) !important;
+    border-color: #111 !important;
+    border-bottom: 4px solid var(--mc-green-shadow) !important;
     transform: translateY(2px);
     box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4);
 }
@@ -200,7 +206,7 @@
     background-image: url('../assets/heart_hardcore.svg');
 }
 
-/* Cima: Corazón Blanco (Animado) */
+/* Cima: Corazón Blanco (Animado que genera el destello de brillo) */
 .world-preview-thumbnail.hardcore-mode::after {
     background-image: url('../assets/heart_hardcore_white.svg');
     animation: pulsate-hardcore-heart-smooth 1s ease-in-out infinite alternate;
@@ -210,6 +216,68 @@
     0%, 20% { opacity: 0; }
     80%, 100% { opacity: 1; }
 }
+
+.world-preview-thumbnail.hardcore-mode {
+    border-color: #111 !important;
+    box-shadow: inset 0 0 0 4px #F42323, inset 0 0 10px rgba(0,0,0,0.8) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Efecto "Gusanito" del juego de la serpiente (Desactivado temporalmente por el usuario)
+   --------------------------------------------------------------------------
+.hardcore-border-svg {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    image-rendering: pixelated;
+}
+
+.world-preview-thumbnail.hardcore-mode .hardcore-border-svg {
+    display: block;
+}
+
+.snake-rect {
+    stroke-dasharray: 266 1218;
+    shape-rendering: crispEdges;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+.snake-1 {
+    stroke: #BB1313;
+    stroke-dashoffset: 266;
+    animation: hardcore-snake-crawl-1 20s linear infinite;
+}
+
+.snake-2 {
+    stroke: #ff7777;
+    stroke-dashoffset: -476;
+    animation: hardcore-snake-crawl-2 20s linear infinite;
+}
+
+@keyframes hardcore-snake-crawl-1 {
+    0% {
+        stroke-dashoffset: 266;
+    }
+    100% {
+        stroke-dashoffset: -1218;
+    }
+}
+
+@keyframes hardcore-snake-crawl-2 {
+    0% {
+        stroke-dashoffset: -476;
+    }
+    100% {
+        stroke-dashoffset: -1960;
+    }
+}
+-------------------------------------------------------------------------- */
 
 /* Checkboxes estilo Minecraft */
 .checkbox-group-wrapper label {

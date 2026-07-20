@@ -1,46 +1,110 @@
 <section id="page-customization" class="page-section" hidden>
-    <div class="panel" style="width: 100%; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+    <div class="panel" style="width: 100%; max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--mc-border); padding-bottom: 12px;">
             <div>
-                <h2 style="margin: 0; color: var(--mc-yellow); font-size: 1.6rem;">Personalización de Interfaz</h2>
-                <p class="hint" style="margin: 4px 0 0 0;">Elige la paleta de colores que prefieras para tu panel de control.</p>
+                <h2 style="margin: 0; color: var(--mc-yellow); font-size: 1.6rem;">Estudio de Personalización de Interfaz</h2>
+                <p class="hint" style="margin: 4px 0 0 0;">Configura cada aspecto estético, paleta de colores, tipografía y efectos de tu aplicación.</p>
             </div>
             <button id="btn-customization-back" type="button" class="mc-btn-secondary" style="padding: 8px 16px;">
                 VOLVER AL INICIO
             </button>
         </div>
 
-        <div id="theme-cards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 8px;">
-            <!-- Tarjetas de temas cargadas dinámicamente -->
+        <!-- 1. Temas Preestablecidos -->
+        <div>
+            <h3 style="margin: 0 0 12px 0; color: var(--mc-white); font-size: 1.15rem;">🎨 Temas y Paletas de Color</h3>
+            <div id="theme-cards-container" style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: flex-start;">
+                <!-- Tarjetas de temas cargadas dinámicamente -->
+            </div>
         </div>
 
-        <!-- Sección de Ajustes de Sonido -->
-        <div class="minecraft-table" style="padding: 16px; margin-top: 12px; display: flex; flex-direction: column; gap: 16px; border-top: 4px solid var(--mc-border);">
-            <h3 style="margin: 0; color: var(--mc-yellow); font-size: 1.2rem; border-bottom: 2px solid var(--mc-border); padding-bottom: 8px;">Ajustes de Sonido</h3>
-            
-            <!-- Volumen Clics -->
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--mc-white); font-size: 1rem;">Volumen de Botones y Menús:</span>
-                    <span id="label-sfx-volume" style="font-family: var(--font-title); color: var(--mc-yellow); font-size: 1.1rem;">75%</span>
+        <!-- 2. Color de Acento Personalizado y Tipografía -->
+        <div class="grid-form two-cols" style="gap: 16px;">
+            <div class="minecraft-table" style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+                <h3 style="margin: 0; color: var(--mc-yellow); font-size: 1.1rem; border-bottom: 2px solid var(--mc-border); padding-bottom: 6px;">
+                    ✨ Color de Acento (Botones/Destacados)
+                </h3>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                    <span style="color: var(--mc-white); font-size: 0.95rem;">Color Personalizado:</span>
+                    <input id="input-custom-accent-color" type="color" value="#4a8f29" style="width: 44px; height: 34px; padding: 0; border: 2px solid #111; cursor: pointer; background: transparent;" />
                 </div>
-                <div style="display: flex; align-items: center; gap: 16px;">
-                    <input id="input-sfx-volume" type="range" min="0" max="100" value="75" style="flex: 1; cursor: pointer; accent-color: var(--mc-green);" />
-                    <button id="btn-test-sfx" type="button" class="mc-btn-secondary btn-small" style="margin: 0; padding: 6px 16px;">
-                        Probar Clic
-                    </button>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="mc-btn-secondary btn-small btn-preset-color" data-color="" style="font-size: 0.8rem; padding: 4px 8px;">Por Defecto</button>
+                    <button type="button" class="mc-btn-secondary btn-small btn-preset-color" data-color="#4a8f29" style="font-size: 0.8rem; padding: 4px 8px; color: #56a730;">Verde</button>
+                    <button type="button" class="mc-btn-secondary btn-small btn-preset-color" data-color="#38bdf8" style="font-size: 0.8rem; padding: 4px 8px; color: #38bdf8;">Diamante</button>
+                    <button type="button" class="mc-btn-secondary btn-small btn-preset-color" data-color="#ef4444" style="font-size: 0.8rem; padding: 4px 8px; color: #ef4444;">Redstone</button>
+                    <button type="button" class="mc-btn-secondary btn-small btn-preset-color" data-color="#a855f7" style="font-size: 0.8rem; padding: 4px 8px; color: #a855f7;">Amatista</button>
                 </div>
             </div>
 
-            <!-- Volumen Tecleado -->
-            <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="minecraft-table" style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+                <h3 style="margin: 0; color: var(--mc-yellow); font-size: 1.1rem; border-bottom: 2px solid var(--mc-border); padding-bottom: 6px;">
+                    🔤 Tipografía y Tamaño Global
+                </h3>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--mc-white); font-size: 1rem;">Volumen de Tecleado (Escritura):</span>
-                    <span id="label-typing-volume" style="font-family: var(--font-title); color: var(--mc-yellow); font-size: 1.1rem;">75%</span>
+                    <span style="color: var(--mc-white); font-size: 0.95rem;">Estilo de Fuente:</span>
+                    <select id="select-font-style" class="mc-select" style="width: 170px; font-size: 0.9rem; padding: 4px 8px;">
+                        <option value="pixel" selected>Pixel Arcade</option>
+                        <option value="modern">Moderna Sans</option>
+                    </select>
                 </div>
-                <div style="display: flex; align-items: center; gap: 16px;">
-                    <input id="input-typing-volume" type="range" min="0" max="100" value="75" style="flex: 1; cursor: pointer; accent-color: var(--mc-green);" />
-                    <input id="input-test-typing" type="text" placeholder="Escribe aquí para probar..." style="width: 220px; padding: 6px 12px; font-size: 0.9rem;" />
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--mc-white); font-size: 0.95rem;">Escala de Texto:</span>
+                    <select id="select-font-scale" class="mc-select" style="width: 170px; font-size: 0.9rem; padding: 4px 8px;">
+                        <option value="90%">Compacto (90%)</option>
+                        <option value="100%" selected>Estándar (100%)</option>
+                        <option value="110%">Amplificado (110%)</option>
+                        <option value="120%">Gigante (120%)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Efectos Visuales y Sonido -->
+        <div class="grid-form two-cols" style="gap: 16px;">
+            <div class="minecraft-table" style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+                <h3 style="margin: 0; color: var(--mc-yellow); font-size: 1.1rem; border-bottom: 2px solid var(--mc-border); padding-bottom: 6px;">
+                    🌌 Resplandor al Scrollear (Overscroll Glow)
+                </h3>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="color: var(--mc-white); font-size: 0.95rem;">Efecto Activo:</span>
+                        <span class="hint" style="font-size: 0.8rem;">Se sincroniza automáticamente con tu color de acento activo.</span>
+                    </div>
+                    <label class="switch-label" style="width: auto;">
+                        <input type="checkbox" id="check-overscroll-enabled" checked />
+                    </label>
+                </div>
+            </div>
+
+            <!-- Ajustes de Sonido -->
+            <div class="minecraft-table" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <h3 style="margin: 0; color: var(--mc-yellow); font-size: 1.1rem; border-bottom: 2px solid var(--mc-border); padding-bottom: 6px;">
+                    🔊 Ajustes de Sonido y Tecleado
+                </h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--mc-white); font-size: 0.9rem;">Volumen Clics:</span>
+                        <span id="label-sfx-volume" style="font-family: var(--font-title); color: var(--mc-yellow); font-size: 1rem;">75%</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input id="input-sfx-volume" type="range" min="0" max="100" value="75" style="flex: 1; cursor: pointer; accent-color: var(--mc-green);" />
+                        <button id="btn-test-sfx" type="button" class="mc-btn-secondary btn-small" style="margin: 0; padding: 4px 12px;">
+                            Probar
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--mc-white); font-size: 0.9rem;">Volumen Tecleado:</span>
+                        <span id="label-typing-volume" style="font-family: var(--font-title); color: var(--mc-yellow); font-size: 1rem;">75%</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input id="input-typing-volume" type="range" min="0" max="100" value="75" style="flex: 1; cursor: pointer; accent-color: var(--mc-green);" />
+                        <input id="input-test-typing" type="text" placeholder="Escribe aquí..." style="width: 140px; padding: 4px 8px; font-size: 0.85rem;" />
+                    </div>
                 </div>
             </div>
         </div>

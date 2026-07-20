@@ -536,6 +536,17 @@ fn listar_extensiones(state: tauri::State<AppState>) -> Result<Vec<ExtensionInfo
 }
 
 #[tauri::command]
+fn alternar_extension(
+    state: tauri::State<AppState>,
+    file_name: String,
+    extension_type: String,
+) -> Result<bool, String> {
+    let session = current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir);
+    crate::extensions::toggle_extension(&path, &file_name, &extension_type)
+}
+
+#[tauri::command]
 fn eliminar_extension(
     state: tauri::State<AppState>,
     file_name: String,
@@ -607,6 +618,7 @@ pub fn run() {
             importar_mundo_zip,
             remover_servidor_guardado,
             listar_extensiones,
+            alternar_extension,
             eliminar_extension,
             instalar_extension,
             detectar_motor_servidor,

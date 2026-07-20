@@ -97,3 +97,61 @@
     --text-primary: #ffe3e3;
     --text-secondary: #dcaaaa;
 }
+
+/* --------------------------------------------------------------------------
+   4. TEMA END (End Místico / Amatista)
+   -------------------------------------------------------------------------- */
+[data-theme="end"] {
+    --bg-dark: #0c0818;
+    --bg-slate: #18112c;
+    --bg-panel: #241a40;
+    
+    --mc-green: #9333ea;
+    --mc-green-shadow: #6b21a8;
+    --mc-green-hover: #a855f7;
+    
+    --mc-red: #c92a2a;
+    --mc-red-shadow: #7a1515;
+    --mc-red-hover: #e03838;
+    
+    --mc-gray: #4c3775;
+    --mc-gray-shadow: #2f204d;
+    --mc-gray-hover: #604694;
+    
+    --mc-yellow: #f59e0b;
+    --mc-yellow-shadow: #b45309;
+    
+    --mc-white: #ffffff;
+    --mc-border: #4d3680;
+    --text-primary: #f3e8ff;
+    --text-secondary: #c084fc;
+}
+
+/* --------------------------------------------------------------------------
+   5. TEMA ESMERALDA (Esmeralda Neón / Ciber)
+   -------------------------------------------------------------------------- */
+[data-theme="emerald"] {
+    --bg-dark: #04140d;
+    --bg-slate: #092419;
+    --bg-panel: #0e3626;
+    
+    --mc-green: #10b981;
+    --mc-green-shadow: #047857;
+    --mc-green-hover: #34d399;
+    
+    --mc-red: #ef4444;
+    --mc-red-shadow: #b91c1c;
+    --mc-red-hover: #f87171;
+    
+    --mc-gray: #1b4d38;
+    --mc-gray-shadow: #0f3324;
+    --mc-gray-hover: #26694d;
+    
+    --mc-yellow: #f59e0b;
+    --mc-yellow-shadow: #b45309;
+    
+    --mc-white: #ffffff;
+    --mc-border: #1a5c42;
+    --text-primary: #ecfdf5;
+    --text-secondary: #6ee7b7;
+}

@@ -82,7 +82,10 @@ export function resetNewServerForm() {
   }
   if (els.createMaxPlayers) els.createMaxPlayers.value = "20";
   if (els.createOnlineMode) els.createOnlineMode.checked = true;
-  if (els.createHardcore) els.createHardcore.checked = false;
+  if (els.createHardcore) {
+    els.createHardcore.checked = false;
+    if (els.createWorldPreview) els.createWorldPreview.classList.remove("hardcore-mode");
+  }
   if (els.createPvp) els.createPvp.checked = true;
   if (els.createAllowFlight) els.createAllowFlight.checked = false;
 

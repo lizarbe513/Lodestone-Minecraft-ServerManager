@@ -106,18 +106,26 @@ export async function loadInstalledExtensions() {
 
     els.listInstalledExtensions.innerHTML = "";
     
-    // Filtrar localmente según la categoría activa
-    const filtered = (extensions || []).filter(ext => ext.extension_type === activeCategory);
+    // Filtrar localmente según la categoría activa y subpestaña (activados vs desactivados)
+    const isLookingForDisabled = activeSubTab === "disabled";
+    const filtered = (extensions || []).filter(ext => {
+      if (ext.extension_type !== activeCategory) return false;
+      const isEnabled = ext.enabled !== false;
+      return isLookingForDisabled ? !isEnabled : isEnabled;
+    });
 
     if (filtered.length === 0) {
       const typeText = activeCategory === "plugin" ? "plugins" : activeCategory === "mod" ? "mods" : "datapacks";
-      els.listInstalledExtensions.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">No hay ${typeText} instalados.</p>`;
+      const statusText = isLookingForDisabled ? "desactivados" : "activados";
+      els.listInstalledExtensions.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">No hay ${typeText} ${statusText}.</p>`;
       return;
     }
 
     filtered.forEach(ext => {
+      const isEnabled = ext.enabled !== false;
       const card = document.createElement("div");
-      card.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--bg-hover); border-radius: 8px; border: 1px solid var(--border-color);";
+      card.className = "minecraft-table";
+      card.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--bg-panel); border: 2px solid #111; margin-bottom: 6px;";
 
       const infoDiv = document.createElement("div");
       infoDiv.style = "display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;";
@@ -134,7 +142,7 @@ export async function loadInstalledExtensions() {
       const isPlugin = ext.extension_type === "plugin";
       const isMod = ext.extension_type === "mod";
       
-      let badgeBg = "rgba(234, 179, 8, 0.2)"; // datapack default yellow
+      let badgeBg = "rgba(234, 179, 8, 0.2)";
       let badgeColor = "#eab308";
       let badgeBorder = "rgba(234, 179, 8, 0.4)";
       
@@ -151,12 +159,12 @@ export async function loadInstalledExtensions() {
       badge.style = `font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder};`;
       badge.textContent = ext.extension_type;
 
+      headerRow.appendChild(name);
+      headerRow.appendChild(badge);
+
       const version = document.createElement("span");
       version.style = "font-size: 0.85rem; color: var(--text-secondary);";
       version.textContent = ext.extension_type === "datapack" ? "" : `v${ext.version}`;
-
-      headerRow.appendChild(name);
-      headerRow.appendChild(badge);
       if (version.textContent) {
         headerRow.appendChild(version);
       }
@@ -175,19 +183,39 @@ export async function loadInstalledExtensions() {
           infoDiv.appendChild(desc);
       }
 
+      const actionsDiv = document.createElement("div");
+      actionsDiv.style = "display: flex; gap: 8px; align-items: center; margin-left: 16px; flex-shrink: 0;";
+
+      // Botón Desactivar (Amarillo Warning) / Activar (Verde Primary)
+      const btnToggle = document.createElement("button");
+      btnToggle.type = "button";
+      btnToggle.className = isEnabled ? "mc-btn-warning btn-small" : "mc-btn-primary btn-small";
+      btnToggle.textContent = isEnabled ? "Desactivar" : "Activar";
+      btnToggle.onclick = async () => {
+        try {
+          showFeedback(`${isEnabled ? 'Desactivando' : 'Activando'} "${ext.name}"...`, "info");
+          await invoke("alternar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
+          showFeedback(`Complemento "${ext.name}" ${isEnabled ? 'desactivado' : 'activado'} correctamente.`, "success");
+          loadInstalledExtensions();
+        } catch (err) {
+          showFeedback(`Error al cambiar estado del complemento: ${err}`, "error");
+        }
+      };
+
+      // Botón Eliminar (Estilo Bedrock Danger)
       const btnDelete = document.createElement("button");
-      btnDelete.className = "mc-btn-warning btn-small";
-      btnDelete.style = "padding: 6px 12px; font-size: 0.85rem; margin-left: 16px; border-radius: 6px; flex-shrink: 0;";
+      btnDelete.type = "button";
+      btnDelete.className = "mc-btn-danger btn-small";
       btnDelete.textContent = "Eliminar";
       btnDelete.onclick = () => {
         requestConfirm(
-          "Eliminar Extensión",
-          `¿Estás seguro de que quieres eliminar la extensión "${ext.name}"?`,
+          "Eliminar Complemento",
+          `¿Estás seguro de que quieres eliminar el complemento "${ext.name}"?`,
           async () => {
             try {
               showFeedback(`Eliminando "${ext.name}"...`, "info");
               await invoke("eliminar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
-              showFeedback(`Extensión "${ext.name}" eliminada correctamente.`, "success");
+              showFeedback(`Complemento "${ext.name}" eliminado correctamente.`, "success");
               loadInstalledExtensions();
             } catch (err) {
               showFeedback(`Error al eliminar: ${err}`, "error");
@@ -196,8 +224,11 @@ export async function loadInstalledExtensions() {
         );
       };
 
+      actionsDiv.appendChild(btnToggle);
+      actionsDiv.appendChild(btnDelete);
+
       card.appendChild(infoDiv);
-      card.appendChild(btnDelete);
+      card.appendChild(actionsDiv);
       els.listInstalledExtensions.appendChild(card);
     });
   } catch (err) {
@@ -433,7 +464,8 @@ function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") 
 function renderSearchResultsInto(hits, parentElement) {
   hits.forEach(project => {
     const card = document.createElement("div");
-    card.style = "display: flex; gap: 16px; padding: 16px; background: var(--bg-hover); border-radius: 8px; border: 1px solid var(--border-color); align-items: flex-start;";
+    card.className = "minecraft-table";
+    card.style = "display: flex; gap: 16px; padding: 14px; background: var(--bg-panel); border: 2px solid #111; align-items: flex-start; margin-bottom: 8px;";
 
     const img = document.createElement("img");
     img.src = project.icon_url || "https://placehold.co/64x64?text=Mc";
@@ -493,7 +525,9 @@ function renderSearchResultsInto(hits, parentElement) {
     content.appendChild(footerDetails);
 
     const btnVersions = document.createElement("button");
-    btnVersions.style = "padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; align-self: center; flex-shrink: 0;";
+    btnVersions.type = "button";
+    btnVersions.className = "mc-btn-primary btn-small";
+    btnVersions.style = "align-self: center; flex-shrink: 0;";
     btnVersions.textContent = "Instalar";
     btnVersions.onclick = () => showPreview(project.project_id || project.slug, project.title, project.project_type, project.provider, project.slug);
 
@@ -763,7 +797,8 @@ function renderVersionsList(versions, provider, projectTitle, projectType) {
 
   displayedVersions.forEach(v => {
     const container = document.createElement("div");
-    container.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 6px; gap: 12px;";
+    container.className = "minecraft-table";
+    container.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-panel); border: 2px solid #111; gap: 12px; margin-bottom: 6px;";
 
     const info = document.createElement("div");
     info.style = "display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;";
@@ -786,7 +821,9 @@ function renderVersionsList(versions, provider, projectTitle, projectType) {
 
     if (downloadFile) {
       const btnDownload = document.createElement("button");
-      btnDownload.style = "padding: 4px 10px; font-size: 0.8rem; border-radius: 4px; flex-shrink: 0;";
+      btnDownload.type = "button";
+      btnDownload.className = "mc-btn-primary btn-small";
+      btnDownload.style = "flex-shrink: 0;";
       btnDownload.textContent = "Descargar";
       btnDownload.onclick = async () => {
         btnDownload.disabled = true;
