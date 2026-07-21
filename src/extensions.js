@@ -8,6 +8,9 @@ export let activeCategory = "datapack"; // "plugin" | "mod" | "datapack"
 export let activeSubTab = "installed"; // "installed" | "search"
 export let activeMcVersion = "unknown";
 
+// Cola de cambios de toggle pendientes (se aplican al cambiar pestaña/categoría)
+let pendingToggleChanges = [];
+
 const RECOMMENDED_SLUGS = {
   plugin: ["essentialsx", "worldedit", "viaversion", "dynmap", "geyser", "vault"],
   mod: ["sodium", "lithium", "iris", "worldedit", "fabric-api", "simple-voice-chat"],
@@ -72,6 +75,25 @@ export async function initExtensionsPage() {
     } else {
       activeCategory = "datapack";
       selectCategoryTab(els.tabCategoryDatapacks);
+    }
+
+    // Configurar botones de navegación de galería de capturas
+    if (els.btnExtGalleryPrev) {
+      els.btnExtGalleryPrev.onclick = () => {
+        if (extGalleryIndex > -1) {
+          extGalleryIndex--;
+          updateGalleryUI();
+        }
+      };
+    }
+
+    if (els.btnExtGalleryNext) {
+      els.btnExtGalleryNext.onclick = () => {
+        if (extGalleryIndex < extGallery.length - 1) {
+          extGalleryIndex++;
+          updateGalleryUI();
+        }
+      };
     }
 
     // Resetear subpestaña a "installed"
@@ -269,9 +291,19 @@ export async function searchModrinth(query) {
   }
 }
 
-async function searchModrinthInternal(query, page = 0) {
+let currentSearchPage = 0;
+let currentSearchHits = [];
+let currentSearchQuery = "";
+let currentSearchProvider = "modrinth";
+let currentTotalHits = 0;
+let selectedSearchProject = null;
+
+async function searchModrinthInternal(query, offsetIndex = 0) {
   try {
-    if (page === 0) els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Buscando en Modrinth...</p>';
+    if (offsetIndex === 0) {
+      els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Buscando en Modrinth...</p>';
+      currentSearchHits = [];
+    }
     const searchType = activeCategory === "plugin" ? "plugin" : activeCategory === "mod" ? "mod" : "datapack";
     
     let facets = [[`project_type:${searchType}`]];
@@ -290,9 +322,8 @@ async function searchModrinthInternal(query, page = 0) {
       }
     }
     
-    const limit = 20;
-    const offset = page * limit;
-    const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${encodeURIComponent(JSON.stringify(facets))}&limit=${limit}&offset=${offset}`;
+    const limit = 48;
+    const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&index=downloads&facets=${encodeURIComponent(JSON.stringify(facets))}&limit=${limit}&offset=${offsetIndex}`;
     
     const response = await fetch(url, {
         headers: {
@@ -305,8 +336,9 @@ async function searchModrinthInternal(query, page = 0) {
     }
 
     const data = await response.json();
+    currentTotalHits = data.total_hits || (data.hits ? data.hits.length : 0);
     
-    const hits = (data.hits || []).map(h => ({
+    const newHits = (data.hits || []).map(h => ({
       project_id: h.project_id,
       title: h.title,
       project_type: h.project_type,
@@ -318,23 +350,30 @@ async function searchModrinthInternal(query, page = 0) {
       provider: "modrinth"
     }));
 
-    renderSearchResults(hits, page, query, "modrinth");
+    if (offsetIndex === 0) {
+      currentSearchHits = newHits;
+      renderSearchResults(currentSearchHits, 0, query, "modrinth");
+    } else {
+      currentSearchHits.push(...newHits);
+    }
   } catch (err) {
     els.listSearchResults.innerHTML = `<p class="hint" style="color: var(--error); text-align: center; margin: 16px 0;">Error de red: ${err.message || err}</p>`;
   }
 }
 
-async function searchCurseForgeInternal(query, page = 0) {
+async function searchCurseForgeInternal(query, offsetIndex = 0) {
   try {
-    if (page === 0) els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Buscando en CurseForge...</p>';
+    if (offsetIndex === 0) {
+      els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Buscando en CurseForge...</p>';
+      currentSearchHits = [];
+    }
     
     let classId = 6; 
     if (activeCategory === "plugin") classId = 5;
     else if (activeCategory === "datapack") classId = 6945;
 
-    const pageSize = 20;
-    const index = page * pageSize;
-    let url = `https://api.curse.tools/v1/cf/mods/search?gameId=432&classId=${classId}&searchFilter=${encodeURIComponent(query)}&pageSize=${pageSize}&index=${index}`;
+    const pageSize = 48;
+    let url = `https://api.curse.tools/v1/cf/mods/search?gameId=432&classId=${classId}&searchFilter=${encodeURIComponent(query)}&sortField=2&sortOrder=desc&pageSize=${pageSize}&index=${offsetIndex}`;
     
     if (activeMcVersion !== "unknown") {
       url += `&gameVersion=${activeMcVersion}`;
@@ -362,8 +401,9 @@ async function searchCurseForgeInternal(query, page = 0) {
     }
 
     const resData = await response.json();
+    currentTotalHits = (resData.pagination && resData.pagination.totalCount) ? resData.pagination.totalCount : (resData.data ? resData.data.length : 0);
     
-    const hits = (resData.data || []).map(h => ({
+    const newHits = (resData.data || []).map(h => ({
       project_id: h.id.toString(),
       title: h.name,
       project_type: activeCategory,
@@ -375,7 +415,12 @@ async function searchCurseForgeInternal(query, page = 0) {
       provider: "curseforge"
     }));
 
-    renderSearchResults(hits, page, query, "curseforge");
+    if (offsetIndex === 0) {
+      currentSearchHits = newHits;
+      renderSearchResults(currentSearchHits, 0, query, "curseforge");
+    } else {
+      currentSearchHits.push(...newHits);
+    }
   } catch (err) {
     els.listSearchResults.innerHTML = `<p class="hint" style="color: var(--error); text-align: center; margin: 16px 0;">Error de red: ${err.message || err}</p>`;
   }
@@ -383,62 +428,13 @@ async function searchCurseForgeInternal(query, page = 0) {
 
 export async function loadRecommendedExtensions() {
   if (!els.listSearchResults) return;
-
-  const slugs = RECOMMENDED_SLUGS[activeCategory];
-  if (!slugs || slugs.length === 0) {
-    els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No hay recomendaciones disponibles para esta categoría.</p>';
-    return;
-  }
-
-  try {
-    els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Cargando recomendaciones...</p>';
-    
-    const response = await fetch(`https://api.modrinth.com/v2/projects?ids=${JSON.stringify(slugs)}`, {
-        headers: {
-            "User-Agent": "norditex/minecraft-server-gui (gemini-agent)"
-        }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener recomendados: ${response.status}`);
-    }
-
-    const projects = await response.json();
-    
-    const mappedHits = projects.map(p => ({
-      project_id: p.id,
-      title: p.title,
-      project_type: p.project_type,
-      downloads: p.downloads,
-      description: p.description,
-      author: "", 
-      icon_url: p.icon_url,
-      slug: p.slug,
-      provider: "modrinth"
-    }));
-
-    els.listSearchResults.innerHTML = "";
-    
-    const header = document.createElement("h3");
-    header.style = "margin: 0 0 12px; font-size: 1.1rem; color: #fff; font-weight: 600;";
-    header.textContent = `Descargas Recomendadas (${activeCategory === "plugin" ? "Plugins" : activeCategory === "mod" ? "Mods" : "Datapacks"})`;
-    els.listSearchResults.appendChild(header);
-
-    const container = document.createElement("div");
-    container.style = "display: flex; flex-direction: column; gap: 16px;";
-    els.listSearchResults.appendChild(container);
-
-    renderSearchResultsInto(mappedHits, container);
-  } catch (err) {
-    els.listSearchResults.innerHTML = `<p class="hint" style="color: var(--error); text-align: center; margin: 16px 0;">Error al cargar sugerencias: ${err.message || err}</p>`;
+  const provider = els.selectSearchProvider ? els.selectSearchProvider.value : "modrinth";
+  if (provider === "curseforge") {
+    await searchCurseForgeInternal("", 0);
+  } else {
+    await searchModrinthInternal("", 0);
   }
 }
-
-let currentSearchPage = 0;
-let currentSearchHits = [];
-let currentSearchQuery = "";
-let currentSearchProvider = "modrinth";
-let selectedSearchProject = null;
 
 function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") {
   currentSearchHits = hits || [];
@@ -458,11 +454,16 @@ function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") 
     return;
   }
 
-  // Paginación de 6 elementos por página para el grid 2x3
-  const pageSize = 6;
-  const totalPages = Math.ceil(hits.length / pageSize);
+  // Paginación de 12 elementos por página para el grid 6x2
+  const pageSize = 12;
+  const totalPages = Math.max(1, Math.ceil(currentTotalHits ? currentTotalHits / pageSize : (hits ? hits.length / pageSize : 1)));
+  const currentPageNum = page + 1;
   const start = page * pageSize;
   const pageHits = hits.slice(start, start + pageSize);
+
+  if (els.extPageIndicator) {
+    els.extPageIndicator.textContent = `Pág. ${currentPageNum} de ${totalPages}`;
+  }
 
   if (els.btnExtPagePrev) {
     els.btnExtPagePrev.disabled = page === 0;
@@ -472,16 +473,22 @@ function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") 
   }
 
   if (els.btnExtPageNext) {
-    els.btnExtPageNext.disabled = (page >= totalPages - 1 && hits.length < 20);
+    const isAtLastLoadedBatch = (start + pageSize >= hits.length);
+    const hasMoreWebResults = currentTotalHits > hits.length;
+    
+    els.btnExtPageNext.disabled = isAtLastLoadedBatch && !hasMoreWebResults;
     els.btnExtPageNext.onclick = async () => {
-      if (page < totalPages - 1) {
+      if (start + pageSize < hits.length) {
         renderSearchResults(hits, page + 1, query, provider);
-      } else if (hits.length >= 20) {
+      } else if (hasMoreWebResults) {
+        els.btnExtPageNext.disabled = true;
+        showFeedback("Cargando más resultados desde internet...", "info");
         if (provider === "modrinth") {
-          await searchModrinthInternal(query, Math.floor(hits.length / 20));
+          await searchModrinthInternal(query, hits.length);
         } else {
-          await searchCurseForgeInternal(query, Math.floor(hits.length / 20));
+          await searchCurseForgeInternal(query, hits.length);
         }
+        renderSearchResults(currentSearchHits, page + 1, query, provider);
       }
     };
   }
@@ -512,14 +519,84 @@ function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") 
   });
 }
 
+let extGallery = [];
+let extGalleryIndex = -1;
+
+function updateGalleryUI() {
+  if (extGalleryIndex === -1) {
+    if (els.extPreviewDesc) els.extPreviewDesc.style.display = "block";
+    if (els.extPreviewGalleryWrapper) els.extPreviewGalleryWrapper.style.display = "none";
+    if (els.extGalleryBar) els.extGalleryBar.style.display = "none";
+    if (els.btnExtGalleryPrev) els.btnExtGalleryPrev.disabled = true;
+  } else {
+    if (els.extPreviewDesc) els.extPreviewDesc.style.display = "none";
+    if (els.extPreviewGalleryWrapper) els.extPreviewGalleryWrapper.style.display = "flex";
+    if (els.extGalleryBar) els.extGalleryBar.style.display = "block";
+    const item = extGallery[extGalleryIndex];
+    if (item && els.extPreviewGalleryImg) {
+      els.extPreviewGalleryImg.src = item.url;
+    }
+    if (els.extPreviewGalleryTitle) {
+      els.extPreviewGalleryTitle.textContent = item.title || `Captura ${extGalleryIndex + 1}/${extGallery.length}`;
+    }
+    if (els.btnExtGalleryPrev) els.btnExtGalleryPrev.disabled = false;
+  }
+
+  if (els.btnExtGalleryNext) {
+    els.btnExtGalleryNext.disabled = (extGalleryIndex >= extGallery.length - 1);
+  }
+}
+
+async function loadExtensionGallery(project) {
+  extGallery = [];
+  extGalleryIndex = -1;
+  updateGalleryUI();
+
+  if (!project || !project.project_id) return;
+
+  try {
+    if (project.provider === "modrinth") {
+      const res = await fetch(`https://api.modrinth.com/v2/project/${project.project_id}`, {
+        headers: { "User-Agent": "norditex/minecraft-server-gui (gemini-agent)" }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.gallery && data.gallery.length > 0) {
+          extGallery = data.gallery.map(g => ({ url: g.url, title: g.title || g.description || "" }));
+        }
+      }
+    } else if (project.provider === "curseforge") {
+      const res = await fetch(`https://api.curse.tools/v1/cf/mods/${project.project_id}`, {
+        headers: { "User-Agent": "norditex/minecraft-server-gui (gemini-agent)" }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const modData = data.data || data;
+        if (modData.screenshots && modData.screenshots.length > 0) {
+          extGallery = modData.screenshots.map(s => ({ url: s.url, title: s.title || s.caption || "" }));
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Error cargando galería de complemento:", err);
+  }
+
+  updateGalleryUI();
+}
+
 function resetPreviewPanel() {
+  extGallery = [];
+  extGalleryIndex = -1;
+  updateGalleryUI();
   if (els.extPreviewTitle) els.extPreviewTitle.textContent = "Selecciona un complemento";
   if (els.extPreviewAuthor) { els.extPreviewAuthor.textContent = ""; els.extPreviewAuthor.style.display = "none"; }
   if (els.extPreviewDesc) els.extPreviewDesc.textContent = "Haz clic en un complemento de la lista para ver sus detalles y descargarlo.";
-  if (els.btnExtInstallSelected) {
-    els.btnExtInstallSelected.disabled = true;
-    els.btnExtInstallSelected.style.opacity = "0.5";
+  hideVersionsState();
+  if (els.btnExtSelectVersion) {
+    els.btnExtSelectVersion.disabled = true;
+    els.btnExtSelectVersion.onclick = null;
   }
+  if (els.extSelectHint) els.extSelectHint.textContent = "Elige un complemento de la lista";
 }
 
 function updatePreviewPanel(project) {
@@ -532,12 +609,193 @@ function updatePreviewPanel(project) {
     els.extPreviewDesc.textContent = project.description || "Sin descripción disponible.";
   }
 
-  if (els.btnExtInstallSelected) {
-    els.btnExtInstallSelected.disabled = false;
-    els.btnExtInstallSelected.style.opacity = "1";
-    els.btnExtInstallSelected.onclick = () => {
-      showPreview(project.project_id || project.slug, project.title, project.project_type, project.provider, project.slug);
+  loadExtensionGallery(project);
+
+  hideVersionsState();
+
+  if (els.btnExtSelectVersion) {
+    els.btnExtSelectVersion.disabled = false;
+    els.btnExtSelectVersion.onclick = () => showVersionsState(project);
+  }
+  if (els.extSelectHint) els.extSelectHint.textContent = project.title || "complemento seleccionado";
+}
+
+function hideVersionsState() {
+  if (els.extSelectState) els.extSelectState.style.display = "flex";
+  if (els.extVersionsState) els.extVersionsState.style.display = "none";
+}
+
+async function showVersionsState(project) {
+  if (!els.extSelectState || !els.extVersionsState) return;
+
+  els.extSelectState.style.display = "none";
+  els.extVersionsState.style.display = "flex";
+
+  // Inicializar loader seleccionado segun el contexto actual
+  let selectedLoader = activeCategory === "plugin" ? "plugin"
+    : (activeEngine && activeEngine !== "unknown" ? activeEngine : "fabric");
+
+  // Determinar loaders disponibles segun el motor del servidor
+  const isPluginEngine = ["paper", "purpur"].includes(activeEngine);
+  const modEngines = ["fabric", "forge", "neoforge", "quilt"];
+  const isModEngine = modEngines.includes(activeEngine);
+
+  const availableLoaders = [];
+  if (isPluginEngine) availableLoaders.push("plugin");
+  if (isModEngine) availableLoaders.push(activeEngine);
+  // Vanilla solo datapacks, pero puede que aparezcan mods genéricos
+  if (availableLoaders.length === 0) availableLoaders.push("plugin", "fabric", "forge", "neoforge");
+
+  // Activar boton de loader correcto y bloquear los no disponibles
+  const loaderGroup = els.extVersionsLoaderGroup;
+  if (loaderGroup) {
+    loaderGroup.querySelectorAll(".mc-btn-group-item").forEach(btn => {
+      const val = btn.dataset.value;
+      const isAvailable = availableLoaders.includes(val);
+      const isActive = val === selectedLoader;
+      btn.classList.toggle("active", isActive);
+      btn.disabled = !isAvailable;
+      btn.style.opacity = isAvailable ? "1" : "0.35";
+      btn.style.cursor = isAvailable ? "pointer" : "not-allowed";
+    });
+  }
+
+  // Funcion interna de carga de versiones para el loader seleccionado
+  async function loadVersionsForLoader(loader) {
+    if (els.extVersionsSelect) {
+      els.extVersionsSelect.innerHTML = '<option value="">Cargando versiones...</option>';
+    }
+    if (els.extVersionsHint) els.extVersionsHint.textContent = "";
+
+    try {
+      let versions = [];
+      const projectId = project.project_id || project.slug;
+
+      if (project.provider === "modrinth") {
+        let loaders = [];
+        if (loader === "plugin") loaders = ["paper", "spigot", "bukkit", "purpur"];
+        else if (loader === "fabric") loaders = ["fabric"];
+        else if (loader === "forge") loaders = ["forge"];
+        else if (loader === "neoforge") loaders = ["neoforge", "forge"];
+        else if (loader === "quilt") loaders = ["quilt", "fabric"];
+
+        let url = `https://api.modrinth.com/v2/project/${projectId}/version`;
+        const params = [];
+        if (loaders.length > 0) params.push(`loaders=${encodeURIComponent(JSON.stringify(loaders))}`);
+        if (activeMcVersion !== "unknown") params.push(`game_versions=${encodeURIComponent(JSON.stringify([activeMcVersion]))}`);
+        if (params.length > 0) url += "?" + params.join("&");
+        const res = await fetch(url, { headers: { "User-Agent": "norditex/minecraft-server-gui (gemini-agent)" } });
+        if (res.ok) versions = await res.json();
+      } else if (project.provider === "curseforge") {
+        let url = `https://api.curse.tools/v1/cf/mods/${projectId}/files?`;
+        const params = [];
+        if (activeMcVersion !== "unknown") params.push(`gameVersion=${activeMcVersion}`);
+        if (loader !== "plugin") {
+          const loaderMap = { forge: 1, fabric: 4, quilt: 5, neoforge: 6 };
+          const lt = loaderMap[loader];
+          if (lt) params.push(`modLoaderType=${lt}`);
+        }
+        url += params.join("&");
+        const res = await fetch(url, { headers: { "User-Agent": "norditex/minecraft-server-gui (gemini-agent)" } });
+        if (res.ok) {
+          const data = await res.json();
+          const cfLoaders = ["fabric", "forge", "neoforge", "quilt", "bukkit", "spigot", "paper"];
+          versions = (data.data || []).map(file => {
+            const loaders = [], gameVersions = [];
+            (file.gameVersions || []).forEach(gv => {
+              if (cfLoaders.includes(gv.toLowerCase())) loaders.push(gv.toLowerCase());
+              else gameVersions.push(gv);
+            });
+            return { id: String(file.id), name: file.displayName, game_versions: gameVersions, loaders, files: [{ url: file.downloadUrl, filename: file.fileName, primary: true }], dependencies: file.dependencies || [] };
+          });
+        }
+      }
+
+      if (els.extVersionsSelect) {
+        els.extVersionsSelect.innerHTML = "";
+        if (!versions || versions.length === 0) {
+          els.extVersionsSelect.innerHTML = '<option value="">Sin versiones disponibles</option>';
+          if (els.extVersionsHint) {
+            els.extVersionsHint.textContent = "No se encontraron versiones para este loader.";
+            els.extVersionsHint.style.color = "#f87171";
+          }
+        } else {
+          els.extVersionsSelect._versionsData = versions;
+          versions.forEach((v, i) => {
+            const opt = document.createElement("option");
+            opt.value = i;
+            const mcVers = v.game_versions.slice(0, 2).join(", ") + (v.game_versions.length > 2 ? "..." : "");
+            opt.textContent = `${v.name} [${mcVers}]`;
+            els.extVersionsSelect.appendChild(opt);
+          });
+          if (els.extVersionsHint) {
+            const loaderLabel = loader.charAt(0).toUpperCase() + loader.slice(1);
+            const mcInfo = activeMcVersion !== "unknown" ? ` (MC ${activeMcVersion})` : "";
+            els.extVersionsHint.textContent = `${versions.length} versiones de ${loaderLabel} obtenidas${mcInfo}.`;
+            els.extVersionsHint.style.color = "#6ee7b7";
+          }
+        }
+      }
+    } catch (err) {
+      if (els.extVersionsSelect) {
+        els.extVersionsSelect.innerHTML = `<option value="">Error: ${err.message}</option>`;
+      }
+      if (els.extVersionsHint) {
+        els.extVersionsHint.textContent = `Error al cargar: ${err.message}`;
+        els.extVersionsHint.style.color = "#f87171";
+      }
+    }
+  }
+
+  // Cargar versiones iniciales
+  await loadVersionsForLoader(selectedLoader);
+
+  // Cambio de loader al hacer click en los botones
+  if (loaderGroup) {
+    loaderGroup.querySelectorAll(".mc-btn-group-item").forEach(btn => {
+      btn.onclick = async () => {
+        loaderGroup.querySelectorAll(".mc-btn-group-item").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedLoader = btn.dataset.value;
+        await loadVersionsForLoader(selectedLoader);
+      };
+    });
+  }
+
+  // Boton Descargar
+  if (els.btnExtDownloadVersion) {
+    els.btnExtDownloadVersion.disabled = false;
+    els.btnExtDownloadVersion.textContent = "Descargar";
+    els.btnExtDownloadVersion.onclick = async () => {
+      const idx = parseInt(els.extVersionsSelect.value);
+      const versData = els.extVersionsSelect._versionsData;
+      if (!versData || isNaN(idx)) return;
+      const v = versData[idx];
+      const downloadFile = v.files.find(f => f.primary) || v.files[0];
+      if (!downloadFile) return;
+      els.btnExtDownloadVersion.disabled = true;
+      els.btnExtDownloadVersion.textContent = "Descargando...";
+      try {
+        await resolveAndDownloadDependencies(v, project.provider);
+        showFeedback(`Descargando: ${project.title}...`, "info");
+        await invoke("instalar_extension", {
+          downloadUrl: downloadFile.url,
+          fileName: downloadFile.filename,
+          extensionType: activeCategory
+        });
+        showFeedback(`Instalación de "${project.title}" completada.`, "success");
+        hideVersionsState();
+      } catch (err) {
+        els.btnExtDownloadVersion.disabled = false;
+        els.btnExtDownloadVersion.textContent = "Descargar";
+        showFeedback(`Error: ${err.message || err}`, "error");
+      }
     };
+  }
+
+  // Boton Cancelar
+  if (els.btnExtCancelVersion) {
+    els.btnExtCancelVersion.onclick = () => hideVersionsState();
   }
 }
 

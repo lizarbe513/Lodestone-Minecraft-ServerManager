@@ -219,15 +219,27 @@ export function initDom() {
 
   els.btnExtPagePrev = document.querySelector("#btn-ext-page-prev");
   els.btnExtPageNext = document.querySelector("#btn-ext-page-next");
-  els.selectExtLoaderFilter = document.querySelector("#select-ext-loader-filter");
-  els.selectExtVersionFilter = document.querySelector("#select-ext-version-filter");
+  els.extPageIndicator = document.querySelector("#ext-page-indicator");
+
+  els.extSelectState = document.querySelector("#ext-select-state");
+  els.extVersionsState = document.querySelector("#ext-versions-state");
+  els.btnExtSelectVersion = document.querySelector("#btn-ext-select-version");
+  els.extSelectHint = document.querySelector("#ext-select-hint");
+  els.extVersionsLoaderGroup = document.querySelector("#ext-versions-loader-group");
+  els.extVersionsSelect = document.querySelector("#ext-versions-select");
+  els.extVersionsHint = document.querySelector("#ext-versions-hint");
+  els.btnExtDownloadVersion = document.querySelector("#btn-ext-download-version");
+  els.btnExtCancelVersion = document.querySelector("#btn-ext-cancel-version");
 
   els.extPreviewTitle = document.querySelector("#ext-preview-title");
   els.extPreviewAuthor = document.querySelector("#ext-preview-author");
   els.extPreviewDesc = document.querySelector("#ext-preview-desc");
+  els.extPreviewGalleryWrapper = document.querySelector("#ext-preview-gallery-wrapper");
+  els.extPreviewGalleryImg = document.querySelector("#ext-preview-gallery-img");
+  els.extPreviewGalleryTitle = document.querySelector("#ext-preview-gallery-title");
   els.btnExtGalleryPrev = document.querySelector("#btn-ext-gallery-prev");
   els.btnExtGalleryNext = document.querySelector("#btn-ext-gallery-next");
-  els.btnExtInstallSelected = document.querySelector("#btn-ext-install-selected");
+  els.extGalleryBar = document.querySelector("#ext-gallery-bar");
 
   els.extInstalledThumb = document.querySelector("#ext-installed-thumb");
   els.extInstalledTitle = document.querySelector("#ext-installed-title");

@@ -11,37 +11,74 @@
     box-sizing: border-box;
 }
 
-/* Top Level Main Tabs (Instalados | Descargar) */
-.ext-top-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
+/* Temas de Baúl (Madera vs End) — aplicados via clases temáticas */
+
+/* Baúl de Madera (Instalados / Archivos Locales) */
+#section-installed-extensions .ext-sidebar {
+    background: rgba(35, 20, 10, 0.65);
+    border: 2px solid #5c3a21;
 }
 
-.ext-top-tab {
+#section-installed-extensions .ext-main-content {
+    background: rgba(20, 12, 6, 0.55);
+    border: 2px solid #5c3a21;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+}
+
+#section-installed-extensions .ext-installed-detail-box {
+    background: #23160c;
+    border: 2px solid #5c3a21;
+}
+
+#section-installed-extensions .ext-sidebar-btn.active {
+    background: #5c3a21 !important;
+    border-color: #2e1a0b !important;
+    border-bottom: 3px solid #361f0d !important;
+    color: #ffdda6 !important;
+    transform: translateY(2px);
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Baúl del End (Descargar / Red Global) */
+#section-search-extensions .ext-sidebar {
+    background: rgba(8, 26, 22, 0.65);
+    border: 2px solid #055f46;
+}
+
+#section-search-extensions .ext-main-content {
+    background: rgba(4, 15, 12, 0.55);
+    border: 2px solid #055f46;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+}
+
+#section-search-extensions .ext-bottom-box {
+    background: #0b221c;
+    border: 2px solid #055f46;
+}
+
+#section-search-extensions .ext-sidebar-btn.active {
+    background: #055f46 !important;
+    border-color: #033628 !important;
+    border-bottom: 3px solid #02241b !important;
+    color: #6ee7b7 !important;
+    transform: translateY(2px);
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Page Indicator Badge — solo texto dorado, sin recuadro */
+.ext-page-badge {
     font-family: var(--font-title);
-    font-size: 1.1rem;
-    padding: 8px 24px;
-    background: #333333;
-    border: 2px solid #111111;
-    border-bottom: 4px solid #222222;
-    color: #cccccc;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.15s ease;
-}
-
-.ext-top-tab:hover {
-    background: #444444;
-    color: #ffffff;
-}
-
-.ext-top-tab.active {
-    background: var(--mc-green) !important;
-    border-color: #111111 !important;
-    border-bottom: 4px solid var(--mc-green-shadow) !important;
-    color: #ffffff !important;
+    font-size: 0.85rem;
     font-weight: bold;
+    color: #daa520;
+    background: none;
+    border: none;
+    padding: 0;
+    white-space: nowrap;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
 }
 
 /* Workspace layout */
@@ -83,30 +120,34 @@
 .ext-sidebar-btn {
     width: 100%;
     padding: 8px 6px;
-    background: #333333;
-    border: 2px solid #111111;
-    border-bottom: 3px solid #222222;
-    color: #cccccc;
+    background: var(--mc-gray);
+    border: 2px solid #111;
+    border-bottom: 3px solid var(--mc-gray-shadow);
+    color: var(--mc-white);
     font-family: var(--font-title);
     font-size: 0.88rem;
     text-transform: uppercase;
     cursor: pointer;
     text-align: center;
-    transition: background 0.15s;
+    transition: none;
     box-sizing: border-box;
     word-break: break-word;
+    position: relative;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15), inset 2px 0 0 rgba(255, 255, 255, 0.1);
 }
 
 .ext-sidebar-btn:hover {
-    background: #444444;
-    color: #ffffff;
+    background: var(--mc-gray-hover);
+    color: var(--mc-white);
 }
 
 .ext-sidebar-btn.active {
     background: var(--mc-green) !important;
-    color: #ffffff !important;
-    border-color: #111111 !important;
+    color: var(--mc-white) !important;
+    border-color: #111 !important;
     border-bottom: 3px solid var(--mc-green-shadow) !important;
+    transform: translateY(2px);
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4);
     font-weight: bold;
 }
 
@@ -191,20 +232,35 @@
     opacity: 0.5;
 }
 
-/* Grid de Complementos (Altura e iguales dimensiones 100% constantes, con o sin elementos) */
-.ext-mod-grid-6, .ext-installed-grid {
+/* Grid de Descargas (Búsqueda - 6 columnas, 440px de espacio vertical sin scrollbar) */
+.ext-mod-grid-6 {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-    grid-auto-rows: 120px;
+    grid-template-columns: repeat(6, 1fr);
     align-content: start;
     gap: 10px;
-    height: 410px !important;
-    min-height: 410px !important;
-    max-height: 410px !important;
+    height: 440px !important;
+    min-height: 440px !important;
+    max-height: 440px !important;
+    overflow: hidden; /* Evita scrollbar */
+    padding-right: 4px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Grid de Instalados (Por defecto 6 columnas que ocupan todo el espacio horizontal disponible) */
+.ext-installed-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    align-content: start;
+    gap: 10px;
+    height: 440px !important;
+    min-height: 440px !important;
+    max-height: 440px !important;
     overflow-y: scroll;
     scrollbar-gutter: stable;
     padding-right: 4px;
     box-sizing: border-box;
+    width: 100%;
 }
 
 .ext-mod-grid-6 > p.hint, .ext-installed-grid > p.hint {
@@ -213,9 +269,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 410px !important;
-    min-height: 410px !important;
-    max-height: 410px !important;
+    height: 440px !important;
+    min-height: 440px !important;
+    max-height: 440px !important;
     margin: 0;
     font-size: 1rem;
     color: #888888;
@@ -223,21 +279,22 @@
     box-sizing: border-box;
 }
 
-/* Extension Card Style (Coincide idéntico al explorador de Modpacks: sin flotación ni resplandores) */
+/* Extension Card Style (Coincide idéntico al explorador de Modpacks: proporción 1:1 cuadrada) */
 .ext-mod-card {
     background: rgba(0, 0, 0, 0.45);
     border: 2px solid #111111;
     border-radius: 4px;
-    padding: 10px 8px;
+    padding: 8px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     color: #ffffff;
     user-select: none;
-    height: 120px;
+    aspect-ratio: 1 / 1; /* Proporción 1:1 exacta */
+    max-height: 195px; /* Limita altura máxima para garantizar 2 filas sin desbordamiento */
     box-sizing: border-box;
     transition: background 0.12s, border-color 0.12s;
 }
@@ -253,18 +310,19 @@
 }
 
 .ext-mod-card img {
-    width: 64px;
-    height: 64px;
+    width: 48%; /* Adaptable al tamaño de la tarjeta */
+    height: auto;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: 4px;
-    box-shadow: 0 4px 0 #111111;
+    box-shadow: 0 3px 0 #111111;
     image-rendering: pixelated;
     flex-shrink: 0;
 }
 
 .ext-mod-card-title {
     font-family: var(--font-title);
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: bold;
     text-align: center;
     white-space: nowrap;
@@ -274,14 +332,45 @@
     color: #ffffff;
 }
 
+/* Boton grande "Seleccionar" */
+.ext-btn-select-big {
+    width: 90%;
+    padding: 14px 8px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    font-family: var(--font-title, 'Minecraftia', monospace);
+    letter-spacing: 0.5px;
+    background: linear-gradient(180deg, #2d9e3f 0%, #1a7a2a 100%);
+    border: 2px solid #1a5c22;
+    border-bottom-color: #0f3a16;
+    color: #ffffff;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+    box-shadow: 0 4px 0 #0f3a16, inset 0 1px 0 rgba(255,255,255,0.15);
+    image-rendering: pixelated;
+}
+.ext-btn-select-big:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+.ext-btn-select-big:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #0f3a16, inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.ext-btn-select-big:disabled {
+    filter: grayscale(0.7) brightness(0.55);
+    cursor: not-allowed;
+}
+
 /* Bottom Split Section */
 .ext-bottom-split {
     display: flex;
     gap: 10px;
-    min-height: 130px;
+    height: 200px !important;
+    min-height: 200px !important;
+    max-height: 200px !important;
     margin-top: auto;
     flex-shrink: 0;
-    flex-wrap: wrap;
     width: 100%;
     box-sizing: border-box;
 }
@@ -294,22 +383,28 @@
 }
 
 .ext-filters-box {
-    width: 180px;
-    min-width: 140px;
-    flex-shrink: 0;
-    flex-grow: 1;
+    width: calc(60% - 5px);
+    flex: 0 0 calc(60% - 5px);
+    height: 100%;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 4px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .ext-preview-box {
-    flex: 1;
-    min-width: 180px;
+    width: calc(40% - 5px);
+    flex: 0 0 calc(40% - 5px);
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .ext-box-label {
@@ -331,7 +426,7 @@
     box-sizing: border-box;
 }
 
-/* Preview Box Details (Adaptable) */
+/* Preview Box Details (Fijado a 200px de altura sin estiramientos) */
 .ext-preview-header {
     display: flex;
     justify-content: space-between;
@@ -364,21 +459,20 @@
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: normal;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    max-height: 125px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .ext-preview-arrow {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 56px;
     background: var(--mc-green);
-    border: 1px solid #111111;
+    border: 2px solid #111111;
     border-bottom: 3px solid var(--mc-green-shadow);
     color: #ffffff;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -394,6 +488,63 @@
 .ext-preview-arrow:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* Gallery wrapper con marco dorado */
+.ext-gallery-frame {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+}
+
+.ext-gallery-image-box {
+    flex: 1;
+    min-width: 0;
+    border: 3px solid #daa520;
+    background: rgba(0,0,0,0.5);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.ext-gallery-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.ext-gallery-arrows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ext-gallery-bar {
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #055f46 0%, #6ee7b7 50%, #055f46 100%);
+    flex-shrink: 0;
+}
+
+.ext-gallery-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Installed Mod Detail Bottom Box (Alineado al fondo y flexible) */
@@ -457,16 +608,33 @@
    RESPONSIVIDAD EXCLUSIVA DE LAS COLUMNAS DE TARJETAS DE COMPLEMENTOS
    ========================================================================== */
 
-/* Conforme el panel de complementos se reduce horizontalmente, las tarjetas se adaptan progresivamente hasta 1 columna */
-.ext-mod-grid-6, .ext-installed-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    grid-auto-rows: 120px;
-    align-content: start;
-    gap: 10px;
-    height: 410px;
-    max-height: 410px;
-    overflow-y: auto;
-    padding-right: 4px;
-    box-sizing: border-box;
+/* Conforme el panel se reduce, las tarjetas se adaptan progresivamente en ambos modos */
+@media (max-width: 1000px) {
+    .ext-mod-grid-6, .ext-installed-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+}
+
+@media (max-width: 850px) {
+    .ext-mod-grid-6, .ext-installed-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .ext-mod-grid-6, .ext-installed-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 550px) {
+    .ext-mod-grid-6, .ext-installed-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .ext-mod-grid-6, .ext-installed-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
