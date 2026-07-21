@@ -308,54 +308,161 @@
             </div>
         </section>
 
+    <link rel="stylesheet" href="css/extensions_custom.css?v=1" />
+
         <section id="page-extensions" class="page-section" hidden>
-            <div class="panel">
-                <div class="panel-heading">
+            <div class="panel extensions-panel-container">
+                <div class="panel-heading" style="margin-bottom: 4px;">
                     <div>
-                        <h2>Gestión de Complementos</h2>
-                        <p class="hint">Instala, desinstala y administra los complementos de tu servidor.</p>
+                        <h2>Complementos</h2>
+                        <p id="extensions-engine-hint" class="hint" style="margin: 4px 0 0; font-size: 0.9rem; color: #aaa;"></p>
                     </div>
                     <button id="btn-extensions-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
                 </div>
 
-                <p id="extensions-engine-hint" class="hint" style="margin-top: -12px; margin-bottom: 20px; font-weight: 500; font-size: 0.95rem; color: #fff;"></p>
-
-                <!-- Categorías superiores (Plugins, Mods, Datapacks) -->
-                <div id="extensions-categories" class="tabs">
-                    <button id="tab-category-plugins" type="button" class="tab-btn active">PLUGINS</button>
-                    <button id="tab-category-mods" type="button" class="tab-btn">MODS</button>
-                    <button id="tab-category-datapacks" type="button" class="tab-btn">DATAPACKS</button>
+                <!-- Pestañas Principales Superiores (Instalados vs Descargar) -->
+                <div class="ext-top-tabs">
+                    <button id="tab-ext-installed" type="button" class="ext-top-tab active">Instalados</button>
+                    <button id="tab-ext-download" type="button" class="ext-top-tab">Descargar</button>
                 </div>
 
-                <!-- Sub-pestañas (Activados vs Desactivados vs Buscar/Descargar) -->
-                <div class="tabs">
-                    <button id="tab-view-installed" type="button" class="tab-btn active">ACTIVADOS</button>
-                    <button id="tab-view-disabled" type="button" class="tab-btn">DESACTIVADOS</button>
-                    <button id="tab-view-search" type="button" class="tab-btn">BUSCAR / DESCARGAR</button>
-                </div>
+                <div class="ext-workspace">
+                    <!-- MODO 1: DESCARGAR (Búsqueda / Exploración) -->
+                    <div id="section-search-extensions" class="ext-tab-view" hidden>
+                        <div class="ext-two-col-layout">
+                            <!-- Columna Izquierda (Proveedores y Categorías) -->
+                            <div class="ext-sidebar">
+                                <select id="select-search-provider" style="display: none;">
+                                    <option value="modrinth" selected>Modrinth</option>
+                                    <option value="curseforge">CurseForge</option>
+                                </select>
+                                <button id="btn-provider-modrinth" type="button" class="ext-sidebar-btn active" data-provider="modrinth">Modrinth</button>
+                                <button id="btn-provider-curseforge" type="button" class="ext-sidebar-btn" data-provider="curseforge">CurseForge</button>
+                                
+                                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px;">
+                                    <label style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Categoría</label>
+                                    <div id="extensions-categories" style="display: flex; flex-direction: column; gap: 4px;">
+                                        <button id="tab-category-mods" type="button" class="ext-sidebar-btn active">MODS</button>
+                                        <button id="tab-category-plugins" type="button" class="ext-sidebar-btn">PLUGINS</button>
+                                        <button id="tab-category-datapacks" type="button" class="ext-sidebar-btn">DATAPACKS</button>
+                                    </div>
+                                </div>
+                            </div>
 
-                <div id="section-installed-extensions">
-                    <div id="list-installed-extensions" style="display: flex; flex-direction: column; gap: 8px;">
-                        <p class="hint" style="text-align: center; margin: 16px 0;">Cargando extensiones...</p>
+                            <!-- Panel Derecho Principal -->
+                            <div class="ext-main-content">
+                                <!-- Barra de búsqueda -->
+                                <div class="ext-search-bar-row">
+                                    <input id="input-search-extension" type="text" placeholder="Buscar por nombre..." autocomplete="off" />
+                                    <button id="btn-search-extension" type="button" class="mc-btn-primary">Buscar</button>
+                                </div>
+
+                                <!-- Grid de resultados 2x3 con flechas de navegación -->
+                                <div class="ext-grid-nav-wrapper">
+                                    <button id="btn-ext-page-prev" type="button" class="ext-nav-arrow-btn">&lt;</button>
+                                    
+                                    <div id="list-search-results" class="ext-mod-grid-6">
+                                        <p class="hint" style="grid-column: span 3; text-align: center; margin: 16px 0;">Cargando sugerencias...</p>
+                                    </div>
+
+                                    <button id="btn-ext-page-next" type="button" class="ext-nav-arrow-btn">&gt;</button>
+                                </div>
+
+                                <!-- Panel Inferior Dividido (Filtros + Vista Previa) -->
+                                <div class="ext-bottom-split">
+                                    <!-- Caja Izquierda: Filtros -->
+                                    <div class="ext-bottom-box ext-filters-box">
+                                        <div>
+                                            <label class="ext-box-label">Lanzadores de Mods</label>
+                                            <select id="select-ext-loader-filter" class="ext-select">
+                                                <option value="all">Todos los lanzadores</option>
+                                                <option value="fabric">Fabric</option>
+                                                <option value="forge">Forge</option>
+                                                <option value="neoforge">NeoForge</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="ext-box-label">Versiones</label>
+                                            <select id="select-ext-version-filter" class="ext-select">
+                                                <option value="all">Todas las versiones</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Caja Derecha: Vista Previa y Detalles -->
+                                    <div id="ext-preview-panel" class="ext-bottom-box ext-preview-box">
+                                        <div class="ext-preview-header">
+                                            <div style="flex: 1; min-width: 0;">
+                                                <h3 id="ext-preview-title" class="ext-preview-title">Selecciona un complemento</h3>
+                                                <span id="ext-preview-author" class="ext-preview-author" style="display:none;"></span>
+                                            </div>
+                                            <div style="display: flex; gap: 4px;">
+                                                <button id="btn-ext-gallery-prev" type="button" class="ext-preview-arrow">&lt;</button>
+                                                <button id="btn-ext-gallery-next" type="button" class="ext-preview-arrow">&gt;</button>
+                                            </div>
+                                        </div>
+                                        <p id="ext-preview-desc" class="ext-preview-desc">Haz clic en un complemento de la lista para ver sus detalles y descargarlo.</p>
+                                        <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+                                            <button id="btn-ext-install-selected" type="button" class="mc-btn-primary btn-small" disabled style="opacity: 0.5;">Instalar</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODO 2: INSTALADOS (Complementos Instalados) -->
+                    <div id="section-installed-extensions" class="ext-tab-view">
+                        <div class="ext-two-col-layout">
+                            <!-- Columna Izquierda (Sub-pestañas Activados / Desactivados) -->
+                            <div class="ext-sidebar">
+                                <button id="tab-view-installed" type="button" class="ext-sidebar-btn active">Activados</button>
+                                <button id="tab-view-disabled" type="button" class="ext-sidebar-btn">Desactivados</button>
+
+                                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px;">
+                                    <label style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Categoría</label>
+                                    <div id="extensions-categories-inst" style="display: flex; flex-direction: column; gap: 4px;">
+                                        <button id="tab-category-mods-inst" type="button" class="ext-sidebar-btn active">MODS</button>
+                                        <button id="tab-category-plugins-inst" type="button" class="ext-sidebar-btn">PLUGINS</button>
+                                        <button id="tab-category-datapacks-inst" type="button" class="ext-sidebar-btn">DATAPACKS</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel Derecho Principal -->
+                            <div class="ext-main-content">
+                                <!-- Grid de Complementos Instalados (2 filas x 4 columnas con scrollbar) -->
+                                <div id="list-installed-extensions" class="ext-installed-grid">
+                                    <p class="hint" style="grid-column: span 4; text-align: center; margin: 16px 0;">Cargando extensiones...</p>
+                                </div>
+
+                                <!-- Panel Inferior: Controles y Detalles del Complemento Instalado Seleccionado -->
+                                <div id="ext-installed-detail-panel" class="ext-bottom-box ext-installed-detail-box">
+                                    <div class="ext-installed-info">
+                                        <h3 id="ext-installed-title" class="ext-preview-title">Ningún complemento seleccionado</h3>
+                                        <span id="ext-installed-author" class="ext-preview-author" style="display:none;"></span>
+                                        <p id="ext-installed-desc" class="ext-preview-desc">Selecciona un complemento instalado arriba para gestionarlo.</p>
+                                    </div>
+                                    <div class="ext-installed-controls">
+                                        <!-- Switch (Desactivar / Activar) -->
+                                        <div class="ext-switch-group">
+                                            <span id="label-ext-toggle-state" style="font-weight: bold; font-size: 0.95rem; color: #fff;">Desactivar</span>
+                                            <label class="mc-switch">
+                                                <input id="switch-ext-toggle" type="checkbox" checked disabled />
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <!-- Botón Rojo Eliminar -->
+                                        <button id="btn-ext-delete-selected" type="button" class="ext-btn-delete" disabled>Eliminar</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div id="section-search-extensions" hidden>
-                    <div class="row responsive-row" style="margin-bottom: 20px; gap: 8px; align-items: stretch;">
-                        <select id="select-search-provider" style="display: none;">
-                            <option value="modrinth" selected>Modrinth</option>
-                            <option value="curseforge">CurseForge</option>
-                        </select>
-                        <button id="btn-search-provider-cycle" type="button" class="mc-cycle-btn btn-small" style="width: auto; min-width: 140px; margin: 0; height: 42px; box-sizing: border-box;">
-                            MODRINTH
-                        </button>
-                        <input id="input-search-extension" type="text" placeholder="Escribe el nombre de un plugin, mod o datapack" autocomplete="off" style="flex: 1; margin: 0; height: 42px; box-sizing: border-box;" />
-                        <button id="btn-search-extension" type="button" class="mc-btn-primary" style="height: 42px; margin: 0; box-sizing: border-box;">Buscar</button>
-                    </div>
-                    <div id="list-search-results" style="display: grid; grid-template-columns: 1fr; gap: 16px;">
-                        <p class="hint" style="text-align: center; margin: 16px 0;">Cargando sugerencias...</p>
-                    </div>
-                </div>
             </div>
         </section>
 

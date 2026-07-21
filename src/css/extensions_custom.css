@@ -1,0 +1,472 @@
+/* ==========================================================================
+   COMPLEMENTOS / EXTENSIONS (DESIGN MATCH)
+   ========================================================================== */
+
+/* Main Panel Layout */
+.extensions-panel-container {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+/* Top Level Main Tabs (Instalados | Descargar) */
+.ext-top-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.ext-top-tab {
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    padding: 8px 24px;
+    background: #333333;
+    border: 2px solid #111111;
+    border-bottom: 4px solid #222222;
+    color: #cccccc;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+}
+
+.ext-top-tab:hover {
+    background: #444444;
+    color: #ffffff;
+}
+
+.ext-top-tab.active {
+    background: var(--mc-green) !important;
+    border-color: #111111 !important;
+    border-bottom: 4px solid var(--mc-green-shadow) !important;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+/* Workspace layout */
+.ext-workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+}
+
+.ext-tab-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Two-column Layout: Sidebar (left) + Main Content (right) */
+.ext-two-col-layout {
+    display: flex;
+    gap: 16px;
+    flex: 1;
+    height: auto;
+    align-items: stretch;
+}
+
+/* Left Sidebar */
+.ext-sidebar {
+    width: 135px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 2px solid #111111;
+    padding: 10px 8px;
+    box-sizing: border-box;
+}
+
+.ext-sidebar-btn {
+    width: 100%;
+    padding: 8px 6px;
+    background: #333333;
+    border: 2px solid #111111;
+    border-bottom: 3px solid #222222;
+    color: #cccccc;
+    font-family: var(--font-title);
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+    box-sizing: border-box;
+    word-break: break-word;
+}
+
+.ext-sidebar-btn:hover {
+    background: #444444;
+    color: #ffffff;
+}
+
+.ext-sidebar-btn.active {
+    background: var(--mc-green) !important;
+    color: #ffffff !important;
+    border-color: #111111 !important;
+    border-bottom: 3px solid var(--mc-green-shadow) !important;
+    font-weight: bold;
+}
+
+/* Main Content Area */
+.ext-main-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 2px solid #111111;
+    padding: 12px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Search Bar Row */
+.ext-search-bar-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ext-search-bar-row input {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    height: 40px;
+}
+
+.ext-search-bar-row button {
+    height: 40px;
+    margin: 0;
+    padding: 0 16px;
+    flex-shrink: 0;
+}
+
+/* Grid + Navigation Arrows Container (Descargar) */
+.ext-grid-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ext-nav-arrow-btn {
+    width: 34px;
+    height: 120px;
+    background: var(--mc-green);
+    border: 2px solid #111111;
+    border-bottom: 4px solid var(--mc-green-shadow);
+    color: #ffffff;
+    font-family: var(--font-title);
+    font-size: 1.6rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: filter 0.15s, transform 0.1s;
+}
+
+.ext-nav-arrow-btn:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.ext-nav-arrow-btn:active:not(:disabled) {
+    transform: translateY(2px);
+}
+
+.ext-nav-arrow-btn:disabled {
+    background: #3a3a3a;
+    border-bottom-color: #222222;
+    color: #666666;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Grid de Complementos (Altura e iguales dimensiones 100% constantes, con o sin elementos) */
+.ext-mod-grid-6, .ext-installed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+    grid-auto-rows: 120px;
+    align-content: start;
+    gap: 10px;
+    height: 410px !important;
+    min-height: 410px !important;
+    max-height: 410px !important;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+    box-sizing: border-box;
+}
+
+.ext-mod-grid-6 > p.hint, .ext-installed-grid > p.hint {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 410px !important;
+    min-height: 410px !important;
+    max-height: 410px !important;
+    margin: 0;
+    font-size: 1rem;
+    color: #888888;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Extension Card Style (Coincide idéntico al explorador de Modpacks: sin flotación ni resplandores) */
+.ext-mod-card {
+    background: rgba(0, 0, 0, 0.45);
+    border: 2px solid #111111;
+    border-radius: 4px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #ffffff;
+    user-select: none;
+    height: 120px;
+    box-sizing: border-box;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.ext-mod-card:hover {
+    background: rgba(0, 0, 0, 0.65);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.ext-mod-card.selected {
+    border: 2px solid var(--mc-green) !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+}
+
+.ext-mod-card img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 4px 0 #111111;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.ext-mod-card-title {
+    font-family: var(--font-title);
+    font-size: 0.88rem;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    color: #ffffff;
+}
+
+/* Bottom Split Section */
+.ext-bottom-split {
+    display: flex;
+    gap: 10px;
+    min-height: 130px;
+    margin-top: auto;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ext-bottom-box {
+    background: #252525;
+    border: 2px solid #111111;
+    padding: 10px 12px;
+    box-sizing: border-box;
+}
+
+.ext-filters-box {
+    width: 180px;
+    min-width: 140px;
+    flex-shrink: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+}
+
+.ext-preview-box {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ext-box-label {
+    font-size: 0.78rem;
+    color: #bbbbbb;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.ext-select {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #444444;
+    color: #ffffff;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+}
+
+/* Preview Box Details (Adaptable) */
+.ext-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+}
+
+.ext-preview-title {
+    margin: 0 0 2px;
+    font-family: var(--font-title);
+    font-size: 1.15rem;
+    color: #ffaa00; /* Yellow / Orange as in mockup */
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+.ext-preview-author {
+    font-size: 0.78rem;
+    color: #aaaaaa;
+    word-break: break-word;
+}
+
+.ext-preview-desc {
+    margin: 4px 0;
+    font-size: 0.82rem;
+    color: #cccccc;
+    line-height: 1.35;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ext-preview-arrow {
+    width: 28px;
+    height: 28px;
+    background: var(--mc-green);
+    border: 1px solid #111111;
+    border-bottom: 3px solid var(--mc-green-shadow);
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: filter 0.15s;
+    flex-shrink: 0;
+}
+
+.ext-preview-arrow:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.ext-preview-arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Installed Mod Detail Bottom Box (Alineado al fondo y flexible) */
+.ext-installed-detail-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 90px;
+    padding: 10px 14px;
+    margin-top: auto;
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ext-installed-info {
+    flex: 1;
+    min-width: 150px;
+    word-break: break-word;
+}
+
+.ext-installed-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.ext-switch-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ext-btn-delete {
+    background: #dc2626 !important;
+    border: 2px solid #7f1d1d !important;
+    border-bottom: 4px solid #991b1b !important;
+    color: #ffffff !important;
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+
+.ext-btn-delete:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.ext-btn-delete:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   RESPONSIVIDAD EXCLUSIVA DE LAS COLUMNAS DE TARJETAS DE COMPLEMENTOS
+   ========================================================================== */
+
+/* Conforme el panel de complementos se reduce horizontalmente, las tarjetas se adaptan progresivamente hasta 1 columna */
+.ext-mod-grid-6, .ext-installed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-auto-rows: 120px;
+    align-content: start;
+    gap: 10px;
+    height: 410px;
+    max-height: 410px;
+    overflow-y: auto;
+    padding-right: 4px;
+    box-sizing: border-box;
+}

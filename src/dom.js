@@ -192,9 +192,21 @@ export function initDom() {
   els.btnExtensionsBack = document.querySelector("#btn-extensions-back");
   els.pageExtensions = document.querySelector("#page-extensions");
   els.extensionsEngineHint = document.querySelector("#extensions-engine-hint");
+
+  els.tabExtInstalled = document.querySelector("#tab-ext-installed");
+  els.tabExtDownload = document.querySelector("#tab-ext-download");
+
+  els.btnProviderModrinth = document.querySelector("#btn-provider-modrinth");
+  els.btnProviderCurseforge = document.querySelector("#btn-provider-curseforge");
+
   els.tabCategoryPlugins = document.querySelector("#tab-category-plugins");
   els.tabCategoryMods = document.querySelector("#tab-category-mods");
   els.tabCategoryDatapacks = document.querySelector("#tab-category-datapacks");
+
+  els.tabCategoryPluginsInst = document.querySelector("#tab-category-plugins-inst");
+  els.tabCategoryModsInst = document.querySelector("#tab-category-mods-inst");
+  els.tabCategoryDatapacksInst = document.querySelector("#tab-category-datapacks-inst");
+
   els.tabViewInstalled = document.querySelector("#tab-view-installed");
   els.tabViewDisabled = document.querySelector("#tab-view-disabled");
   els.tabViewSearch = document.querySelector("#tab-view-search");
@@ -204,6 +216,27 @@ export function initDom() {
   els.inputSearchExtension = document.querySelector("#input-search-extension");
   els.btnSearchExtension = document.querySelector("#btn-search-extension");
   els.listSearchResults = document.querySelector("#list-search-results");
+
+  els.btnExtPagePrev = document.querySelector("#btn-ext-page-prev");
+  els.btnExtPageNext = document.querySelector("#btn-ext-page-next");
+  els.selectExtLoaderFilter = document.querySelector("#select-ext-loader-filter");
+  els.selectExtVersionFilter = document.querySelector("#select-ext-version-filter");
+
+  els.extPreviewTitle = document.querySelector("#ext-preview-title");
+  els.extPreviewAuthor = document.querySelector("#ext-preview-author");
+  els.extPreviewDesc = document.querySelector("#ext-preview-desc");
+  els.btnExtGalleryPrev = document.querySelector("#btn-ext-gallery-prev");
+  els.btnExtGalleryNext = document.querySelector("#btn-ext-gallery-next");
+  els.btnExtInstallSelected = document.querySelector("#btn-ext-install-selected");
+
+  els.extInstalledThumb = document.querySelector("#ext-installed-thumb");
+  els.extInstalledTitle = document.querySelector("#ext-installed-title");
+  els.extInstalledAuthor = document.querySelector("#ext-installed-author");
+  els.extInstalledDesc = document.querySelector("#ext-installed-desc");
+  els.labelExtToggleState = document.querySelector("#label-ext-toggle-state");
+  els.switchExtToggle = document.querySelector("#switch-ext-toggle");
+  els.btnExtDeleteSelected = document.querySelector("#btn-ext-delete-selected");
+
   els.extensionVersionsDialog = document.querySelector("#extension-versions-dialog");
   els.extDialogTitle = document.querySelector("#ext-dialog-title");
   els.extDialogDesc = document.querySelector("#ext-dialog-desc");
@@ -213,13 +246,10 @@ export function initDom() {
 
   els.selectSearchProvider = document.querySelector("#select-search-provider");
   els.btnSearchProviderCycle = document.querySelector("#btn-search-provider-cycle");
-  els.inputSearchExtension = document.querySelector("#input-search-extension");
   els.extensionPreviewDialog = document.querySelector("#extension-preview-dialog");
   els.extPreviewIcon = document.querySelector("#ext-preview-icon");
-  els.extPreviewTitle = document.querySelector("#ext-preview-title");
   els.extPreviewType = document.querySelector("#ext-preview-type");
   els.extPreviewDownloads = document.querySelector("#ext-preview-downloads");
-  els.extPreviewAuthor = document.querySelector("#ext-preview-author");
   els.extPreviewGalleryContainer = document.querySelector("#ext-preview-gallery-container");
   els.extPreviewGallery = document.querySelector("#ext-preview-gallery");
   els.tabPreviewDesc = document.querySelector("#tab-preview-desc");

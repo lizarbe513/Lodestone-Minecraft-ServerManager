@@ -454,10 +454,57 @@ export function initServerControlEvents() {
     });
   }
 
+  // Pestañas Principales Superiores (Instalados vs Descargar)
+  if (els.tabExtInstalled) {
+    els.tabExtInstalled.addEventListener("click", () => {
+      els.tabExtInstalled.classList.add("active");
+      if (els.tabExtDownload) els.tabExtDownload.classList.remove("active");
+      if (els.sectionInstalledExtensions) els.sectionInstalledExtensions.hidden = false;
+      if (els.sectionSearchExtensions) els.sectionSearchExtensions.hidden = true;
+      setActiveSubTab("installed");
+      loadInstalledExtensions();
+    });
+  }
+
+  if (els.tabExtDownload) {
+    els.tabExtDownload.addEventListener("click", () => {
+      els.tabExtDownload.classList.add("active");
+      if (els.tabExtInstalled) els.tabExtInstalled.classList.remove("active");
+      if (els.sectionInstalledExtensions) els.sectionInstalledExtensions.hidden = true;
+      if (els.sectionSearchExtensions) els.sectionSearchExtensions.hidden = false;
+      setActiveSubTab("search");
+      const query = els.inputSearchExtension ? els.inputSearchExtension.value : "";
+      searchModrinth(query);
+    });
+  }
+
+  // Proveedores (Modrinth vs CurseForge)
+  if (els.btnProviderModrinth) {
+    els.btnProviderModrinth.addEventListener("click", () => {
+      els.btnProviderModrinth.classList.add("active");
+      if (els.btnProviderCurseforge) els.btnProviderCurseforge.classList.remove("active");
+      if (els.selectSearchProvider) els.selectSearchProvider.value = "modrinth";
+      const query = els.inputSearchExtension ? els.inputSearchExtension.value : "";
+      searchModrinth(query);
+    });
+  }
+
+  if (els.btnProviderCurseforge) {
+    els.btnProviderCurseforge.addEventListener("click", () => {
+      els.btnProviderCurseforge.classList.add("active");
+      if (els.btnProviderModrinth) els.btnProviderModrinth.classList.remove("active");
+      if (els.selectSearchProvider) els.selectSearchProvider.value = "curseforge";
+      const query = els.inputSearchExtension ? els.inputSearchExtension.value : "";
+      searchModrinth(query);
+    });
+  }
+
+  // Categorías (Mods / Plugins / Datapacks) en Descargar
   if (els.tabCategoryPlugins) {
     els.tabCategoryPlugins.addEventListener("click", () => {
       setActiveCategory("plugin");
-      selectCategoryTab(els.tabCategoryPlugins);
+      [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks].forEach(b => b && b.classList.remove("active"));
+      els.tabCategoryPlugins.classList.add("active");
       refreshExtensionsList();
     });
   }
@@ -465,7 +512,8 @@ export function initServerControlEvents() {
   if (els.tabCategoryMods) {
     els.tabCategoryMods.addEventListener("click", () => {
       setActiveCategory("mod");
-      selectCategoryTab(els.tabCategoryMods);
+      [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks].forEach(b => b && b.classList.remove("active"));
+      els.tabCategoryMods.classList.add("active");
       refreshExtensionsList();
     });
   }
@@ -473,17 +521,46 @@ export function initServerControlEvents() {
   if (els.tabCategoryDatapacks) {
     els.tabCategoryDatapacks.addEventListener("click", () => {
       setActiveCategory("datapack");
-      selectCategoryTab(els.tabCategoryDatapacks);
+      [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks].forEach(b => b && b.classList.remove("active"));
+      els.tabCategoryDatapacks.classList.add("active");
       refreshExtensionsList();
     });
   }
 
+  // Categorías en Instalados
+  if (els.tabCategoryPluginsInst) {
+    els.tabCategoryPluginsInst.addEventListener("click", () => {
+      setActiveCategory("plugin");
+      [els.tabCategoryPluginsInst, els.tabCategoryModsInst, els.tabCategoryDatapacksInst].forEach(b => b && b.classList.remove("active"));
+      els.tabCategoryPluginsInst.classList.add("active");
+      loadInstalledExtensions();
+    });
+  }
+
+  if (els.tabCategoryModsInst) {
+    els.tabCategoryModsInst.addEventListener("click", () => {
+      setActiveCategory("mod");
+      [els.tabCategoryPluginsInst, els.tabCategoryModsInst, els.tabCategoryDatapacksInst].forEach(b => b && b.classList.remove("active"));
+      els.tabCategoryModsInst.classList.add("active");
+      loadInstalledExtensions();
+    });
+  }
+
+  if (els.tabCategoryDatapacksInst) {
+    els.tabCategoryDatapacksInst.addEventListener("click", () => {
+      setActiveCategory("datapack");
+      [els.tabCategoryPluginsInst, els.tabCategoryModsInst, els.tabCategoryDatapacksInst].forEach(b => b && b.classList.remove("active"));
+      els.tabCategoryDatapacksInst.classList.add("active");
+      loadInstalledExtensions();
+    });
+  }
+
+  // Sub-pestañas Estado (Activados vs Desactivados)
   if (els.tabViewInstalled) {
     els.tabViewInstalled.addEventListener("click", () => {
       setActiveSubTab("installed");
-      selectSubTab(els.tabViewInstalled);
-      if (els.sectionInstalledExtensions) els.sectionInstalledExtensions.hidden = false;
-      if (els.sectionSearchExtensions) els.sectionSearchExtensions.hidden = true;
+      els.tabViewInstalled.classList.add("active");
+      if (els.tabViewDisabled) els.tabViewDisabled.classList.remove("active");
       loadInstalledExtensions();
     });
   }
@@ -491,20 +568,9 @@ export function initServerControlEvents() {
   if (els.tabViewDisabled) {
     els.tabViewDisabled.addEventListener("click", () => {
       setActiveSubTab("disabled");
-      selectSubTab(els.tabViewDisabled);
-      if (els.sectionInstalledExtensions) els.sectionInstalledExtensions.hidden = false;
-      if (els.sectionSearchExtensions) els.sectionSearchExtensions.hidden = true;
+      els.tabViewDisabled.classList.add("active");
+      if (els.tabViewInstalled) els.tabViewInstalled.classList.remove("active");
       loadInstalledExtensions();
-    });
-  }
-
-  if (els.tabViewSearch) {
-    els.tabViewSearch.addEventListener("click", () => {
-      setActiveSubTab("search");
-      selectSubTab(els.tabViewSearch);
-      if (els.sectionInstalledExtensions) els.sectionInstalledExtensions.hidden = true;
-      if (els.sectionSearchExtensions) els.sectionSearchExtensions.hidden = false;
-      searchModrinth(els.inputSearchExtension.value);
     });
   }
 

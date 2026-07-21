@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- Gray base -->
+  <rect width="8" height="8" fill="#7a7a7a"/>
+  <!-- Eyes -->
+  <rect x="1" y="2" width="2" height="2" fill="#222222"/>
+  <rect x="5" y="2" width="2" height="2" fill="#222222"/>
+  <!-- Nose/mouth -->
+  <rect x="3" y="4" width="2" height="2" fill="#222222"/>
+  <rect x="2" y="5" width="4" height="2" fill="#222222"/>
+  <rect x="2" y="7" width="1" height="1" fill="#222222"/>
+  <rect x="5" y="7" width="1" height="1" fill="#222222"/>
+</svg>

@@ -97,16 +97,19 @@ function selectCategoryTab(activeButton) {
   });
 }
 
+let selectedInstalledExt = null;
+
 export async function loadInstalledExtensions() {
   if (!els.listInstalledExtensions) return;
 
   try {
-    els.listInstalledExtensions.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Cargando extensiones...</p>';
+    els.listInstalledExtensions.innerHTML = '<p class="hint" style="grid-column: span 4; text-align: center; margin: 16px 0;">Cargando extensiones...</p>';
     const extensions = await invoke("listar_extensiones");
 
     els.listInstalledExtensions.innerHTML = "";
-    
-    // Filtrar localmente según la categoría activa y subpestaña (activados vs desactivados)
+    selectedInstalledExt = null;
+    resetInstalledDetailPanel();
+
     const isLookingForDisabled = activeSubTab === "disabled";
     const filtered = (extensions || []).filter(ext => {
       if (ext.extension_type !== activeCategory) return false;
@@ -117,122 +120,133 @@ export async function loadInstalledExtensions() {
     if (filtered.length === 0) {
       const typeText = activeCategory === "plugin" ? "plugins" : activeCategory === "mod" ? "mods" : "datapacks";
       const statusText = isLookingForDisabled ? "desactivados" : "activados";
-      els.listInstalledExtensions.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">No hay ${typeText} ${statusText}.</p>`;
+      els.listInstalledExtensions.innerHTML = `<p class="hint" style="grid-column: span 4; text-align: center; margin: 16px 0;">No hay ${typeText} ${statusText}.</p>`;
       return;
     }
 
-    filtered.forEach(ext => {
-      const isEnabled = ext.enabled !== false;
+    filtered.forEach((ext, idx) => {
       const card = document.createElement("div");
-      card.className = "minecraft-table";
-      card.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--bg-panel); border: 2px solid #111; margin-bottom: 6px;";
-
-      const infoDiv = document.createElement("div");
-      infoDiv.style = "display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;";
-
-      const headerRow = document.createElement("div");
-      headerRow.style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;";
-
-      const name = document.createElement("strong");
-      name.style.fontSize = "1rem";
-      name.style.color = "#fff";
-      name.textContent = ext.name;
-
-      const badge = document.createElement("span");
-      const isPlugin = ext.extension_type === "plugin";
-      const isMod = ext.extension_type === "mod";
-      
-      let badgeBg = "rgba(234, 179, 8, 0.2)";
-      let badgeColor = "#eab308";
-      let badgeBorder = "rgba(234, 179, 8, 0.4)";
-      
-      if (isPlugin) {
-        badgeBg = "rgba(79, 70, 229, 0.2)";
-        badgeColor = "#818cf8";
-        badgeBorder = "rgba(79, 70, 229, 0.4)";
-      } else if (isMod) {
-        badgeBg = "rgba(16, 185, 129, 0.2)";
-        badgeColor = "#34d399";
-        badgeBorder = "rgba(16, 185, 129, 0.4)";
-      }
-      
-      badge.style = `font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder};`;
-      badge.textContent = ext.extension_type;
-
-      headerRow.appendChild(name);
-      headerRow.appendChild(badge);
-
-      const version = document.createElement("span");
-      version.style = "font-size: 0.85rem; color: var(--text-secondary);";
-      version.textContent = ext.extension_type === "datapack" ? "" : `v${ext.version}`;
-      if (version.textContent) {
-        headerRow.appendChild(version);
+      const isEnabled = ext.enabled !== false;
+      card.className = "ext-mod-card" + (!isEnabled ? " disabled-card" : "");
+      card.dataset.fileName = ext.file_name;
+      if (!isEnabled) {
+        card.style.opacity = "0.45";
+        card.style.filter = "grayscale(85%)";
+      } else {
+        card.style.opacity = "1";
+        card.style.filter = "none";
       }
 
-      const fileName = document.createElement("span");
-      fileName.style = "font-size: 0.8rem; color: var(--text-secondary); font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.7;";
-      fileName.textContent = ext.file_name;
+      const iconUrl = ext.icon_url || "assets/creeper_head.svg";
+      card.innerHTML = `
+        <img src="${iconUrl}" />
+        <div class="ext-mod-card-title">${ext.name}</div>
+      `;
 
-      infoDiv.appendChild(headerRow);
-      infoDiv.appendChild(fileName);
+      card.addEventListener("click", () => {
+        const allCards = els.listInstalledExtensions.querySelectorAll(".ext-mod-card");
+        allCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedInstalledExt = ext;
+        updateInstalledDetailPanel(ext);
+      });
 
-      if (ext.description) {
-          const desc = document.createElement("p");
-          desc.style = "margin: 4px 0 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;";
-          desc.textContent = ext.description;
-          infoDiv.appendChild(desc);
-      }
-
-      const actionsDiv = document.createElement("div");
-      actionsDiv.style = "display: flex; gap: 8px; align-items: center; margin-left: 16px; flex-shrink: 0;";
-
-      // Botón Desactivar (Amarillo Warning) / Activar (Verde Primary)
-      const btnToggle = document.createElement("button");
-      btnToggle.type = "button";
-      btnToggle.className = isEnabled ? "mc-btn-warning btn-small" : "mc-btn-primary btn-small";
-      btnToggle.textContent = isEnabled ? "Desactivar" : "Activar";
-      btnToggle.onclick = async () => {
-        try {
-          showFeedback(`${isEnabled ? 'Desactivando' : 'Activando'} "${ext.name}"...`, "info");
-          await invoke("alternar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
-          showFeedback(`Complemento "${ext.name}" ${isEnabled ? 'desactivado' : 'activado'} correctamente.`, "success");
-          loadInstalledExtensions();
-        } catch (err) {
-          showFeedback(`Error al cambiar estado del complemento: ${err}`, "error");
-        }
-      };
-
-      // Botón Eliminar (Estilo Bedrock Danger)
-      const btnDelete = document.createElement("button");
-      btnDelete.type = "button";
-      btnDelete.className = "mc-btn-danger btn-small";
-      btnDelete.textContent = "Eliminar";
-      btnDelete.onclick = () => {
-        requestConfirm(
-          "Eliminar Complemento",
-          `¿Estás seguro de que quieres eliminar el complemento "${ext.name}"?`,
-          async () => {
-            try {
-              showFeedback(`Eliminando "${ext.name}"...`, "info");
-              await invoke("eliminar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
-              showFeedback(`Complemento "${ext.name}" eliminado correctamente.`, "success");
-              loadInstalledExtensions();
-            } catch (err) {
-              showFeedback(`Error al eliminar: ${err}`, "error");
-            }
-          }
-        );
-      };
-
-      actionsDiv.appendChild(btnToggle);
-      actionsDiv.appendChild(btnDelete);
-
-      card.appendChild(infoDiv);
-      card.appendChild(actionsDiv);
       els.listInstalledExtensions.appendChild(card);
+
+      // Autoselect first item
+      if (idx === 0) {
+        card.click();
+      }
     });
   } catch (err) {
-    els.listInstalledExtensions.innerHTML = `<p class="hint" style="color: var(--error);">Error al cargar extensiones: ${err}</p>`;
+    els.listInstalledExtensions.innerHTML = `<p class="hint" style="grid-column: span 4; color: var(--error);">Error al cargar extensiones: ${err}</p>`;
+  }
+}
+
+function resetInstalledDetailPanel() {
+  if (els.extInstalledTitle) els.extInstalledTitle.textContent = "Ningún complemento seleccionado";
+  if (els.extInstalledAuthor) { els.extInstalledAuthor.textContent = ""; els.extInstalledAuthor.style.display = "none"; }
+  if (els.extInstalledDesc) els.extInstalledDesc.textContent = "Selecciona un complemento instalado arriba para gestionarlo.";
+  if (els.extInstalledThumb) els.extInstalledThumb.style.backgroundImage = "none";
+  if (els.switchExtToggle) { els.switchExtToggle.disabled = true; els.switchExtToggle.checked = false; }
+  if (els.labelExtToggleState) els.labelExtToggleState.textContent = "Desactivar";
+  if (els.btnExtDeleteSelected) { els.btnExtDeleteSelected.disabled = true; }
+}
+
+function updateInstalledDetailPanel(ext) {
+  const isEnabled = ext.enabled !== false;
+  
+  if (els.extInstalledTitle) els.extInstalledTitle.textContent = ext.name;
+  if (els.extInstalledAuthor) {
+    els.extInstalledAuthor.textContent = `Archivo: ${ext.file_name} ${ext.version ? '| v' + ext.version : ''}`;
+    els.extInstalledAuthor.style.display = "block";
+  }
+  if (els.extInstalledDesc) {
+    els.extInstalledDesc.textContent = ext.description || "Complemento instalado en el servidor.";
+  }
+  if (els.extInstalledThumb) {
+    if (ext.icon_url) {
+      els.extInstalledThumb.style.backgroundImage = `url('${ext.icon_url}')`;
+    } else {
+      els.extInstalledThumb.style.backgroundImage = "none";
+    }
+  }
+
+  if (els.switchExtToggle) {
+    els.switchExtToggle.disabled = false;
+    els.switchExtToggle.checked = isEnabled;
+    els.switchExtToggle.onclick = async () => {
+      try {
+        const nextState = !(ext.enabled !== false);
+        showFeedback(`${nextState ? 'Activando' : 'Desactivando'} "${ext.name}"...`, "info");
+        await invoke("alternar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
+        ext.enabled = nextState;
+        showFeedback(`Complemento "${ext.name}" ${nextState ? 'activado' : 'desactivado'} correctamente.`, "success");
+
+        // Mantener la tarjeta visible en pantalla con apariencia apagada/activada
+        const cardElem = els.listInstalledExtensions.querySelector(`.ext-mod-card[data-file-name="${ext.file_name}"]`);
+        if (cardElem) {
+          if (nextState) {
+            cardElem.classList.remove("disabled-card");
+            cardElem.style.opacity = "1";
+            cardElem.style.filter = "none";
+          } else {
+            cardElem.classList.add("disabled-card");
+            cardElem.style.opacity = "0.45";
+            cardElem.style.filter = "grayscale(85%)";
+          }
+        }
+
+        // Actualizar el estado del switch y texto
+        updateInstalledDetailPanel(ext);
+      } catch (err) {
+        showFeedback(`Error al cambiar estado: ${err}`, "error");
+      }
+    };
+  }
+
+  if (els.labelExtToggleState) {
+    els.labelExtToggleState.textContent = isEnabled ? "Desactivar" : "Activar";
+  }
+
+  if (els.btnExtDeleteSelected) {
+    els.btnExtDeleteSelected.disabled = false;
+    els.btnExtDeleteSelected.onclick = () => {
+      requestConfirm(
+        "Eliminar Complemento",
+        `¿Estás seguro de que quieres eliminar el complemento "${ext.name}"?`,
+        async () => {
+          try {
+            showFeedback(`Eliminando "${ext.name}"...`, "info");
+            await invoke("eliminar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
+            showFeedback(`Complemento "${ext.name}" eliminado correctamente.`, "success");
+            loadInstalledExtensions();
+          } catch (err) {
+            showFeedback(`Error al eliminar: ${err}`, "error");
+          }
+        }
+      );
+    };
   }
 }
 
@@ -420,122 +434,111 @@ export async function loadRecommendedExtensions() {
   }
 }
 
-function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") {
-  if (page === 0) {
-    els.listSearchResults.innerHTML = "";
-  } else {
-    const loadMoreBtn = els.listSearchResults.querySelector(".btn-load-more");
-    if (loadMoreBtn) loadMoreBtn.remove();
-  }
+let currentSearchPage = 0;
+let currentSearchHits = [];
+let currentSearchQuery = "";
+let currentSearchProvider = "modrinth";
+let selectedSearchProject = null;
 
-  if (page === 0 && (!hits || hits.length === 0)) {
-    els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No se encontraron resultados.</p>';
+function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") {
+  currentSearchHits = hits || [];
+  currentSearchPage = page;
+  currentSearchQuery = query;
+  currentSearchProvider = provider;
+  selectedSearchProject = null;
+  resetPreviewPanel();
+
+  if (!els.listSearchResults) return;
+  els.listSearchResults.innerHTML = "";
+
+  if (!hits || hits.length === 0) {
+    els.listSearchResults.innerHTML = '<p class="hint" style="grid-column: span 3; text-align: center; margin: 16px 0;">No se encontraron resultados.</p>';
+    if (els.btnExtPagePrev) els.btnExtPagePrev.disabled = true;
+    if (els.btnExtPageNext) els.btnExtPageNext.disabled = true;
     return;
   }
 
-  let container = els.listSearchResults.querySelector(".search-results-container");
-  if (!container) {
-    container = document.createElement("div");
-    container.className = "search-results-container";
-    container.style = "display: flex; flex-direction: column; gap: 16px;";
-    els.listSearchResults.appendChild(container);
+  // Paginación de 6 elementos por página para el grid 2x3
+  const pageSize = 6;
+  const totalPages = Math.ceil(hits.length / pageSize);
+  const start = page * pageSize;
+  const pageHits = hits.slice(start, start + pageSize);
+
+  if (els.btnExtPagePrev) {
+    els.btnExtPagePrev.disabled = page === 0;
+    els.btnExtPagePrev.onclick = () => {
+      if (page > 0) renderSearchResults(hits, page - 1, query, provider);
+    };
   }
 
-  renderSearchResultsInto(hits, container);
-
-  if (hits.length >= 20) {
-    const btnLoadMore = document.createElement("button");
-    btnLoadMore.className = "btn-load-more secondary";
-    btnLoadMore.style = "width: 100%; margin-top: 16px; padding: 10px; font-weight: bold; border-radius: 6px;";
-    btnLoadMore.textContent = "Cargar más resultados";
-    btnLoadMore.onclick = () => {
-      btnLoadMore.textContent = "Cargando...";
-      btnLoadMore.disabled = true;
-      if (provider === "modrinth") {
-        searchModrinthInternal(query, page + 1);
-      } else {
-        searchCurseForgeInternal(query, page + 1);
+  if (els.btnExtPageNext) {
+    els.btnExtPageNext.disabled = (page >= totalPages - 1 && hits.length < 20);
+    els.btnExtPageNext.onclick = async () => {
+      if (page < totalPages - 1) {
+        renderSearchResults(hits, page + 1, query, provider);
+      } else if (hits.length >= 20) {
+        if (provider === "modrinth") {
+          await searchModrinthInternal(query, Math.floor(hits.length / 20));
+        } else {
+          await searchCurseForgeInternal(query, Math.floor(hits.length / 20));
+        }
       }
     };
-    els.listSearchResults.appendChild(btnLoadMore);
+  }
+
+  pageHits.forEach((project, idx) => {
+    const card = document.createElement("div");
+    card.className = "ext-mod-card";
+    
+    const iconUrl = project.icon_url || "assets/creeper_head.svg";
+    card.innerHTML = `
+      <img src="${iconUrl}" />
+      <div class="ext-mod-card-title">${project.title}</div>
+    `;
+
+    card.addEventListener("click", () => {
+      const allCards = els.listSearchResults.querySelectorAll(".ext-mod-card");
+      allCards.forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      selectedSearchProject = project;
+      updatePreviewPanel(project);
+    });
+
+    els.listSearchResults.appendChild(card);
+
+    if (idx === 0) {
+      card.click();
+    }
+  });
+}
+
+function resetPreviewPanel() {
+  if (els.extPreviewTitle) els.extPreviewTitle.textContent = "Selecciona un complemento";
+  if (els.extPreviewAuthor) { els.extPreviewAuthor.textContent = ""; els.extPreviewAuthor.style.display = "none"; }
+  if (els.extPreviewDesc) els.extPreviewDesc.textContent = "Haz clic en un complemento de la lista para ver sus detalles y descargarlo.";
+  if (els.btnExtInstallSelected) {
+    els.btnExtInstallSelected.disabled = true;
+    els.btnExtInstallSelected.style.opacity = "0.5";
   }
 }
 
-function renderSearchResultsInto(hits, parentElement) {
-  hits.forEach(project => {
-    const card = document.createElement("div");
-    card.className = "minecraft-table";
-    card.style = "display: flex; gap: 16px; padding: 14px; background: var(--bg-panel); border: 2px solid #111; align-items: flex-start; margin-bottom: 8px;";
+function updatePreviewPanel(project) {
+  if (els.extPreviewTitle) els.extPreviewTitle.textContent = project.title;
+  if (els.extPreviewAuthor) {
+    els.extPreviewAuthor.textContent = project.author ? `Por: ${project.author}` : `Origen: ${project.provider === 'curseforge' ? 'CurseForge' : 'Modrinth'}`;
+    els.extPreviewAuthor.style.display = "block";
+  }
+  if (els.extPreviewDesc) {
+    els.extPreviewDesc.textContent = project.description || "Sin descripción disponible.";
+  }
 
-    const img = document.createElement("img");
-    img.src = project.icon_url || "https://placehold.co/64x64?text=Mc";
-    img.style = "width: 56px; height: 56px; border-radius: 8px; background: rgba(0,0,0,0.2); object-fit: cover; flex-shrink: 0;";
-    img.onerror = () => { img.src = "https://placehold.co/64x64?text=Mc"; };
-
-    const content = document.createElement("div");
-    content.style = "display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0;";
-
-    const titleRow = document.createElement("div");
-    titleRow.style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;";
-
-    const title = document.createElement("strong");
-    title.style.fontSize = "1.05rem";
-    title.style.color = "#fff";
-    title.textContent = project.title;
-
-    const badge = document.createElement("span");
-    const isMod = project.project_type === "mod";
-    const isPlugin = project.project_type === "plugin";
-    
-    let badgeBg = "rgba(234, 179, 8, 0.2)";
-    let badgeColor = "#eab308";
-    let badgeBorder = "rgba(234, 179, 8, 0.4)";
-    
-    if (isPlugin) {
-      badgeBg = "rgba(79, 70, 229, 0.2)";
-      badgeColor = "#818cf8";
-      badgeBorder = "rgba(79, 70, 229, 0.4)";
-    } else if (isMod) {
-      badgeBg = "rgba(16, 185, 129, 0.2)";
-      badgeColor = "#34d399";
-      badgeBorder = "rgba(16, 185, 129, 0.4)";
-    }
-
-    badge.style = `font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder};`;
-    badge.textContent = project.project_type;
-
-    const downloads = document.createElement("span");
-    downloads.style = "font-size: 0.8rem; color: var(--text-secondary); opacity: 0.8;";
-    downloads.textContent = `📥 ${project.downloads.toLocaleString()} descargas`;
-
-    titleRow.appendChild(title);
-    titleRow.appendChild(badge);
-    titleRow.appendChild(downloads);
-
-    const desc = document.createElement("p");
-    desc.style = "margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;";
-    desc.textContent = project.description;
-
-    const footerDetails = document.createElement("span");
-    footerDetails.style = "font-size: 0.8rem; color: var(--text-secondary); opacity: 0.6;";
-    footerDetails.textContent = project.author ? `Autor: ${project.author}` : `Slug: ${project.slug}`;
-
-    content.appendChild(titleRow);
-    content.appendChild(desc);
-    content.appendChild(footerDetails);
-
-    const btnVersions = document.createElement("button");
-    btnVersions.type = "button";
-    btnVersions.className = "mc-btn-primary btn-small";
-    btnVersions.style = "align-self: center; flex-shrink: 0;";
-    btnVersions.textContent = "Instalar";
-    btnVersions.onclick = () => showPreview(project.project_id || project.slug, project.title, project.project_type, project.provider, project.slug);
-
-    card.appendChild(img);
-    card.appendChild(content);
-    card.appendChild(btnVersions);
-    parentElement.appendChild(card);
-  });
+  if (els.btnExtInstallSelected) {
+    els.btnExtInstallSelected.disabled = false;
+    els.btnExtInstallSelected.style.opacity = "1";
+    els.btnExtInstallSelected.onclick = () => {
+      showPreview(project.project_id || project.slug, project.title, project.project_type, project.provider, project.slug);
+    };
+  }
 }
 
 export async function showPreview(projectId, projectTitle, projectType, provider, slug) {
