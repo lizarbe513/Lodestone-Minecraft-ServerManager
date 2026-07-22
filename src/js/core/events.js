@@ -8,6 +8,7 @@ import { initCreateServerEvents } from "../modules/create_server.js";
 import { initServerControlEvents } from "../modules/server_control.js";
 import { initModpacksEvents } from "../modules/modpacks.js";
 import { initCustomizationEvents } from "../modules/customization.js";
+import { initThemeCreatorEvents } from "../modules/theme_creator.js";
 
 export async function registerTauriEvents() {
   await listen("server-status", async (event) => {
@@ -41,6 +42,7 @@ export function setupEvents() {
     initServerControlEvents();
     initModpacksEvents();
     initCustomizationEvents();
+    initThemeCreatorEvents();
   } catch (e) {
     console.error(e);
     alert("Error en setupEvents: " + e.stack);

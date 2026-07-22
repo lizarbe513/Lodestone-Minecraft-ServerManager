@@ -12,7 +12,12 @@
 
         <!-- 1. Temas Preestablecidos -->
         <div>
-            <h3 style="margin: 0 0 12px 0; color: var(--mc-white); font-size: 1.15rem;">🎨 Temas y Paletas de Color</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="margin: 0; color: var(--mc-white); font-size: 1.15rem;">🎨 Temas y Paletas de Color</h3>
+                <button id="btn-customization-create-theme" type="button" class="mc-btn-primary" style="padding: 6px 12px; font-size: 0.9rem; margin: 0;">
+                    + CREAR TEMA PERSONALIZADO
+                </button>
+            </div>
             <div id="theme-cards-container" style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: flex-start;">
                 <!-- Tarjetas de temas cargadas dinámicamente -->
             </div>

@@ -53,16 +53,117 @@ export const AVAILABLE_THEMES = [
   },
 ];
 
+const DEFAULT_THEMES_COUNT = 5;
+
+export function loadCustomThemes() {
+  // Truncar para mantener solo los temas por defecto y evitar duplicados
+  AVAILABLE_THEMES.length = DEFAULT_THEMES_COUNT;
+
+  try {
+    const customThemesStr = localStorage.getItem("mc_gui_custom_themes");
+    if (customThemesStr) {
+      const customThemes = JSON.parse(customThemesStr);
+      if (Array.isArray(customThemes)) {
+        for (const theme of customThemes) {
+          theme.isCustom = true;
+          AVAILABLE_THEMES.push(theme);
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error al cargar temas personalizados:", e);
+  }
+}
+
+export function saveCustomTheme(theme) {
+  try {
+    const customThemesStr = localStorage.getItem("mc_gui_custom_themes") || "[]";
+    const customThemes = JSON.parse(customThemesStr);
+    
+    if (!theme.id) {
+      theme.id = `custom-${Date.now()}`;
+    }
+    theme.isCustom = true;
+
+    const existingIndex = customThemes.findIndex(t => t.id === theme.id);
+    if (existingIndex >= 0) {
+      customThemes[existingIndex] = theme;
+    } else {
+      customThemes.push(theme);
+    }
+
+    localStorage.setItem("mc_gui_custom_themes", JSON.stringify(customThemes));
+    loadCustomThemes();
+    setTheme(theme.id);
+    return theme.id;
+  } catch (e) {
+    console.error("Error al guardar tema personalizado:", e);
+    return null;
+  }
+}
+
+export function deleteCustomTheme(themeId) {
+  try {
+    const customThemesStr = localStorage.getItem("mc_gui_custom_themes") || "[]";
+    let customThemes = JSON.parse(customThemesStr);
+    customThemes = customThemes.filter(t => t.id !== themeId);
+    localStorage.setItem("mc_gui_custom_themes", JSON.stringify(customThemes));
+    
+    loadCustomThemes();
+
+    if (getCurrentTheme() === themeId) {
+      setTheme("dark");
+    }
+    return true;
+  } catch (e) {
+    console.error("Error al eliminar tema personalizado:", e);
+    return false;
+  }
+}
+
+function applyCustomThemeStyles(theme) {
+  let styleEl = document.getElementById("mc-custom-theme-styles");
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "mc-custom-theme-styles";
+    document.head.appendChild(styleEl);
+  }
+
+  if (theme && theme.isCustom && theme.colors) {
+    let css = `[data-theme="${theme.id}"] {\n`;
+    for (const [key, value] of Object.entries(theme.colors)) {
+      css += `  ${key}: ${value};\n`;
+    }
+    // Si el tema claro personalizado es activo, añadir también el estilo del botón
+    if (theme.id.includes("light") || theme.name.toLowerCase().includes("claro")) {
+      css += `}\n[data-theme="${theme.id}"] .mc-btn-group-item:not(.active), [data-theme="${theme.id}"] .mc-btn-secondary {\n  color: ${theme.colors['--text-primary']} !important;\n  text-shadow: none !important;\n`;
+    }
+    css += `}`;
+    styleEl.textContent = css;
+  } else {
+    styleEl.textContent = "";
+  }
+}
+
 export function getCurrentTheme() {
   return localStorage.getItem(STORAGE_THEME_KEY) || "dark";
 }
 
 export function setTheme(themeId) {
+  // Asegurarse de tener los temas personalizados cargados al cambiar
+  loadCustomThemes();
   const validTheme = AVAILABLE_THEMES.find((t) => t.id === themeId);
   const selectedTheme = validTheme ? validTheme.id : "dark";
 
   document.documentElement.setAttribute("data-theme", selectedTheme);
   localStorage.setItem(STORAGE_THEME_KEY, selectedTheme);
+
+  // Aplicar estilos personalizados si corresponde
+  if (validTheme && validTheme.isCustom) {
+    applyCustomThemeStyles(validTheme);
+  } else {
+    applyCustomThemeStyles(null);
+  }
 
   // Si no hay un acento personalizado guardado expresamente, limpiar overrides inline
   const hasCustomAccent = localStorage.getItem(STORAGE_ACCENT_KEY);
@@ -136,6 +237,7 @@ export function setBorderRadius(radiusValue) {
 }
 
 export function initTheme() {
+  loadCustomThemes();
   const savedTheme = getCurrentTheme();
   setTheme(savedTheme);
 
