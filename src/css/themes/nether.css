@@ -1,0 +1,28 @@
+/*--------------------------------------------------------------------------
+    3. TEMA NETHER (Inframundo Carmesí)
+   -------------------------------------------------------------------------- */
+[data-theme="nether"] {
+    --bg-dark: #1a0808;
+    --bg-slate: #2b0d0d;
+    --bg-panel: #3d1414;
+    
+    --mc-green: #298f6d;
+    --mc-green-shadow: #195b45;
+    --mc-green-hover: #35a882;
+    
+    --mc-red: #c92a2a;
+    --mc-red-shadow: #7a1515;
+    --mc-red-hover: #e03838;
+    
+    --mc-gray: #5e2828;
+    --mc-gray-shadow: #381515;
+    --mc-gray-hover: #753535;
+    
+    --mc-yellow: #ffa94d;
+    --mc-yellow-shadow: #b86e1e;
+    
+    --mc-white: #ffffff;
+    --mc-border: #5c2424;
+    --text-primary: #ffe3e3;
+    --text-secondary: #dcaaaa;
+}

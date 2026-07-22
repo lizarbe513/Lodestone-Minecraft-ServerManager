@@ -1,25 +1,17 @@
-mod constants;
-mod events;
-mod extensions;
-mod backups;
-mod java;
-mod models;
-mod mrpack;
-mod runtime;
-mod server_files;
-mod sessions;
-mod worlds;
+pub mod commands;
+pub mod core;
+
 
 use crate::{
-    events::emit_log,
-    models::{AppSnapshot, LogKind, NewServerRequest, UpdateServerConfigRequest, ServerStatsPayload, ExtensionInfo},
-    runtime::{
+    core::events::emit_log,
+    core::models::{AppSnapshot, LogKind, NewServerRequest, UpdateServerConfigRequest, ServerStatsPayload, ExtensionInfo},
+    core::runtime::{
         build_snapshot, current_session, ensure_server_is_idle, pending_eula_session,
         send_console_command, spawn_server_process, stop_server, sync_runtime_from_saved_config,
         update_active_session, AppState, ServerRuntime,
     },
-    server_files::ensure_eula_accepted,
-    sessions::{
+    commands::server_files::ensure_eula_accepted,
+    commands::sessions::{
         create_server_session, load_app_config, load_or_infer_session, save_app_config,
         update_server_session_config, validate_existing_session,
     },
@@ -138,9 +130,9 @@ fn aceptar_eula_y_reiniciar(
     };
     
     if child_alive {
-        let _ = crate::runtime::send_console_command(&state.runtime, "true");
+        let _ = crate::core::runtime::send_console_command(&state.runtime, "true");
         let mut runtime_guard = state.runtime.lock().unwrap();
-        runtime_guard.status = crate::models::ServerStatus::Starting;
+        runtime_guard.status = crate::core::models::ServerStatus::Starting;
         runtime_guard.eula_pending = false;
         
         emit_log(
@@ -163,7 +155,7 @@ fn aceptar_eula_y_reiniciar(
         .lock()
         .map_err(|_| "No se pudo leer el estado actualizado.".to_string())?;
         
-    runtime_guard.status = crate::models::ServerStatus::Offline;
+    runtime_guard.status = crate::core::models::ServerStatus::Offline;
     runtime_guard.eula_pending = false;
 
     Ok(build_snapshot(&runtime_guard))
@@ -209,7 +201,7 @@ async fn obtener_eula_texto(
 ) -> Result<String, String> {
     let session = current_session(&state.runtime)?;
     let session_dir = PathBuf::from(&session.server_dir);
-    Ok(crate::server_files::obtener_eula_texto_backend(&session_dir).await)
+    Ok(crate::commands::server_files::obtener_eula_texto_backend(&session_dir).await)
 }
 
 #[tauri::command]
@@ -360,7 +352,7 @@ fn guardar_archivo_servidor(state: tauri::State<AppState>, archivo: String, cont
 
 #[tauri::command]
 fn obtener_estadisticas_servidor(state: tauri::State<AppState>) -> Result<ServerStatsPayload, String> {
-    let (cpu, ram_bytes) = crate::runtime::get_server_stats(&state.runtime);
+    let (cpu, ram_bytes) = crate::core::runtime::get_server_stats(&state.runtime);
     Ok(ServerStatsPayload {
         cpu,
         ram_mb: ram_bytes / 1024 / 1024,
@@ -398,14 +390,14 @@ async fn descargar_servidor_jar(url: String, destino: String) -> Result<(), Stri
 fn listar_mundos(state: tauri::State<AppState>) -> Result<Vec<String>, String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::worlds::get_worlds(&path)
+    crate::commands::worlds::get_worlds(&path)
 }
 
 #[tauri::command]
 fn obtener_mundo_activo(state: tauri::State<AppState>) -> Result<String, String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    Ok(crate::worlds::get_active_world(&path))
+    Ok(crate::commands::worlds::get_active_world(&path))
 }
 
 #[tauri::command]
@@ -416,7 +408,7 @@ fn cambiar_mundo_activo(
 ) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::worlds::set_active_world(&path, &mundo)?;
+    crate::commands::worlds::set_active_world(&path, &mundo)?;
     emit_log(
         &app_handle,
         LogKind::System,
@@ -440,7 +432,7 @@ fn respaldar_mundo(
         format!("Creando respaldo del mundo `{}`...", mundo),
     )?;
     
-    let backup_path = crate::worlds::backup_world(&path, &mundo)?;
+    let backup_path = crate::commands::worlds::backup_world(&path, &mundo)?;
     
     emit_log(
         &app_handle,
@@ -458,7 +450,7 @@ fn borrar_mundo(
 ) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::worlds::delete_world(&path, &mundo)?;
+    crate::commands::worlds::delete_world(&path, &mundo)?;
     emit_log(
         &app_handle,
         LogKind::System,
@@ -476,7 +468,7 @@ fn renombrar_mundo(
 ) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::worlds::rename_world(&path, &old_name, &new_name)?;
+    crate::commands::worlds::rename_world(&path, &old_name, &new_name)?;
     emit_log(
         &app_handle,
         LogKind::System,
@@ -493,7 +485,7 @@ fn crear_mundo_nuevo(
 ) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::worlds::create_new_world(&path, &mundo)?;
+    crate::commands::worlds::create_new_world(&path, &mundo)?;
     emit_log(
         &app_handle,
         LogKind::System,
@@ -518,7 +510,7 @@ fn importar_mundo_zip(
         format!("Importando mundo desde `{}`...", zip_path),
     )?;
     
-    crate::worlds::import_world_zip(&path, &zip_path, &mundo)?;
+    crate::commands::worlds::import_world_zip(&path, &zip_path, &mundo)?;
     
     emit_log(
         &app_handle,
@@ -532,7 +524,7 @@ fn importar_mundo_zip(
 fn listar_extensiones(state: tauri::State<AppState>) -> Result<Vec<ExtensionInfo>, String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::extensions::get_extensions(&path)
+    crate::commands::extensions::get_extensions(&path)
 }
 
 #[tauri::command]
@@ -543,7 +535,7 @@ fn alternar_extension(
 ) -> Result<bool, String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::extensions::toggle_extension(&path, &file_name, &extension_type)
+    crate::commands::extensions::toggle_extension(&path, &file_name, &extension_type)
 }
 
 #[tauri::command]
@@ -554,7 +546,7 @@ fn eliminar_extension(
 ) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::extensions::delete_extension(&path, &file_name, &extension_type)
+    crate::commands::extensions::delete_extension(&path, &file_name, &extension_type)
 }
 
 #[tauri::command]
@@ -566,21 +558,21 @@ async fn instalar_extension(
 ) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    crate::extensions::install_extension(&path, &download_url, &file_name, &extension_type).await
+    crate::commands::extensions::install_extension(&path, &download_url, &file_name, &extension_type).await
 }
 
 #[tauri::command]
 fn detectar_motor_servidor(state: tauri::State<AppState>) -> Result<String, String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    Ok(crate::extensions::detect_server_engine(&path, &session.jar_file_name))
+    Ok(crate::commands::extensions::detect_server_engine(&path, &session.jar_file_name))
 }
 
 #[tauri::command]
 fn detectar_version_minecraft(state: tauri::State<AppState>) -> Result<String, String> {
     let session = current_session(&state.runtime)?;
     let path = PathBuf::from(&session.server_dir);
-    Ok(crate::extensions::detect_minecraft_version(&path, &session.jar_file_name))
+    Ok(crate::commands::extensions::detect_minecraft_version(&path, &session.jar_file_name))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -627,11 +619,11 @@ pub fn run() {
             listar_backups,
             restaurar_backup,
             eliminar_backup,
-            mrpack::parse_mrpack,
-            mrpack::extract_mrpack_overrides,
+            commands::mrpack::parse_mrpack,
+            commands::mrpack::extract_mrpack_overrides,
             abrir_carpeta_por_ruta,
             salir_aplicacion,
-            mrpack::extraer_zip
+            commands::mrpack::extraer_zip
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -641,14 +633,14 @@ pub fn run() {
 async fn crear_backup_completo(state: tauri::State<'_, AppState>) -> Result<String, String> {
     let session = current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
-    crate::backups::create_full_backup(&path)
+    crate::commands::backups::create_full_backup(&path)
 }
 
 #[tauri::command]
-fn listar_backups(state: tauri::State<AppState>) -> Result<Vec<crate::backups::BackupInfo>, String> {
+fn listar_backups(state: tauri::State<AppState>) -> Result<Vec<crate::commands::backups::BackupInfo>, String> {
     let session = current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
-    crate::backups::list_backups(&path)
+    crate::commands::backups::list_backups(&path)
 }
 
 #[tauri::command]
@@ -656,12 +648,12 @@ async fn restaurar_backup(state: tauri::State<'_, AppState>, backup_name: String
     ensure_server_is_idle(&state.runtime)?;
     let session = current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
-    crate::backups::restore_backup(&path, &backup_name)
+    crate::commands::backups::restore_backup(&path, &backup_name)
 }
 
 #[tauri::command]
 fn eliminar_backup(state: tauri::State<AppState>, backup_name: String) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
-    crate::backups::delete_backup(&path, &backup_name)
+    crate::commands::backups::delete_backup(&path, &backup_name)
 }

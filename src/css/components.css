@@ -203,12 +203,12 @@
 
 /* Base: Corazón Rojo */
 .world-preview-thumbnail.hardcore-mode::before {
-    background-image: url('../assets/heart_hardcore.svg');
+    background-image: url('../assets/images/heart_hardcore.svg');
 }
 
 /* Cima: Corazón Blanco (Animado que genera el destello de brillo) */
 .world-preview-thumbnail.hardcore-mode::after {
-    background-image: url('../assets/heart_hardcore_white.svg');
+    background-image: url('../assets/images/heart_hardcore_white.svg');
     animation: pulsate-hardcore-heart-smooth 1s ease-in-out infinite alternate;
 }
 

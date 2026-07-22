@@ -1,0 +1,39 @@
+<section id="page-backups" class="page-section" hidden>
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Administración del Servidor</h2>
+                        <p class="hint">Gestiona copias de seguridad y automatización de tareas.</p>
+                    </div>
+                    <div class="row responsive-row">
+                        <button id="btn-backups-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
+                    </div>
+                </div>
+
+                <!-- Pestañas Backups vs Tareas -->
+                <div class="tabs">
+                    <button id="tab-backups-list" type="button" class="tab-btn active">COPIAS DE SEGURIDAD</button>
+                    <button id="tab-tasks-list" type="button" class="tab-btn">TAREAS PROGRAMADAS</button>
+                </div>
+
+                <!-- Sección Copias de Seguridad -->
+                <div id="section-backups-list">
+                    <div class="row action-row" style="margin-bottom: 20px;">
+                        <button id="btn-create-backup" type="button" class="mc-btn-primary">Respaldar</button>
+                    </div>
+                    <div id="list-backups" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p class="hint" style="text-align: center; margin: 16px 0;">Cargando copias de seguridad...</p>
+                    </div>
+                </div>
+
+                <!-- Sección Tareas Programadas -->
+                <div id="section-tasks-list" hidden>
+                    <div class="row action-row" style="margin-bottom: 20px;">
+                        <button id="btn-open-new-task-modal" type="button">Nueva Tarea Programada</button>
+                    </div>
+                    <div id="list-tasks" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p class="hint" style="text-align: center; margin: 16px 0;">No hay tareas programadas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>

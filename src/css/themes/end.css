@@ -1,0 +1,28 @@
+/* --------------------------------------------------------------------------
+  4. TEMA END (End Místico / Amatista)
+  -------------------------------------------------------------------------- */
+[data-theme="end"] {
+    --bg-dark: #0c0818;
+    --bg-slate: #18112c;
+    --bg-panel: #241a40;
+    
+    --mc-green: #9333ea;
+    --mc-green-shadow: #6b21a8;
+    --mc-green-hover: #a855f7;
+    
+    --mc-red: #c92a2a;
+    --mc-red-shadow: #7a1515;
+    --mc-red-hover: #e03838;
+    
+    --mc-gray: #4c3775;
+    --mc-gray-shadow: #2f204d;
+    --mc-gray-hover: #604694;
+    
+    --mc-yellow: #f59e0b;
+    --mc-yellow-shadow: #b45309;
+    
+    --mc-white: #ffffff;
+    --mc-border: #4d3680;
+    --text-primary: #f3e8ff;
+    --text-secondary: #c084fc;
+}
