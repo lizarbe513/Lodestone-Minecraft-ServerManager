@@ -165,6 +165,9 @@ pub fn import_world_zip(server_dir: &Path, zip_path_str: &str, world_name: &str)
         // Let's just extract directly into world_path
         
         let final_outpath = world_path.join(outpath);
+        if !final_outpath.starts_with(&world_path) {
+            continue;
+        }
         
         if (*file.name()).ends_with('/') {
             let _ = fs::create_dir_all(&final_outpath);

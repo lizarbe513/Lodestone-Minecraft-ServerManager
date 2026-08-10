@@ -31,12 +31,17 @@ pub fn extract_mrpack_overrides(path: String, dest_dir: String) -> Result<(), St
             .by_index(i)
             .map_err(|e| format!("Error leyendo archivo {i} en zip: {e}"))?;
 
-        let name = file.name().to_string();
+        let enclosed = match file.enclosed_name() {
+            Some(p) => p,
+            None => continue,
+        };
+
+        let name = enclosed.to_string_lossy();
         
-        let extract_path = if name.starts_with("overrides/") {
-            name.strip_prefix("overrides/").unwrap()
-        } else if name.starts_with("server-overrides/") {
-            name.strip_prefix("server-overrides/").unwrap()
+        let extract_path = if name.starts_with("overrides/") || name.starts_with("overrides\\") {
+            &name[10..]
+        } else if name.starts_with("server-overrides/") || name.starts_with("server-overrides\\") {
+            &name[17..]
         } else {
             continue;
         };
@@ -46,6 +51,9 @@ pub fn extract_mrpack_overrides(path: String, dest_dir: String) -> Result<(), St
         }
 
         let outpath = dest_path.join(extract_path);
+        if !outpath.starts_with(dest_path) {
+            continue;
+        }
 
         if file.is_dir() {
             fs::create_dir_all(&outpath)
@@ -53,7 +61,7 @@ pub fn extract_mrpack_overrides(path: String, dest_dir: String) -> Result<(), St
         } else {
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    fs::create_dir_all(&p)
+                    fs::create_dir_all(p)
                         .map_err(|e| format!("Error creando carpetas padre para {:?}: {e}", outpath))?;
                 }
             }
@@ -78,7 +86,15 @@ pub fn extraer_zip(path: String, dest_dir: String) -> Result<(), String> {
             .by_index(i)
             .map_err(|e| format!("Error leyendo archivo {i} en zip: {e}"))?;
 
-        let outpath = dest_path.join(file.name());
+        let enclosed = match file.enclosed_name() {
+            Some(p) => p,
+            None => continue,
+        };
+
+        let outpath = dest_path.join(enclosed);
+        if !outpath.starts_with(dest_path) {
+            continue;
+        }
 
         if file.is_dir() {
             fs::create_dir_all(&outpath)
@@ -86,7 +102,7 @@ pub fn extraer_zip(path: String, dest_dir: String) -> Result<(), String> {
         } else {
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    fs::create_dir_all(&p)
+                    fs::create_dir_all(p)
                         .map_err(|e| format!("Error creando carpetas padre para {:?}: {e}", outpath))?;
                 }
             }

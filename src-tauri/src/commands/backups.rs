@@ -132,6 +132,9 @@ pub fn restore_backup(server_dir: &Path, backup_name: &str) -> Result<(), String
         };
         
         let final_outpath = server_dir.join(outpath);
+        if !final_outpath.starts_with(server_dir) {
+            continue;
+        }
         
         if (*file.name()).ends_with('/') {
             let _ = fs::create_dir_all(&final_outpath);

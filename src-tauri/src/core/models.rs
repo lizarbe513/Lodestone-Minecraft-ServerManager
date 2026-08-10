@@ -150,12 +150,15 @@ pub struct ExtensionInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
-    fn test_deser_app_state() {
-        let content = std::fs::read_to_string("/home/leonardo/.config/norditex.minecraft-server-gui/app-state.json").unwrap();
-        match serde_json::from_str::<AppConfig>(&content) {
-            Ok(config) => println!("SUCCESS_JSON_TEST: {:?}", config),
-            Err(e) => panic!("FAILED_JSON_TEST: {}", e),
-        }
+    fn test_deser_app_config() {
+        let json_data = r#"{
+            "active_session": null,
+            "saved_servers": []
+        }"#;
+        let config: AppConfig = serde_json::from_str(json_data).expect("Failed to deserialize AppConfig");
+        assert!(config.active_session.is_none());
+        assert!(config.saved_servers.is_empty());
     }
 }

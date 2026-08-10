@@ -17,7 +17,7 @@ use crate::{
     },
 };
 use std::{
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
 
@@ -325,28 +325,55 @@ fn guardar_server_properties(state: tauri::State<AppState>, contenido: String) -
     std::fs::write(path, contenido).map_err(|e| format!("No se pudo guardar server.properties: {}", e))
 }
 
+fn sanitize_server_file_path(server_dir: &Path, relative_path: &str) -> Result<PathBuf, String> {
+    let clean = relative_path.trim().trim_start_matches('/').trim_start_matches('\\');
+    if clean.contains("..") {
+        return Err("Ruta de archivo inválida: No se permite '..'.".into());
+    }
+    let target = server_dir.join(clean);
+    
+    if target.exists() {
+        let canonical_base = server_dir.canonicalize()
+            .map_err(|_| "Carpeta del servidor no encontrada.".to_string())?;
+        let canonical_target = target.canonicalize()
+            .map_err(|e| format!("Error resolviendo ruta: {e}"))?;
+        if !canonical_target.starts_with(&canonical_base) {
+            return Err("Acceso denegado: El archivo se encuentra fuera del directorio del servidor.".into());
+        }
+        Ok(canonical_target)
+    } else {
+        if let Some(parent) = target.parent() {
+            if parent.exists() {
+                let canonical_base = server_dir.canonicalize()
+                    .map_err(|_| "Carpeta del servidor no encontrada.".to_string())?;
+                let canonical_parent = parent.canonicalize()
+                    .map_err(|e| format!("Error resolviendo carpeta: {e}"))?;
+                if !canonical_parent.starts_with(&canonical_base) {
+                    return Err("Acceso denegado: La carpeta destino está fuera del servidor.".into());
+                }
+            }
+        }
+        Ok(target)
+    }
+}
+
 #[tauri::command]
 fn leer_archivo_servidor(state: tauri::State<AppState>, archivo: String) -> Result<String, String> {
     let session = current_session(&state.runtime)?;
-    // Basic sanitization
-    if archivo.contains("..") || archivo.contains('/') || archivo.contains('\\') {
-        return Err("Nombre de archivo inválido".into());
-    }
-    let path = PathBuf::from(&session.server_dir).join(&archivo);
+    let server_dir = PathBuf::from(&session.server_dir);
+    let path = sanitize_server_file_path(&server_dir, &archivo)?;
     if path.exists() {
         std::fs::read_to_string(path).map_err(|e| format!("No se pudo leer {}: {}", archivo, e))
     } else {
-        Ok(String::new()) // Return empty if it doesn't exist
+        Ok(String::new())
     }
 }
 
 #[tauri::command]
 fn guardar_archivo_servidor(state: tauri::State<AppState>, archivo: String, contenido: String) -> Result<(), String> {
     let session = current_session(&state.runtime)?;
-    if archivo.contains("..") || archivo.contains('/') || archivo.contains('\\') {
-        return Err("Nombre de archivo inválido".into());
-    }
-    let path = PathBuf::from(&session.server_dir).join(&archivo);
+    let server_dir = PathBuf::from(&session.server_dir);
+    let path = sanitize_server_file_path(&server_dir, &archivo)?;
     std::fs::write(path, contenido).map_err(|e| format!("No se pudo guardar {}: {}", archivo, e))
 }
 
