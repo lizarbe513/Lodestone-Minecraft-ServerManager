@@ -5,6 +5,9 @@ use crate::{
     commands::java::{default_java_path, validate_java_path},
     core::models::{AppConfig, NewServerRequest, ServerSession, UpdateServerConfigRequest},
     commands::server_files::write_start_script,
+    core::runtime::{
+        current_session, ensure_server_is_idle, sync_runtime_from_saved_config, update_active_session,
+    },
 };
 use std::{
     fs,
@@ -480,6 +483,156 @@ pub fn validate_existing_session(session: &ServerSession) -> Result<(), String> 
     }
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn obtener_estado_aplicacion(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+) -> Result<crate::core::models::AppSnapshot, String> {
+    sync_runtime_from_saved_config(&app_handle, &state.runtime)?;
+    let runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer el estado de la aplicación.".to_string())?;
+    Ok(crate::core::runtime::build_snapshot(&runtime_guard))
+}
+
+#[tauri::command]
+pub fn crear_e_iniciar_servidor(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    request: NewServerRequest,
+) -> Result<crate::core::models::AppSnapshot, String> {
+    ensure_server_is_idle(&state.runtime)?;
+
+    let start_immediately = request.start_immediately.unwrap_or(true);
+    let session = create_server_session(request)?;
+    update_active_session(&app_handle, &state.runtime, Some(session.clone()))?;
+
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!(
+            "Sesión `{}` creada en `{}`.",
+            session.server_name, session.server_dir
+        ),
+    );
+
+    if start_immediately {
+        crate::core::runtime::spawn_server_process(&app_handle, &state.runtime, session)?;
+    }
+
+    let runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer el estado actualizado.".to_string())?;
+    Ok(crate::core::runtime::build_snapshot(&runtime_guard))
+}
+
+#[tauri::command]
+pub fn abrir_servidor_existente(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    server_dir: String,
+) -> Result<crate::core::models::AppSnapshot, String> {
+    ensure_server_is_idle(&state.runtime)?;
+
+    let path = PathBuf::from(server_dir.trim());
+    if !path.is_dir() {
+        return Err("Debes seleccionar una carpeta de servidor válida.".into());
+    }
+
+    let session = load_or_infer_session(&path)?;
+    validate_existing_session(&session)?;
+    update_active_session(&app_handle, &state.runtime, Some(session.clone()))?;
+
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Sesión `{}` abierta correctamente.", session.server_name),
+    );
+
+    let runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer la sesión abierta.".to_string())?;
+    Ok(crate::core::runtime::build_snapshot(&runtime_guard))
+}
+
+#[tauri::command]
+pub fn iniciar_servidor_actual(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+) -> Result<crate::core::models::AppSnapshot, String> {
+    ensure_server_is_idle(&state.runtime)?;
+    sync_runtime_from_saved_config(&app_handle, &state.runtime)?;
+
+    let session = current_session(&state.runtime)?;
+    crate::core::runtime::spawn_server_process(&app_handle, &state.runtime, session)?;
+
+    let runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer el estado actualizado.".to_string())?;
+    Ok(crate::core::runtime::build_snapshot(&runtime_guard))
+}
+
+#[tauri::command]
+pub fn remover_servidor_guardado(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    server_dir: String,
+    delete_files: bool,
+) -> Result<crate::core::models::AppSnapshot, String> {
+    ensure_server_is_idle(&state.runtime)?;
+
+    let path = PathBuf::from(server_dir.trim());
+    if delete_files && path.is_dir() {
+        trash::delete(&path)
+            .map_err(|e| format!("No se pudo mover la carpeta del servidor a la papelera: {e}"))?;
+    }
+
+    let mut config = load_app_config(&app_handle)?;
+    config.saved_servers.retain(|s| s.server_dir != server_dir.trim());
+    
+    if let Some(active) = &config.active_session {
+        if active.server_dir == server_dir.trim() {
+            config.active_session = None;
+        }
+    }
+
+    save_app_config(&app_handle, &config)?;
+    sync_runtime_from_saved_config(&app_handle, &state.runtime)?;
+
+    let runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer el estado.".to_string())?;
+    Ok(crate::core::runtime::build_snapshot(&runtime_guard))
+}
+
+#[tauri::command]
+pub fn actualizar_configuracion_servidor(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    request: UpdateServerConfigRequest,
+) -> Result<crate::core::models::AppSnapshot, String> {
+    let session = current_session(&state.runtime)?;
+    let updated_session = update_server_session_config(&session, request)?;
+    update_active_session(&app_handle, &state.runtime, Some(updated_session.clone()))?;
+
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Configuración de `{}` actualizada.", updated_session.server_name),
+    );
+
+    let runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer el estado actualizado.".to_string())?;
+    Ok(crate::core::runtime::build_snapshot(&runtime_guard))
 }
 
 #[cfg(test)]

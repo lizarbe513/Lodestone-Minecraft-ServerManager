@@ -14,40 +14,49 @@ fn quote_for_shell(value: &str) -> String {
     format!("'{}'", value.replace('\'', "'\"'\"'"))
 }
 
+pub trait ScriptGenerator {
+    fn generate(&self, session: &ServerSession) -> String;
+}
+
+pub struct WindowsScriptGenerator;
+pub struct UnixScriptGenerator;
+
+impl ScriptGenerator for WindowsScriptGenerator {
+    fn generate(&self, session: &ServerSession) -> String {
+        let memory_mb = session.memory_gb.saturating_mul(1024);
+        let is_installer = session.jar_file_name.ends_with("-installer.jar");
+        let mut script = format!("@echo off\nset \"JAVA_EXE={}\"\n\n", session.java_path.replace('/', "\\"));
+        if is_installer {
+            script.push_str(&format!("if exist \"{}\" (\n  echo Ejecutando instalador...\n  \"%JAVA_EXE%\" -jar \"{}\" --installServer\n  ren \"{}\" \"{}.done\"\n)\n\n", session.jar_file_name, session.jar_file_name, session.jar_file_name, session.jar_file_name));
+            script.push_str(&format!("if exist \"run.bat\" (\n  echo -Xmx{}M -Xms{}M > user_jvm_args.txt\n  call run.bat\n) else (\n  \"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar \"{}\" nogui\n)\n", memory_mb, memory_mb, memory_mb, memory_mb, session.jar_file_name.replace("-installer.jar", ".jar")));
+        } else {
+            script.push_str(&format!("\"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar {} nogui\n", memory_mb, memory_mb, session.jar_file_name));
+        }
+        script
+    }
+}
+
+impl ScriptGenerator for UnixScriptGenerator {
+    fn generate(&self, session: &ServerSession) -> String {
+        let memory_mb = session.memory_gb.saturating_mul(1024);
+        let is_installer = session.jar_file_name.ends_with("-installer.jar");
+        let mut script = format!("#!/usr/bin/env sh\n");
+        let java_q = quote_for_shell(&session.java_path);
+        let jar_q = quote_for_shell(&session.jar_file_name);
+        if is_installer {
+            script.push_str(&format!("if [ -f {} ]; then\n  echo \"Ejecutando instalador...\"\n  {} -jar {} --installServer\n  mv {} {}.done\nfi\n\n", jar_q, java_q, jar_q, jar_q, jar_q));
+            script.push_str(&format!("if [ -f \"run.sh\" ]; then\n  echo \"-Xmx{}M -Xms{}M\" > user_jvm_args.txt\n  sh run.sh\nelse\n  {} -Xmx{}M -Xms{}M -jar {} nogui\nfi\n", memory_mb, memory_mb, java_q, memory_mb, memory_mb, quote_for_shell(&session.jar_file_name.replace("-installer.jar", ".jar"))));
+        } else {
+            script.push_str(&format!("{} -Xmx{}M -Xms{}M -jar {} nogui\n", java_q, memory_mb, memory_mb, jar_q));
+        }
+        script
+    }
+}
+
 fn start_script_name_for_platform(platform: &str) -> &'static str {
     match platform {
         "windows" => "start.bat",
         _ => "start.sh",
-    }
-}
-
-fn start_script_content_for_platform(session: &ServerSession, platform: &str) -> String {
-    let memory_mb = session.memory_gb.saturating_mul(1024);
-    let is_installer = session.jar_file_name.ends_with("-installer.jar");
-    
-    match platform {
-        "windows" => {
-            let mut script = format!("@echo off\nset \"JAVA_EXE={}\"\n\n", session.java_path.replace('/', "\\"));
-            if is_installer {
-                script.push_str(&format!("if exist \"{}\" (\n  echo Ejecutando instalador...\n  \"%JAVA_EXE%\" -jar \"{}\" --installServer\n  ren \"{}\" \"{}.done\"\n)\n\n", session.jar_file_name, session.jar_file_name, session.jar_file_name, session.jar_file_name));
-                script.push_str(&format!("if exist \"run.bat\" (\n  echo -Xmx{}M -Xms{}M > user_jvm_args.txt\n  call run.bat\n) else (\n  \"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar \"{}\" nogui\n)\n", memory_mb, memory_mb, memory_mb, memory_mb, session.jar_file_name.replace("-installer.jar", ".jar")));
-            } else {
-                script.push_str(&format!("\"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar {} nogui\n", memory_mb, memory_mb, session.jar_file_name));
-            }
-            script
-        },
-        _ => {
-            let mut script = format!("#!/usr/bin/env sh\n");
-            let java_q = quote_for_shell(&session.java_path);
-            let jar_q = quote_for_shell(&session.jar_file_name);
-            if is_installer {
-                script.push_str(&format!("if [ -f {} ]; then\n  echo \"Ejecutando instalador...\"\n  {} -jar {} --installServer\n  mv {} {}.done\nfi\n\n", jar_q, java_q, jar_q, jar_q, jar_q));
-                script.push_str(&format!("if [ -f \"run.sh\" ]; then\n  echo \"-Xmx{}M -Xms{}M\" > user_jvm_args.txt\n  sh run.sh\nelse\n  {} -Xmx{}M -Xms{}M -jar {} nogui\nfi\n", memory_mb, memory_mb, java_q, memory_mb, memory_mb, quote_for_shell(&session.jar_file_name.replace("-installer.jar", ".jar"))));
-            } else {
-                script.push_str(&format!("{} -Xmx{}M -Xms{}M -jar {} nogui\n", java_q, memory_mb, memory_mb, jar_q));
-            }
-            script
-        }
     }
 }
 
@@ -60,11 +69,13 @@ pub fn write_start_script(session: &ServerSession) -> Result<PathBuf, String> {
     };
     let script_path = server_dir.join(script_name);
 
-    let content = if cfg!(windows) {
-        start_script_content_for_platform(session, "windows")
+    let generator: Box<dyn ScriptGenerator> = if cfg!(windows) {
+        Box::new(WindowsScriptGenerator)
     } else {
-        start_script_content_for_platform(session, "unix")
+        Box::new(UnixScriptGenerator)
     };
+
+    let content = generator.generate(session);
 
     fs::write(&script_path, content)
         .map_err(|e| format!("No se pudo crear el script de arranque: {e}"))?;
@@ -223,6 +234,132 @@ pub async fn obtener_eula_texto_backend(server_dir: &Path) -> String {
     include_str!("../eula_offline.txt").to_string()
 }
 
+pub fn sanitize_server_file_path(server_dir: &Path, relative_path: &str) -> Result<PathBuf, String> {
+    let clean = relative_path.trim().trim_start_matches('/').trim_start_matches('\\');
+    if clean.contains("..") {
+        return Err("Ruta de archivo inválida: No se permite '..'.".into());
+    }
+    let target = server_dir.join(clean);
+    
+    if target.exists() {
+        let canonical_base = server_dir.canonicalize()
+            .map_err(|_| "Carpeta del servidor no encontrada.".to_string())?;
+        let canonical_target = target.canonicalize()
+            .map_err(|e| format!("Error resolviendo ruta: {e}"))?;
+        if !canonical_target.starts_with(&canonical_base) {
+            return Err("Acceso denegado: El archivo se encuentra fuera del directorio del servidor.".into());
+        }
+        Ok(canonical_target)
+    } else {
+        if let Some(parent) = target.parent() {
+            if parent.exists() {
+                let canonical_base = server_dir.canonicalize()
+                    .map_err(|_| "Carpeta del servidor no encontrada.".to_string())?;
+                let canonical_parent = parent.canonicalize()
+                    .map_err(|e| format!("Error resolviendo carpeta: {e}"))?;
+                if !canonical_parent.starts_with(&canonical_base) {
+                    return Err("Acceso denegado: La carpeta destino está fuera del servidor.".into());
+                }
+            }
+        }
+        Ok(target)
+    }
+}
+
+#[tauri::command]
+pub fn aceptar_eula_y_reiniciar(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+) -> Result<crate::core::models::AppSnapshot, String> {
+    let session = crate::core::runtime::pending_eula_session(&state.runtime)?;
+    let session_dir = PathBuf::from(&session.server_dir);
+
+    ensure_eula_accepted(&session_dir)?;
+    
+    let child_alive = {
+        let runtime_guard = state.runtime.lock().unwrap();
+        runtime_guard.child.is_some()
+    };
+    
+    if child_alive {
+        let _ = crate::core::runtime::send_console_command(&state.runtime, "true");
+        let mut runtime_guard = state.runtime.lock().unwrap();
+        runtime_guard.status = crate::core::models::ServerStatus::Starting;
+        runtime_guard.eula_pending = false;
+        
+        let _ = crate::core::events::emit_log(
+            &app_handle,
+            crate::core::models::LogKind::System,
+            "EULA aceptado interactivamente. Continuando arranque del servidor...",
+        );
+        
+        return Ok(crate::core::runtime::build_snapshot(&runtime_guard));
+    }
+
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        "EULA aceptado. Servidor listo para iniciarse.",
+    );
+
+    let mut runtime_guard = state
+        .runtime
+        .lock()
+        .map_err(|_| "No se pudo leer el estado actualizado.".to_string())?;
+        
+    runtime_guard.status = crate::core::models::ServerStatus::Offline;
+    runtime_guard.eula_pending = false;
+
+    Ok(crate::core::runtime::build_snapshot(&runtime_guard))
+}
+
+#[tauri::command]
+pub async fn obtener_eula_texto(
+    state: tauri::State<'_, crate::core::runtime::AppState>,
+) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let session_dir = PathBuf::from(&session.server_dir);
+    Ok(obtener_eula_texto_backend(&session_dir).await)
+}
+
+#[tauri::command]
+pub fn leer_server_properties(state: tauri::State<crate::core::runtime::AppState>) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir).join("server.properties");
+    if path.exists() {
+        std::fs::read_to_string(path).map_err(|e| format!("No se pudo leer server.properties: {}", e))
+    } else {
+        Ok(String::new())
+    }
+}
+
+#[tauri::command]
+pub fn guardar_server_properties(state: tauri::State<crate::core::runtime::AppState>, contenido: String) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = PathBuf::from(&session.server_dir).join("server.properties");
+    std::fs::write(path, contenido).map_err(|e| format!("No se pudo guardar server.properties: {}", e))
+}
+
+#[tauri::command]
+pub fn leer_archivo_servidor(state: tauri::State<crate::core::runtime::AppState>, archivo: String) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let server_dir = PathBuf::from(&session.server_dir);
+    let path = sanitize_server_file_path(&server_dir, &archivo)?;
+    if path.exists() {
+        std::fs::read_to_string(path).map_err(|e| format!("No se pudo leer {}: {}", archivo, e))
+    } else {
+        Ok(String::new())
+    }
+}
+
+#[tauri::command]
+pub fn guardar_archivo_servidor(state: tauri::State<crate::core::runtime::AppState>, archivo: String, contenido: String) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let server_dir = PathBuf::from(&session.server_dir);
+    let path = sanitize_server_file_path(&server_dir, &archivo)?;
+    std::fs::write(path, contenido).map_err(|e| format!("No se pudo guardar {}: {}", archivo, e))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -251,7 +388,8 @@ mod tests {
             minecraft_version: None,
         };
 
-        let content = start_script_content_for_platform(&session, "windows");
+        let generator = WindowsScriptGenerator;
+        let content = generator.generate(&session);
         assert!(content.contains("@echo off"));
         assert!(content.contains("server.jar"));
         assert!(content.contains("-Xmx2048M"));

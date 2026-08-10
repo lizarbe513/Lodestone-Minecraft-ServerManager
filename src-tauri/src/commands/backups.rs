@@ -167,3 +167,42 @@ pub fn delete_backup(server_dir: &Path, backup_name: &str) -> Result<(), String>
     fs::remove_file(backup_path)
         .map_err(|e| format!("Error al eliminar el archivo de copia de seguridad: {}", e))
 }
+
+#[tauri::command]
+pub async fn crear_backup_completo(
+    state: tauri::State<'_, crate::core::runtime::AppState>,
+) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    create_full_backup(&path)
+}
+
+#[tauri::command]
+pub fn listar_backups(
+    state: tauri::State<crate::core::runtime::AppState>,
+) -> Result<Vec<BackupInfo>, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    list_backups(&path)
+}
+
+#[tauri::command]
+pub async fn restaurar_backup(
+    state: tauri::State<'_, crate::core::runtime::AppState>,
+    backup_name: String,
+) -> Result<(), String> {
+    crate::core::runtime::ensure_server_is_idle(&state.runtime)?;
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    restore_backup(&path, &backup_name)
+}
+
+#[tauri::command]
+pub fn eliminar_backup(
+    state: tauri::State<crate::core::runtime::AppState>,
+    backup_name: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    delete_backup(&path, &backup_name)
+}

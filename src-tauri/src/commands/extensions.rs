@@ -421,3 +421,58 @@ pub fn detect_minecraft_version(server_dir: &Path, jar_name: &str) -> String {
     crate::commands::sessions::detect_version_from_jar_name(jar_name)
 }
 
+#[tauri::command]
+pub fn listar_extensiones(state: tauri::State<crate::core::runtime::AppState>) -> Result<Vec<ExtensionInfo>, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    get_extensions(&path)
+}
+
+#[tauri::command]
+pub fn alternar_extension(
+    state: tauri::State<crate::core::runtime::AppState>,
+    file_name: String,
+    extension_type: String,
+) -> Result<bool, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    toggle_extension(&path, &file_name, &extension_type)
+}
+
+#[tauri::command]
+pub fn eliminar_extension(
+    state: tauri::State<crate::core::runtime::AppState>,
+    file_name: String,
+    extension_type: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    delete_extension(&path, &file_name, &extension_type)
+}
+
+#[tauri::command]
+pub async fn instalar_extension(
+    state: tauri::State<'_, crate::core::runtime::AppState>,
+    download_url: String,
+    file_name: String,
+    extension_type: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    install_extension(&path, &download_url, &file_name, &extension_type).await
+}
+
+#[tauri::command]
+pub fn detectar_motor_servidor(state: tauri::State<crate::core::runtime::AppState>) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    Ok(detect_server_engine(&path, &session.jar_file_name))
+}
+
+#[tauri::command]
+pub fn detectar_version_minecraft(state: tauri::State<crate::core::runtime::AppState>) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    Ok(detect_minecraft_version(&path, &session.jar_file_name))
+}
+

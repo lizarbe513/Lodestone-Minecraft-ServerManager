@@ -249,3 +249,137 @@ pub fn backup_world(server_dir: &Path, world_name: &str) -> Result<String, Strin
         
     Ok(backup_path.to_string_lossy().to_string())
 }
+
+#[tauri::command]
+pub fn listar_mundos(state: tauri::State<crate::core::runtime::AppState>) -> Result<Vec<String>, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    get_worlds(&path)
+}
+
+#[tauri::command]
+pub fn obtener_mundo_activo(state: tauri::State<crate::core::runtime::AppState>) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    Ok(get_active_world(&path))
+}
+
+#[tauri::command]
+pub fn cambiar_mundo_activo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    mundo: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    set_active_world(&path, &mundo)?;
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Mundo activo cambiado a `{}`.", mundo),
+    );
+    Ok(())
+}
+
+#[tauri::command]
+pub fn respaldar_mundo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    mundo: String,
+) -> Result<String, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Creando respaldo del mundo `{}`...", mundo),
+    );
+    
+    let backup_path = backup_world(&path, &mundo)?;
+    
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Respaldo creado en `{}`.", backup_path),
+    );
+    Ok(backup_path)
+}
+
+#[tauri::command]
+pub fn borrar_mundo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    mundo: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    delete_world(&path, &mundo)?;
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Mundo `{}` eliminado.", mundo),
+    );
+    Ok(())
+}
+
+#[tauri::command]
+pub fn renombrar_mundo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    old_name: String,
+    new_name: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    rename_world(&path, &old_name, &new_name)?;
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Mundo `{}` renombrado a `{}`.", old_name, new_name),
+    );
+    Ok(())
+}
+
+#[tauri::command]
+pub fn crear_mundo_nuevo(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    mundo: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    create_new_world(&path, &mundo)?;
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Nuevo mundo vacío `{}` creado.", mundo),
+    );
+    Ok(())
+}
+
+#[tauri::command]
+pub fn importar_mundo_zip(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<crate::core::runtime::AppState>,
+    zip_path: String,
+    mundo: String,
+) -> Result<(), String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Importando mundo desde `{}`...", zip_path),
+    );
+    
+    import_world_zip(&path, &zip_path, &mundo)?;
+    
+    let _ = crate::core::events::emit_log(
+        &app_handle,
+        crate::core::models::LogKind::System,
+        format!("Mundo `{}` importado correctamente.", mundo),
+    );
+    Ok(())
+}
