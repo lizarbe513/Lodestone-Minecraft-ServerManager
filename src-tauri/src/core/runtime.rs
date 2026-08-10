@@ -359,6 +359,11 @@ pub fn spawn_server_process(
                                 &text,
                             );
                             
+                            // Inspeccionar diagnóstico de errores de Java
+                            if let Some(diag) = crate::core::diagnostics::diagnose_java_log(&text) {
+                                emit_runtime_log(&app_handle_for_task, LogKind::System, diag);
+                            }
+
                             // Detectar si el servidor se cuelga esperando EULA por stdin
                             if text.contains("agreement to Minecraft's EULA") || text.contains("EULA:") {
                                 if let Ok(mut rg) = runtime_for_task.lock() {
@@ -382,6 +387,12 @@ pub fn spawn_server_process(
                                 &runtime_for_task,
                                 &text,
                             );
+
+                            // Inspeccionar diagnóstico de errores de Java
+                            if let Some(diag) = crate::core::diagnostics::diagnose_java_log(&text) {
+                                emit_runtime_log(&app_handle_for_task, LogKind::System, diag);
+                            }
+
                             emit_runtime_log(&app_handle_for_task, LogKind::Stderr, text);
                         }
                         CommandEvent::Terminated(payload) => {
