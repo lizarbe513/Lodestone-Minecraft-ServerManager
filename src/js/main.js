@@ -19,7 +19,7 @@ async function loadInitialState() {
 async function loadViews() {
   const container = document.getElementById("app-container");
   if (!container) return;
-  const views = ["home", "create", "control", "customization", "theme_creator"];
+  const views = ["home", "create", "control", "customization"];
   for (const view of views) {
     try {
       const response = await fetch(`views/${view}.html?v=${Date.now()}`);

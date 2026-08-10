@@ -3,8 +3,7 @@ import {
   AVAILABLE_THEMES, getCurrentTheme, setTheme, 
   getCustomAccent, setCustomAccent, 
   getFontStyle, setFontStyle, 
-  getFontScale, setFontScale,
-  deleteCustomTheme
+  getFontScale, setFontScale 
 } from "../ui/theme.js";
 import { 
   getSfxVolume, setSfxVolume, 
@@ -12,7 +11,7 @@ import {
   playClickSound, playTypingSound 
 } from "../ui/audio.js";
 import { getOverscrollEnabled, setOverscrollEnabled } from "../ui/overscroll.js";
-import { showFeedback, requestConfirm } from "../utils/utils.js";
+import { showFeedback } from "../utils/utils.js";
 import { navigateTo } from "../ui/ui.js";
 
 export function renderThemeCards() {
@@ -25,7 +24,7 @@ export function renderThemeCards() {
       <div class="minecraft-table theme-card" data-theme-id="${theme.id}" style="width: 230px; min-width: 230px; max-width: 230px; height: 175px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid ${isActive ? 'var(--mc-green)' : 'var(--mc-border)'}; background-color: var(--bg-panel); cursor: pointer; border-radius: 4px; box-sizing: border-box; flex-shrink: 0;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <h4 style="margin: 0; color: var(--mc-yellow); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${theme.name}</h4>
-          ${isActive ? '<span class="status-badge" data-status="running" style="padding: 2px 6px; font-size: 0.75rem; flex-shrink: 0;">ACTIVO</span>' : (theme.isCustom ? '<span class="status-badge" style="padding: 2px 6px; font-size: 0.75rem; flex-shrink: 0; background-color: var(--mc-gray); border-color: var(--mc-gray-shadow); color: var(--text-primary);">PROPIO</span>' : '')}
+          ${isActive ? '<span class="status-badge" data-status="running" style="padding: 2px 6px; font-size: 0.75rem; flex-shrink: 0;">ACTIVO</span>' : ''}
         </div>
         <p class="hint" style="margin: 4px 0 0 0; font-size: 0.8rem; height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${theme.description}</p>
         
@@ -35,48 +34,20 @@ export function renderThemeCards() {
           <div style="flex: 1; background-color: ${theme.previewText};" title="Texto"></div>
         </div>
 
-        <div style="display: flex; gap: 6px; margin-top: 6px;">
-          <button type="button" class="btn-select-theme ${isActive ? 'mc-btn-primary' : 'mc-btn-secondary'} btn-small" style="flex: 1; padding: 4px 8px; font-size: 0.85rem; margin: 0;">
-            ${isActive ? 'ACTIVADO' : 'SELECCIONAR'}
-          </button>
-          ${theme.isCustom ? `
-            <button type="button" class="btn-delete-theme mc-btn-danger btn-small" data-theme-id="${theme.id}" style="padding: 4px 8px; font-size: 0.85rem; margin: 0; min-width: 32px; height: 26px; display: flex; align-items: center; justify-content: center;" title="Eliminar tema">
-              ✕
-            </button>
-          ` : ''}
-        </div>
+        <button type="button" class="${isActive ? 'mc-btn-primary' : 'mc-btn-secondary'} btn-small" style="width: 100%; margin-top: 6px; padding: 4px 8px; font-size: 0.85rem;">
+          ${isActive ? 'ACTIVADO' : 'SELECCIONAR'}
+        </button>
       </div>
     `;
   }).join('');
 
   els.themeCardsContainer.querySelectorAll('.theme-card').forEach(card => {
-    // Clic en toda la tarjeta (menos en el botón de eliminar)
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('.btn-delete-theme')) return;
+    card.addEventListener('click', () => {
       const themeId = card.dataset.themeId;
       setTheme(themeId);
       renderThemeCards();
       showFeedback(`Tema cambiado a: ${AVAILABLE_THEMES.find(t => t.id === themeId).name}`, "info");
     });
-
-    // Clic específico en eliminar
-    const btnDelete = card.querySelector('.btn-delete-theme');
-    if (btnDelete) {
-      btnDelete.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const themeId = btnDelete.dataset.themeId;
-        const themeName = AVAILABLE_THEMES.find(t => t.id === themeId)?.name || "";
-        requestConfirm(
-          "Eliminar Tema",
-          `¿Estás seguro de que quieres eliminar el tema personalizado "${themeName}"?`,
-          () => {
-            deleteCustomTheme(themeId);
-            renderThemeCards();
-            showFeedback("Tema personalizado eliminado.", "success");
-          }
-        );
-      });
-    }
   });
 }
 
@@ -107,12 +78,6 @@ export function initCustomizationEvents() {
   if (els.btnCustomizationBack) {
     els.btnCustomizationBack.addEventListener("click", () => {
       navigateTo("home");
-    });
-  }
-
-  if (els.btnCustomizationCreateTheme) {
-    els.btnCustomizationCreateTheme.addEventListener("click", () => {
-      navigateTo("theme_creator");
     });
   }
 

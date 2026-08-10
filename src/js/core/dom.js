@@ -302,27 +302,4 @@ export function initDom() {
   els.chartCpuVal = document.querySelector("#chart-cpu-val");
   els.chartRam = document.querySelector("#chart-ram");
   els.chartRamVal = document.querySelector("#chart-ram-val");
-
-  // Elementos del Creador de Temas Personalizados
-  els.pageThemeCreator = document.querySelector("#page-theme-creator");
-  els.btnThemeCreatorBack = document.querySelector("#btn-theme-creator-back");
-  els.themeCreatorName = document.querySelector("#theme-creator-name");
-  els.themeCreatorDesc = document.querySelector("#theme-creator-desc");
-  els.textareaImportPalette = document.querySelector("#textarea-import-palette");
-  els.btnDoImportPalette = document.querySelector("#btn-do-import-palette");
-  els.colorThemeDark = document.querySelector("#color-theme-dark");
-  els.colorThemePanel = document.querySelector("#color-theme-panel");
-  els.colorThemeSlate = document.querySelector("#color-theme-slate");
-  els.colorThemeBorder = document.querySelector("#color-theme-border");
-  els.colorThemeTextPrimary = document.querySelector("#color-theme-text-primary");
-  els.colorThemeTextSecondary = document.querySelector("#color-theme-text-secondary");
-  els.colorThemeGreen = document.querySelector("#color-theme-green");
-  els.colorThemeGray = document.querySelector("#color-theme-gray");
-  els.colorThemeRed = document.querySelector("#color-theme-red");
-  els.colorThemeYellow = document.querySelector("#color-theme-yellow");
-  els.colorThemeWhite = document.querySelector("#color-theme-white");
-  els.themeCreatorPreviewContainer = document.querySelector("#theme-creator-preview-container");
-  els.btnThemeCreatorReset = document.querySelector("#btn-theme-creator-reset");
-  els.btnThemeCreatorSave = document.querySelector("#btn-theme-creator-save");
-  els.btnCustomizationCreateTheme = document.querySelector("#btn-customization-create-theme");
 }

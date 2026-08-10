@@ -18,7 +18,6 @@ export function navigateTo(page) {
     if (els.pageExtensions) els.pageExtensions.hidden = page !== "extensions";
     if (els.pageBackups) els.pageBackups.hidden = page !== "backups";
     if (els.pageCustomization) els.pageCustomization.hidden = page !== "customization";
-    if (els.pageThemeCreator) els.pageThemeCreator.hidden = page !== "theme_creator";
     updateControls();
   }, 120); // Retardo para que el botón juegue su animación de subida antes de ocultarse
 }
