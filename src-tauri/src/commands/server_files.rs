@@ -27,8 +27,9 @@ impl ScriptGenerator for WindowsScriptGenerator {
         let is_installer = session.jar_file_name.ends_with("-installer.jar");
         let mut script = format!("@echo off\nset \"JAVA_EXE={}\"\n\n", session.java_path.replace('/', "\\"));
         if is_installer {
+            let target_jar = session.jar_file_name.replace("-installer.jar", ".jar");
             script.push_str(&format!("if exist \"{}\" (\n  echo Ejecutando instalador...\n  \"%JAVA_EXE%\" -jar \"{}\" --installServer\n  ren \"{}\" \"{}.done\"\n)\n\n", session.jar_file_name, session.jar_file_name, session.jar_file_name, session.jar_file_name));
-            script.push_str(&format!("if exist \"run.bat\" (\n  echo -Xmx{}M -Xms{}M > user_jvm_args.txt\n  call run.bat\n) else (\n  \"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar \"{}\" nogui\n)\n", memory_mb, memory_mb, memory_mb, memory_mb, session.jar_file_name.replace("-installer.jar", ".jar")));
+            script.push_str(&format!("if exist \"run.bat\" (\n  (echo -Xmx{}M & echo -Xms{}M) > user_jvm_args.txt\n  call run.bat\n) else if exist \"{}\" (\n  \"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar \"{}\" nogui\n) else (\n  echo No se encontro script de inicio ni jar ejecutable.\n)\n", memory_mb, memory_mb, target_jar, memory_mb, memory_mb, target_jar));
         } else {
             script.push_str(&format!("\"%JAVA_EXE%\" -Xmx{}M -Xms{}M -jar {} nogui\n", memory_mb, memory_mb, session.jar_file_name));
         }
@@ -44,8 +45,10 @@ impl ScriptGenerator for UnixScriptGenerator {
         let java_q = quote_for_shell(&session.java_path);
         let jar_q = quote_for_shell(&session.jar_file_name);
         if is_installer {
+            let target_jar = session.jar_file_name.replace("-installer.jar", ".jar");
+            let target_jar_q = quote_for_shell(&target_jar);
             script.push_str(&format!("if [ -f {} ]; then\n  echo \"Ejecutando instalador...\"\n  {} -jar {} --installServer\n  mv {} {}.done\nfi\n\n", jar_q, java_q, jar_q, jar_q, jar_q));
-            script.push_str(&format!("if [ -f \"run.sh\" ]; then\n  echo \"-Xmx{}M -Xms{}M\" > user_jvm_args.txt\n  sh run.sh\nelse\n  {} -Xmx{}M -Xms{}M -jar {} nogui\nfi\n", memory_mb, memory_mb, java_q, memory_mb, memory_mb, quote_for_shell(&session.jar_file_name.replace("-installer.jar", ".jar"))));
+            script.push_str(&format!("if [ -f \"run.sh\" ]; then\n  chmod +x run.sh 2>/dev/null || true\n  printf -- \"-Xmx%sM\\n-Xms%sM\\n\" \"{}\" \"{}\" > user_jvm_args.txt\n  sh run.sh\nelif [ -f {} ]; then\n  {} -Xmx{}M -Xms{}M -jar {} nogui\nelse\n  SERVER_JAR=$(ls *.jar 2>/dev/null | grep -v \"-installer\" | head -n 1)\n  if [ -n \"$SERVER_JAR\" ]; then\n    {} -Xmx{}M -Xms{}M -jar \"$SERVER_JAR\" nogui\n  else\n    echo \"No se encontró el ejecutable del servidor.\"\n    exit 1\n  fi\nfi\n", memory_mb, memory_mb, target_jar_q, java_q, memory_mb, memory_mb, target_jar_q, java_q, memory_mb, memory_mb));
         } else {
             script.push_str(&format!("{} -Xmx{}M -Xms{}M -jar {} nogui\n", java_q, memory_mb, memory_mb, jar_q));
         }

@@ -1,13 +1,13 @@
 import { els } from "../core/dom.js";
 import { appState, globals } from "../core/state.js";
-import { invoke, open } from "../core/api.js";
+import { invoke, open, fetchForgeVersions, fetchNeoForgeVersions } from "../core/api.js";
 import { updateControls, navigateTo, applySnapshot } from "../ui/ui.js";
 import { showFeedback, appendLog, normalizeError, requestConfirm } from "../utils/utils.js";
 import { startCurrentServer, stopServer, sendCommand, saveServerConfig, acceptEulaAndRestart, loadAndShowEula, openExistingServer, browseServerJar } from "../features/server.js";
 import { parsePropertiesContent, renderPropertiesUI, buildPropertiesPayload } from "../features/properties.js";
 import { loadAllPlayerLists, addItemToList, handleRemoveOp, handleRemoveWhitelist, handleRemoveBannedPlayer, handleRemoveBannedIp } from "../features/players.js";
 import { loadWorlds } from "../features/worlds.js";
-import { loadInstalledExtensions, searchModrinth, initExtensionsPage, setActiveCategory, setActiveSubTab, activeSubTab } from "../features/extensions.js";
+import { loadInstalledExtensions, searchModrinth, initExtensionsPage, setActiveCategory, setActiveSubTab, activeSubTab, syncCategoryButtons, importLocalExtensions } from "../features/extensions.js";
 import { loadBackupsList, loadTasksList, createFullBackup, addNewTask, startScheduler, setActiveAdminTab } from "../features/backups.js";
 
 export function initServerControlEvents() {
@@ -23,7 +23,10 @@ export function initServerControlEvents() {
       if (typeof globals.pendingConfirmAction === "function") {
         await globals.pendingConfirmAction();
       } else if (globals.pendingConfirmAction) {
-        invoke("enviar_comando", { comando: globals.pendingConfirmAction });
+        await invoke("enviar_comando", { comando: globals.pendingConfirmAction });
+        setTimeout(() => {
+          loadAllPlayerLists();
+        }, 500);
       }
       globals.pendingConfirmAction = null;
       els.confirmDialog.close();
@@ -66,6 +69,7 @@ export function initServerControlEvents() {
       
       els.sectionAccessManagement.hidden = false;
       els.sectionOnlinePlayers.hidden = true;
+      loadAllPlayerLists();
     });
   }
 
@@ -454,6 +458,30 @@ export function initServerControlEvents() {
     });
   }
 
+  if (els.btnImportExtension) {
+    els.btnImportExtension.addEventListener("click", async () => {
+      await importLocalExtensions();
+    });
+  }
+
+  if (els.btnDisableClientMods) {
+    els.btnDisableClientMods.addEventListener("click", async () => {
+      if (!appState.activeSession) return;
+      try {
+        showFeedback("Buscando y deshabilitando mods de lado cliente...", "info");
+        const count = await invoke("deshabilitar_mods_cliente_en_ruta", { serverDir: appState.activeSession.server_dir });
+        if (count > 0) {
+          showFeedback(`Se deshabilitaron ${count} mods exclusivos del cliente.`, "success");
+          loadInstalledExtensions();
+        } else {
+          showFeedback("No se encontraron mods de cliente para deshabilitar.", "info");
+        }
+      } catch (e) {
+        showFeedback(`Error deshabilitando mods de cliente: ${e}`, "error");
+      }
+    });
+  }
+
   // Pestañas Principales Superiores (Instalados vs Descargar)
   if (els.tabExtInstalled) {
     els.tabExtInstalled.addEventListener("click", () => {
@@ -502,27 +530,24 @@ export function initServerControlEvents() {
   // Categorías (Mods / Plugins / Datapacks) en Descargar
   if (els.tabCategoryPlugins) {
     els.tabCategoryPlugins.addEventListener("click", () => {
-      setActiveCategory("plugin");
-      [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks].forEach(b => b && b.classList.remove("active"));
-      els.tabCategoryPlugins.classList.add("active");
+      if (els.tabCategoryPlugins.disabled) return;
+      syncCategoryButtons("plugin");
       refreshExtensionsList();
     });
   }
 
   if (els.tabCategoryMods) {
     els.tabCategoryMods.addEventListener("click", () => {
-      setActiveCategory("mod");
-      [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks].forEach(b => b && b.classList.remove("active"));
-      els.tabCategoryMods.classList.add("active");
+      if (els.tabCategoryMods.disabled) return;
+      syncCategoryButtons("mod");
       refreshExtensionsList();
     });
   }
 
   if (els.tabCategoryDatapacks) {
     els.tabCategoryDatapacks.addEventListener("click", () => {
-      setActiveCategory("datapack");
-      [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks].forEach(b => b && b.classList.remove("active"));
-      els.tabCategoryDatapacks.classList.add("active");
+      if (els.tabCategoryDatapacks.disabled) return;
+      syncCategoryButtons("datapack");
       refreshExtensionsList();
     });
   }
@@ -530,27 +555,24 @@ export function initServerControlEvents() {
   // Categorías en Instalados
   if (els.tabCategoryPluginsInst) {
     els.tabCategoryPluginsInst.addEventListener("click", () => {
-      setActiveCategory("plugin");
-      [els.tabCategoryPluginsInst, els.tabCategoryModsInst, els.tabCategoryDatapacksInst].forEach(b => b && b.classList.remove("active"));
-      els.tabCategoryPluginsInst.classList.add("active");
+      if (els.tabCategoryPluginsInst.disabled) return;
+      syncCategoryButtons("plugin");
       loadInstalledExtensions();
     });
   }
 
   if (els.tabCategoryModsInst) {
     els.tabCategoryModsInst.addEventListener("click", () => {
-      setActiveCategory("mod");
-      [els.tabCategoryPluginsInst, els.tabCategoryModsInst, els.tabCategoryDatapacksInst].forEach(b => b && b.classList.remove("active"));
-      els.tabCategoryModsInst.classList.add("active");
+      if (els.tabCategoryModsInst.disabled) return;
+      syncCategoryButtons("mod");
       loadInstalledExtensions();
     });
   }
 
   if (els.tabCategoryDatapacksInst) {
     els.tabCategoryDatapacksInst.addEventListener("click", () => {
-      setActiveCategory("datapack");
-      [els.tabCategoryPluginsInst, els.tabCategoryModsInst, els.tabCategoryDatapacksInst].forEach(b => b && b.classList.remove("active"));
-      els.tabCategoryDatapacksInst.classList.add("active");
+      if (els.tabCategoryDatapacksInst.disabled) return;
+      syncCategoryButtons("datapack");
       loadInstalledExtensions();
     });
   }
@@ -789,6 +811,14 @@ export function initServerControlEvents() {
         const data = await res.json();
         const versions = [...data.versions].reverse();
         els.controlVersionSelect.innerHTML = versions.map(v => `<option value="${v}">${v}</option>`).join("");
+      } else if (type === "forge") {
+        const versions = await fetchForgeVersions();
+        globals.cachedForgeVersions = versions;
+        els.controlVersionSelect.innerHTML = versions.map(v => `<option value="${v.mcVersion}|${v.forgeVersion}">${v.mcVersion} (${v.forgeVersion})</option>`).join("");
+      } else if (type === "neoforge") {
+        const versions = await fetchNeoForgeVersions();
+        globals.cachedNeoForgeVersions = versions;
+        els.controlVersionSelect.innerHTML = versions.map(v => `<option value="${v.mcVersion}|${v.neoVersion}">${v.mcVersion} (${v.neoVersion})</option>`).join("");
       }
       els.controlVersionSelect.disabled = false;
     } catch (e) {

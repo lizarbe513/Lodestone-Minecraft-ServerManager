@@ -30,6 +30,7 @@ pub fn run() {
             // System & Process Control
             commands::system::enviar_comando,
             commands::system::detener_servidor,
+
             commands::system::obtener_estadisticas_servidor,
             commands::system::abrir_carpeta_servidor,
             commands::system::abrir_carpeta_por_ruta,
@@ -49,8 +50,10 @@ pub fn run() {
             commands::extensions::alternar_extension,
             commands::extensions::eliminar_extension,
             commands::extensions::instalar_extension,
+            commands::extensions::importar_extensiones_locales,
             commands::extensions::detectar_motor_servidor,
             commands::extensions::detectar_version_minecraft,
+            commands::extensions::deshabilitar_mods_cliente_en_ruta,
             // Backups
             commands::backups::crear_backup_completo,
             commands::backups::listar_backups,

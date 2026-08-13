@@ -11,56 +11,62 @@
     box-sizing: border-box;
 }
 
-/* Temas de Baúl (Madera vs End) — aplicados via clases temáticas */
+/* Temas Integrados con la Personalización de la Interfaz */
 
-/* Baúl de Madera (Instalados / Archivos Locales) */
+/* Pestaña de Instalados */
 #section-installed-extensions .ext-sidebar {
-    background: rgba(35, 20, 10, 0.65);
-    border: 2px solid #5c3a21;
+    background: var(--bg-hover, rgba(0, 0, 0, 0.45));
+    border: 2px solid var(--border-color, #333333);
+    border-radius: var(--border-radius, 0);
 }
 
 #section-installed-extensions .ext-main-content {
-    background: rgba(20, 12, 6, 0.55);
-    border: 2px solid #5c3a21;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+    background: var(--bg-card, rgba(0, 0, 0, 0.35));
+    border: 2px solid var(--border-color, #333333);
+    border-radius: var(--border-radius, 0);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
 }
 
 #section-installed-extensions .ext-installed-detail-box {
-    background: #23160c;
-    border: 2px solid #5c3a21;
+    background: var(--bg-panel, #252525);
+    border: 2px solid var(--border-color, #333333);
+    border-radius: var(--border-radius, 0);
 }
 
 #section-installed-extensions .ext-sidebar-btn.active {
-    background: #5c3a21 !important;
-    border-color: #2e1a0b !important;
-    border-bottom: 3px solid #361f0d !important;
-    color: #ffdda6 !important;
+    background: var(--mc-green, #22c55e) !important;
+    border-color: var(--border-color, #111) !important;
+    border-bottom: 3px solid var(--mc-green-shadow, #15803d) !important;
+    color: #ffffff !important;
     transform: translateY(2px);
     box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Baúl del End (Descargar / Red Global) */
+/* Pestaña de Descargas */
 #section-search-extensions .ext-sidebar {
-    background: rgba(8, 26, 22, 0.65);
-    border: 2px solid #055f46;
+    background: var(--bg-hover, rgba(0, 0, 0, 0.45));
+    border: 2px solid var(--border-color, #333333);
+    border-radius: var(--border-radius, 0);
 }
 
 #section-search-extensions .ext-main-content {
-    background: rgba(4, 15, 12, 0.55);
-    border: 2px solid #055f46;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+    background: var(--bg-card, rgba(0, 0, 0, 0.35));
+    border: 2px solid var(--border-color, #333333);
+    border-radius: var(--border-radius, 0);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
 }
 
 #section-search-extensions .ext-bottom-box {
-    background: #0b221c;
-    border: 2px solid #055f46;
+    background: var(--bg-panel, #252525);
+    border: 2px solid var(--border-color, #333333);
+    border-radius: var(--border-radius, 0);
 }
 
 #section-search-extensions .ext-sidebar-btn.active {
-    background: #055f46 !important;
-    border-color: #033628 !important;
-    border-bottom: 3px solid #02241b !important;
-    color: #6ee7b7 !important;
+    background: var(--mc-green, #22c55e) !important;
+    border-color: var(--border-color, #111) !important;
+    border-bottom: 3px solid var(--mc-green-shadow, #15803d) !important;
+    color: #ffffff !important;
     transform: translateY(2px);
     box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.4);
 }
@@ -232,11 +238,11 @@
     opacity: 0.5;
 }
 
-/* Grid de Descargas (Búsqueda - 6 columnas, 440px de espacio vertical sin scrollbar) */
+/* Grid de Descargas (Búsqueda - 6 columnas, 2 filas fijas, 440px de espacio vertical sin scrollbar) */
 .ext-mod-grid-6 {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    align-content: start;
+    grid-template-rows: repeat(2, 1fr);
     gap: 10px;
     height: 440px !important;
     min-height: 440px !important;
@@ -251,12 +257,13 @@
 .ext-installed-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: calc((440px - 10px) / 2);
     align-content: start;
     gap: 10px;
     height: 440px !important;
     min-height: 440px !important;
     max-height: 440px !important;
-    overflow-y: scroll;
+    overflow-y: auto;
     scrollbar-gutter: stable;
     padding-right: 4px;
     box-sizing: border-box;
@@ -279,7 +286,7 @@
     box-sizing: border-box;
 }
 
-/* Extension Card Style (Coincide idéntico al explorador de Modpacks: proporción 1:1 cuadrada) */
+/* Extension Card Style (Uniforme en tamaño y alineación) */
 .ext-mod-card {
     background: rgba(0, 0, 0, 0.45);
     border: 2px solid #111111;
@@ -289,14 +296,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     cursor: pointer;
     color: #ffffff;
     user-select: none;
-    aspect-ratio: 1 / 1; /* Proporción 1:1 exacta */
-    max-height: 195px; /* Limita altura máxima para garantizar 2 filas sin desbordamiento */
+    height: 100%;
+    width: 100%;
     box-sizing: border-box;
     transition: background 0.12s, border-color 0.12s;
+    overflow: hidden;
 }
 
 .ext-mod-card:hover {
@@ -310,9 +318,10 @@
 }
 
 .ext-mod-card img {
-    width: 48%; /* Adaptable al tamaño de la tarjeta */
-    height: auto;
-    aspect-ratio: 1 / 1;
+    width: 56px;
+    height: 56px;
+    max-width: 50%;
+    max-height: 50%;
     object-fit: cover;
     border-radius: 4px;
     box-shadow: 0 3px 0 #111111;

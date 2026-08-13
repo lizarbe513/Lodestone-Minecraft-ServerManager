@@ -105,6 +105,28 @@ fn parse_memory_token(token: &str) -> Option<u32> {
 }
 
 pub fn detect_version_from_jar_name(jar_name: &str) -> String {
+    let lower = jar_name.to_lowercase();
+    
+    // NeoForge version pattern handling: neoforge-20.4.x -> 1.20.4, neoforge-21.1.x -> 1.21.1, etc.
+    if lower.contains("neoforge") {
+        if let Some(pos) = lower.find("neoforge-") {
+            let rest = &lower[pos + 9..];
+            let num_part: String = rest.chars().take_while(|c| c.is_ascii_digit() || *c == '.').collect();
+            let parts: Vec<&str> = num_part.split('.').collect();
+            if parts.len() >= 2 {
+                if parts[0] == "47" && parts[1] == "1" {
+                    return "1.20.1".to_string();
+                } else if parts[0] == "20" {
+                    return format!("1.20.{}", parts[1]);
+                } else if parts[0] == "21" {
+                    return if parts[1] == "0" { "1.21".to_string() } else { format!("1.21.{}", parts[1]) };
+                } else if parts[0] == "26" {
+                    return format!("1.26.{}", parts[1]);
+                }
+            }
+        }
+    }
+
     let mut current_version = String::new();
     let chars: Vec<char> = jar_name.chars().collect();
     let mut i = 0;
@@ -325,7 +347,15 @@ pub fn create_server_session(request: NewServerRequest) -> Result<ServerSession,
         minecraft_version,
     };
 
-    write_start_script(&session)?;
+    let is_forge_or_neoforge = session.jar_file_name.to_lowercase().contains("forge")
+        || session.jar_file_name.ends_with("-installer.jar")
+        || server_dir.join("run.sh").is_file()
+        || server_dir.join("run.bat").is_file()
+        || server_dir.join("user_jvm_args.txt").is_file();
+
+    if !is_forge_or_neoforge {
+        write_start_script(&session)?;
+    }
     save_session_metadata(&session)?;
 
     // Escribir configuración server.properties inicial
@@ -448,7 +478,15 @@ pub fn update_server_session_config(
         minecraft_version,
     };
 
-    write_start_script(&updated_session)?;
+    let is_forge_or_neoforge = updated_session.jar_file_name.to_lowercase().contains("forge")
+        || updated_session.jar_file_name.ends_with("-installer.jar")
+        || server_dir.join("run.sh").is_file()
+        || server_dir.join("run.bat").is_file()
+        || server_dir.join("user_jvm_args.txt").is_file();
+
+    if !is_forge_or_neoforge {
+        write_start_script(&updated_session)?;
+    }
     save_session_metadata(&updated_session)?;
 
     Ok(updated_session)
@@ -461,9 +499,22 @@ pub fn validate_existing_session(session: &ServerSession) -> Result<(), String> 
     }
 
     let jar_path = server_dir.join(&session.jar_file_name);
-    if !jar_path.is_file() {
+    let is_installer = session.jar_file_name.ends_with("-installer.jar");
+
+    let exists = if is_installer {
+        jar_path.is_file()
+            || server_dir.join(format!("{}.done", session.jar_file_name)).is_file()
+            || server_dir.join("run.sh").is_file()
+            || server_dir.join("run.bat").is_file()
+            || server_dir.join("user_jvm_args.txt").is_file()
+            || server_dir.join(session.jar_file_name.replace("-installer.jar", ".jar")).is_file()
+    } else {
+        jar_path.is_file()
+    };
+
+    if !exists {
         return Err(format!(
-            "No encontré el archivo `{}` dentro de la carpeta del servidor.",
+            "No encontré el archivo `{}` ni los scripts de inicio en la carpeta del servidor.",
             session.jar_file_name
         ));
     }
@@ -478,7 +529,13 @@ pub fn validate_existing_session(session: &ServerSession) -> Result<(), String> 
         ..session.clone()
     };
 
-    if normalized_session.managed_by_app || !server_dir.join(START_SCRIPT_NAME).is_file() {
+    let is_forge_or_neoforge = session.jar_file_name.to_lowercase().contains("forge")
+        || session.jar_file_name.ends_with("-installer.jar")
+        || server_dir.join("run.sh").is_file()
+        || server_dir.join("run.bat").is_file()
+        || server_dir.join("user_jvm_args.txt").is_file();
+
+    if !is_forge_or_neoforge && (normalized_session.managed_by_app || !server_dir.join(START_SCRIPT_NAME).is_file()) {
         write_start_script(&normalized_session)?;
     }
 

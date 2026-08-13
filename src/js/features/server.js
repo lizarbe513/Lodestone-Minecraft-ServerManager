@@ -3,7 +3,7 @@ import { els } from "../core/dom.js";
 import { appState, connectedPlayers } from "../core/state.js";
 import { triggerStartTasks } from "./backups.js";
 import { navigateTo, updateControls, applySnapshot, renderJavaOptions, renderPlayersList } from "../ui/ui.js";
-import { showFeedback, clearLogs, suggestedServerName, normalizeError, appendLog, normalizeMessage } from "../utils/utils.js";
+import { showFeedback, clearLogs, suggestedServerName, normalizeError, appendLog, normalizeMessage, showLoadingOverlay, hideLoadingOverlay } from "../utils/utils.js";
 
 export function collectNewServerPayload() {
   const memoryGb = Number.parseInt(els.memoryGb.value, 10);
@@ -33,7 +33,9 @@ export function collectNewServerPayload() {
 
 export function resetNewServerForm() {
   if (els.serverJarPath) els.serverJarPath.value = "";
-  if (els.serverParentDir) els.serverParentDir.value = "";
+  if (els.serverParentDir) {
+    els.serverParentDir.value = localStorage.getItem("last_server_parent_dir") || "";
+  }
   if (els.serverName) els.serverName.value = "";
   if (els.radioJarSourceLocal) els.radioJarSourceLocal.checked = false;
   if (els.radioJarSourceDownload) {
@@ -118,10 +120,12 @@ export async function browseServerJar(targetInput = null) {
 }
 
 export async function browseServerParentDir() {
+  const savedParentDir = localStorage.getItem("last_server_parent_dir") || undefined;
+  const currentDir = els.serverParentDir ? els.serverParentDir.value.trim() : "";
   const selectedPath = await open({
     directory: true,
     multiple: false,
-    defaultPath: els.serverParentDir.value.trim() || undefined,
+    defaultPath: currentDir || savedParentDir,
     title: "Selecciona el directorio donde se creará la carpeta del servidor",
   });
 
@@ -130,6 +134,7 @@ export async function browseServerParentDir() {
   }
 
   els.serverParentDir.value = selectedPath;
+  localStorage.setItem("last_server_parent_dir", selectedPath);
   updateControls();
 }
 
@@ -159,12 +164,19 @@ export async function createServer() {
   const isDownload = els.radioJarSourceDownload && els.radioJarSourceDownload.checked;
   let payload = collectNewServerPayload();
 
+  if (payload.parent_dir) {
+    localStorage.setItem("last_server_parent_dir", payload.parent_dir);
+  }
+
   let minecraft_version = null;
   if (appState.selectedModpackId) {
     // Si hay un modpack, se usará la versión del modpack
     payload.start_immediately = false;
   } else if (isDownload) {
     minecraft_version = els.selectDownloadVersion.value;
+    if (minecraft_version && minecraft_version.includes('|')) {
+      minecraft_version = minecraft_version.split('|')[0].trim();
+    }
     payload.minecraft_version = minecraft_version;
   } else {
     const jarPath = els.serverJarPath.value.trim();
@@ -374,17 +386,24 @@ export async function createServer() {
         url = await getFabricDownloadUrl(version);
         jarName = `fabric-${version}.jar`;
       } else if (software === "forge") {
-        const [mcVersion, forgeVersion] = version.split('|');
+        const parts = version.includes('|') ? version.split('|') : [version, ""];
+        const mcVersion = parts[0] ? parts[0].trim() : "";
+        const forgeVersion = parts[1] ? parts[1].trim() : "";
         url = await getForgeDownloadUrl(mcVersion, forgeVersion);
-        jarName = `forge-${mcVersion}-${forgeVersion}-installer.jar`;
+        const cleanForge = (forgeVersion || "latest").replace(/[^a-zA-Z0-9_\.\-]/g, "_");
+        const cleanMc = mcVersion.replace(/[^a-zA-Z0-9_\.\-]/g, "_");
+        jarName = `forge-${cleanMc}-${cleanForge}-installer.jar`;
       } else if (software === "neoforge") {
-        url = await getNeoForgeDownloadUrl(version);
-        jarName = `neoforge-${version}-installer.jar`;
+        const rawNeo = version.includes('|') ? version.split('|')[1] : version;
+        const cleanNeo = (rawNeo || "").trim().replace(/[^a-zA-Z0-9_\.\-]/g, "_");
+        url = await getNeoForgeDownloadUrl(cleanNeo);
+        jarName = `neoforge-${cleanNeo}-installer.jar`;
       }
 
       if (!url) throw new Error("No se pudo obtener la URL de descarga.");
 
-      const tempDest = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + "temp_" + jarName;
+      const safeJarName = jarName.replace(/[^a-zA-Z0-9_\.\-]/g, "_");
+      const tempDest = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + "temp_" + safeJarName;
       showFeedback(`Descargando ${software} ${version}... Esto puede tardar dependiendo de tu conexión.`, "info");
 
       await invoke("descargar_servidor_jar", { url: url, destino: tempDest });
@@ -399,9 +418,19 @@ export async function createServer() {
   }
 
   showFeedback("Creando servidor...", "info");
-  const snapshot = await invoke("crear_e_iniciar_servidor", {
-    request: payload,
-  });
+  showLoadingOverlay("Creando e iniciando servidor", "Este proceso podría demorar unos minutos si se están instalando dependencias de Forge o descargando librerías...");
+  
+  let snapshot;
+  try {
+    snapshot = await invoke("crear_e_iniciar_servidor", {
+      request: payload,
+    });
+  } catch (err) {
+    hideLoadingOverlay();
+    throw err;
+  }
+  
+  hideLoadingOverlay();
   applySnapshot(snapshot);
   
   if (appState.mrpackToInstall) {
@@ -413,7 +442,21 @@ export async function createServer() {
       await invoke("extract_mrpack_overrides", { path: mr.mrpackPath, destDir: serverDir });
       
       let downloaded = 0;
-      const filesToDownload = mr.files.filter(f => !f.env || f.env.server !== "unsupported");
+      const clientPatterns = [
+        "sodium-", "iris-", "rubidium-", "oculus-", "embeddium-", "entityculling-",
+        "notenoughanimations-", "appleskin-", "modmenu-", "controlling-", "inventoryhud",
+        "optifine", "dynamiclights", "itemphysic", "continuity-", "indium-",
+        "resourcify-", "soundphysics", "skinlayers", "3dskinlayers", "cherishedworlds",
+        "borderless", "smoothboot", "lazydfu", "reeses-sodium-options"
+      ];
+      const filesToDownload = mr.files.filter(f => {
+        if (f.env && f.env.server === "unsupported") return false;
+        const lowerPath = (f.path || "").toLowerCase();
+        if (clientPatterns.some(p => lowerPath.includes(p))) {
+          return false;
+        }
+        return true;
+      });
       
       for (const file of filesToDownload) {
         const url = file.downloads[0];
@@ -423,12 +466,22 @@ export async function createServer() {
         downloaded++;
       }
       
-      showFeedback("Modpack instalado correctamente. Iniciando servidor...", "success");
+      try {
+        const disabledCount = await invoke("deshabilitar_mods_cliente_en_ruta", { serverDir });
+        if (disabledCount > 0) {
+          showFeedback(`Se deshabilitaron ${disabledCount} mods exclusivos del cliente en el servidor.`, "info");
+        }
+      } catch (e) {
+        console.warn("No se pudieron deshabilitar mods de cliente:", e);
+      }
       
-      // Finalmente, como start_immediately era false, iniciamos
+      showFeedback("Modpack instalado correctamente. Iniciando servidor...", "success");
+      showLoadingOverlay("Iniciando servidor...", "Espera mientras arranca el motor del juego.");
       await invoke("iniciar_servidor_actual");
+      hideLoadingOverlay();
       
     } catch(e) {
+      hideLoadingOverlay();
       showFeedback("Error instalando mods del modpack: " + (e.message || e), "error");
     }
     appState.mrpackToInstall = null;
@@ -438,9 +491,20 @@ export async function createServer() {
     const serverDir = payload.parent_dir + (payload.parent_dir.endsWith("/") || payload.parent_dir.endsWith("\\") ? "" : "/") + payload.server_name;
     try {
       await invoke("extraer_zip", { path: zipPath, destDir: serverDir });
+      try {
+        const disabledCount = await invoke("deshabilitar_mods_cliente_en_ruta", { serverDir });
+        if (disabledCount > 0) {
+          showFeedback(`Se deshabilitaron ${disabledCount} mods exclusivos del cliente en el servidor.`, "info");
+        }
+      } catch (e) {
+        console.warn("No se pudieron deshabilitar mods de cliente:", e);
+      }
       showFeedback("Modpack local (.zip) extraído correctamente. Iniciando servidor...", "success");
+      showLoadingOverlay("Iniciando servidor...", "Espera mientras arranca el motor del juego.");
       await invoke("iniciar_servidor_actual");
+      hideLoadingOverlay();
     } catch(e) {
+      hideLoadingOverlay();
       showFeedback("Error extrayendo modpack local: " + (e.message || e), "error");
     }
     appState.localZipModpackPath = null;
@@ -459,7 +523,15 @@ export async function startCurrentServer() {
   // Disparar las tareas programadas de tipo "Al iniciar"
   triggerStartTasks();
 
-  const snapshot = await invoke("iniciar_servidor_actual");
+  showLoadingOverlay("Iniciando servidor...", "El servidor se está ejecutando en segundo plano.");
+  let snapshot;
+  try {
+    snapshot = await invoke("iniciar_servidor_actual");
+  } catch (err) {
+    hideLoadingOverlay();
+    throw err;
+  }
+  hideLoadingOverlay();
   applySnapshot(snapshot);
 }
 
@@ -481,7 +553,15 @@ export async function sendCommand() {
 
 export async function continueAfterEulaAcceptance() {
   showFeedback("Aceptando EULA y reiniciando servidor...", "info");
-  const snapshot = await invoke("aceptar_eula_y_reiniciar");
+  showLoadingOverlay("Reiniciando...", "Aceptando el EULA y preparando el arranque.");
+  let snapshot;
+  try {
+    snapshot = await invoke("aceptar_eula_y_reiniciar");
+  } catch(err) {
+    hideLoadingOverlay();
+    throw err;
+  }
+  hideLoadingOverlay();
   applySnapshot(snapshot);
 }
 
@@ -612,16 +692,25 @@ export function handleServerLogLine(message) {
   let text = normalizeMessage(message);
   text = text.replace(/\x1b\[[0-9;]*m/g, "");
 
-  const joinMatch = text.match(/INFO\]:\s+([a-zA-Z0-9_]{1,16})\s+joined the game/i);
-  if (joinMatch) {
-    connectedPlayers.add(joinMatch[1]);
-    renderPlayersList();
-    return;
+  const isJoin = text.includes("joined the game");
+  const isLeave = text.includes("left the game");
+  if (!isJoin && !isLeave) return;
+
+  if (isJoin) {
+    const joinMatch = text.match(/(?:INFO\]|INFO\]:)\s*(?:\[[^\]]+\]:?\s*)*([a-zA-Z0-9_]{1,16})\s+joined the game/i);
+    if (joinMatch) {
+      connectedPlayers.add(joinMatch[1]);
+      renderPlayersList();
+      return;
+    }
   }
-  const leaveMatch = text.match(/INFO\]:\s+([a-zA-Z0-9_]{1,16})\s+left the game/i);
-  if (leaveMatch) {
-    connectedPlayers.delete(leaveMatch[1]);
-    renderPlayersList();
-    return;
+
+  if (isLeave) {
+    const leaveMatch = text.match(/(?:INFO\]|INFO\]:)\s*(?:\[[^\]]+\]:?\s*)*([a-zA-Z0-9_]{1,16})\s+left the game/i);
+    if (leaveMatch) {
+      connectedPlayers.delete(leaveMatch[1]);
+      renderPlayersList();
+      return;
+    }
   }
 }

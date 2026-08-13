@@ -16,7 +16,7 @@ use tauri_plugin_shell::{
     process::{CommandChild, CommandEvent},
     ShellExt,
 };
-use sysinfo::{System, Pid};
+use sysinfo::System;
 
 pub struct AppState {
     pub runtime: Arc<Mutex<ServerRuntime>>,
@@ -282,6 +282,70 @@ fn is_port_in_use(ip: &str, port: u16) -> bool {
     }
 }
 
+pub fn setup_and_spawn_forge_server(
+    app_handle: &tauri::AppHandle,
+    server_dir: &std::path::Path,
+    session: &ServerSession,
+) -> Result<tauri_plugin_shell::process::Command, String> {
+    // let _ = crate::commands::server_files::ensure_eula_accepted(server_dir); // Let the normal server execution handle EULA creation, not here.
+    let memory_mb = session.memory_gb * 1024;
+    let run_bat = server_dir.join("run.bat");
+    let run_sh = server_dir.join("run.sh");
+
+    // Configure memory in user_jvm_args.txt if it exists
+    let jvm_args_path = server_dir.join("user_jvm_args.txt");
+    if jvm_args_path.is_file() {
+        if let Ok(content) = std::fs::read_to_string(&jvm_args_path) {
+            let mut new_lines = Vec::new();
+            for line in content.lines() {
+                if !line.trim_start().starts_with("-Xmx") && !line.trim_start().starts_with("-Xms") {
+                    new_lines.push(line.to_string());
+                }
+            }
+            new_lines.push(format!("-Xmx{}M", memory_mb));
+            new_lines.push(format!("-Xms{}M", memory_mb));
+            let _ = std::fs::write(&jvm_args_path, new_lines.join("\n"));
+        }
+    }
+
+    let java_exe = if session.java_path.trim().is_empty() { "java".to_string() } else { session.java_path.clone() };
+
+    // Si no existen los scripts de arranque, pero es un instalador, lo corremos como instalador para capturar logs en la consola
+    if !run_bat.is_file() && !run_sh.is_file() && session.jar_file_name.ends_with("-installer.jar") {
+        let installer_path = server_dir.join(&session.jar_file_name);
+        if installer_path.is_file() {
+            return Ok(app_handle.shell().command(java_exe).args(["-jar", &session.jar_file_name, "--installServer"]).current_dir(server_dir));
+        }
+    }
+
+    let target_jar = session.jar_file_name.replace("-installer.jar", ".jar");
+    let mem_arg_xmx = format!("-Xmx{}M", memory_mb);
+    let mem_arg_xms = format!("-Xms{}M", memory_mb);
+
+    if cfg!(windows) {
+        if run_bat.is_file() {
+            Ok(app_handle.shell().command("cmd").args(["/c", "run.bat", "nogui"]).current_dir(server_dir))
+        } else {
+            Ok(app_handle.shell().command(java_exe).args([&mem_arg_xmx, &mem_arg_xms, "-Djava.awt.headless=true", "-jar", &target_jar, "nogui"]).current_dir(server_dir))
+        }
+    } else {
+        if run_sh.is_file() {
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                if let Ok(meta) = std::fs::metadata(&run_sh) {
+                    let mut perms = meta.permissions();
+                    perms.set_mode(0o755);
+                    let _ = std::fs::set_permissions(&run_sh, perms);
+                }
+            }
+            Ok(app_handle.shell().command("sh").args(["run.sh", "nogui"]).current_dir(server_dir))
+        } else {
+            Ok(app_handle.shell().command(java_exe).args([&mem_arg_xmx, &mem_arg_xms, "-Djava.awt.headless=true", "-jar", &target_jar, "nogui"]).current_dir(server_dir))
+        }
+    }
+}
+
 pub fn spawn_server_process(
     app_handle: &tauri::AppHandle,
     runtime: &Arc<Mutex<ServerRuntime>>,
@@ -300,11 +364,22 @@ pub fn spawn_server_process(
         ));
     }
 
-    let command = app_handle
-        .shell()
-        .command("bash")
-        .arg(START_SCRIPT_NAME)
-        .current_dir(&server_dir);
+    let is_forge_or_neoforge = session.jar_file_name.to_lowercase().contains("forge")
+        || session.jar_file_name.ends_with("-installer.jar")
+        || server_dir.join("run.sh").is_file()
+        || server_dir.join("run.bat").is_file()
+        || server_dir.join("user_jvm_args.txt").is_file();
+
+    let command = if is_forge_or_neoforge {
+        setup_and_spawn_forge_server(app_handle, &server_dir, &session)?
+    } else {
+        crate::commands::server_files::write_start_script(&session)?;
+        app_handle
+            .shell()
+            .command("bash")
+            .arg(START_SCRIPT_NAME)
+            .current_dir(&server_dir)
+    };
 
     {
         let mut runtime_guard = runtime
@@ -337,8 +412,8 @@ pub fn spawn_server_process(
                 app_handle,
                 LogKind::System,
                 format!(
-                    "Script `{}` ejecutado dentro de `{}`.",
-                    START_SCRIPT_NAME, session.server_dir
+                    "Servidor ejecutado dentro de `{}`.",
+                    session.server_dir
                 ),
             );
 
@@ -359,12 +434,10 @@ pub fn spawn_server_process(
                                 &text,
                             );
                             
-                            // Inspeccionar diagnóstico de errores de Java
                             if let Some(diag) = crate::core::diagnostics::diagnose_java_log(&text) {
                                 emit_runtime_log(&app_handle_for_task, LogKind::System, diag);
                             }
 
-                            // Detectar si el servidor se cuelga esperando EULA por stdin
                             if text.contains("agreement to Minecraft's EULA") || text.contains("EULA:") {
                                 if let Ok(mut rg) = runtime_for_task.lock() {
                                     rg.status = ServerStatus::WaitingEula;
@@ -388,7 +461,6 @@ pub fn spawn_server_process(
                                 &text,
                             );
 
-                            // Inspeccionar diagnóstico de errores de Java
                             if let Some(diag) = crate::core::diagnostics::diagnose_java_log(&text) {
                                 emit_runtime_log(&app_handle_for_task, LogKind::System, diag);
                             }
@@ -475,28 +547,94 @@ pub fn spawn_server_process(
     }
 }
 
+
 pub fn get_server_stats(runtime: &Arc<Mutex<ServerRuntime>>) -> (f32, u64) {
     let mut runtime_guard = match runtime.lock() {
         Ok(guard) => guard,
         Err(_) => return (0.0, 0),
     };
 
-    let bash_pid_raw = match &runtime_guard.child {
-        Some(child) => child.pid(),
-        None => return (0.0, 0),
-    };
-
-    let bash_pid = Pid::from_u32(bash_pid_raw);
-    
-    runtime_guard.system.refresh_all();
-
-    let java_proc = runtime_guard.system.processes().values().find(|p| {
-        p.parent() == Some(bash_pid) || p.pid() == bash_pid
-    });
-
-    if let Some(p) = java_proc {
-        (p.cpu_usage(), p.memory())
-    } else {
-        (0.0, 0)
+    if runtime_guard.child.is_none() {
+        return (0.0, 0);
     }
+
+    runtime_guard.system.refresh_cpu_usage();
+    runtime_guard.system.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+
+    let processes = runtime_guard.system.processes();
+    let mut tracked_pids = std::collections::HashSet::new();
+
+    let root_pid = runtime_guard.child.as_ref().map(|c| sysinfo::Pid::from_u32(c.pid()));
+
+    // 1. Prioridad 1: Buscar procesos Java que desciendan de root_pid
+    if let Some(r_pid) = root_pid {
+        for (pid, proc) in processes {
+            let name_str = proc.name().to_string_lossy().to_lowercase();
+            if name_str.contains("java") {
+                let mut curr = Some(*pid);
+                for _ in 0..8 {
+                    if let Some(p) = curr {
+                        if p == r_pid {
+                            tracked_pids.insert(*pid);
+                            break;
+                        }
+                        curr = processes.get(&p).and_then(|pr| pr.parent());
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Prioridad 2: Si no se encontró Java en el árbol, buscar el proceso Java que coincida con el server_dir
+    if tracked_pids.is_empty() {
+        if let Some(ref session) = runtime_guard.active_session {
+            let s_dir = PathBuf::from(&session.server_dir);
+            let s_dir_str = s_dir.to_string_lossy().to_lowercase();
+            let jar_name_str = session.jar_file_name.to_lowercase();
+
+            for (pid, proc) in processes {
+                let name_str = proc.name().to_string_lossy().to_lowercase();
+                if name_str.contains("java") {
+                    let is_cwd_match = proc.cwd().map(|c| c == s_dir).unwrap_or(false);
+                    let is_cmd_match = if !s_dir_str.is_empty() {
+                        let cmd_concat = proc.cmd().iter().map(|s| s.to_string_lossy().to_lowercase()).collect::<Vec<_>>().join(" ");
+                        cmd_concat.contains(&s_dir_str) || (!jar_name_str.is_empty() && cmd_concat.contains(&jar_name_str))
+                    } else {
+                        false
+                    };
+
+                    if is_cwd_match || is_cmd_match {
+                        tracked_pids.insert(*pid);
+                        break; // Tomar únicamente la instancia Java de este servidor
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Fallback: Si el servidor está arrancando y Java aún no se ha levantado, trackear el proceso raíz
+    if tracked_pids.is_empty() {
+        if let Some(r_pid) = root_pid {
+            if processes.contains_key(&r_pid) {
+                tracked_pids.insert(r_pid);
+            }
+        }
+    }
+
+    let mut total_cpu = 0.0f32;
+    let mut max_ram = 0u64;
+
+    for pid in &tracked_pids {
+        if let Some(p) = processes.get(pid) {
+            total_cpu += p.cpu_usage();
+            max_ram = max_ram.max(p.memory());
+        }
+    }
+
+    let cpu_cores = runtime_guard.system.cpus().len().max(1) as f32;
+    let normalized_cpu = (total_cpu / cpu_cores).min(100.0);
+
+    (normalized_cpu, max_ram)
 }

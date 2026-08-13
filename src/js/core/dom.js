@@ -64,6 +64,8 @@ export function initDom() {
   els.javaVersion = document.querySelector("#java-version");
   els.btnCreateJavaCycle = document.querySelector("#btn-create-java-cycle");
   els.memoryGb = document.querySelector("#memory-gb");
+  els.btnMemoryGbDec = document.querySelector("#btn-memory-gb-dec");
+  els.btnMemoryGbInc = document.querySelector("#btn-memory-gb-inc");
   els.inputCommand = document.querySelector("#input-command");
   els.summaryServerName = document.querySelector("#summary-server-name");
   els.summaryServerDir = document.querySelector("#summary-server-dir");
@@ -190,6 +192,8 @@ export function initDom() {
 
   els.btnOpenExtensions = document.querySelector("#btn-open-extensions");
   els.btnExtensionsBack = document.querySelector("#btn-extensions-back");
+  els.btnImportExtension = document.querySelector("#btn-import-extension");
+  els.btnDisableClientMods = document.querySelector("#btn-disable-client-mods");
   els.pageExtensions = document.querySelector("#page-extensions");
   els.extensionsEngineHint = document.querySelector("#extensions-engine-hint");
 
@@ -239,6 +243,7 @@ export function initDom() {
   els.extPreviewGalleryWrapper = document.querySelector("#ext-preview-gallery-wrapper");
   els.extPreviewGalleryImg = document.querySelector("#ext-preview-gallery-img");
   els.extPreviewGalleryTitle = document.querySelector("#ext-preview-gallery-title");
+  els.extPreviewGalleryControls = document.querySelector("#ext-preview-gallery-controls");
   els.btnExtGalleryPrev = document.querySelector("#btn-ext-gallery-prev");
   els.btnExtGalleryNext = document.querySelector("#btn-ext-gallery-next");
   els.extGalleryBar = document.querySelector("#ext-gallery-bar");

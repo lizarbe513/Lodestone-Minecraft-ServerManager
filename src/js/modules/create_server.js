@@ -2,7 +2,7 @@ import { els } from "../core/dom.js";
 import { appState, globals } from "../core/state.js";
 import { fetchForgeVersions, fetchNeoForgeVersions } from "../core/api.js";
 import { updateControls, navigateTo } from "../ui/ui.js";
-import { showFeedback, appendLog, normalizeError } from "../utils/utils.js";
+import { showFeedback, appendLog, normalizeError, requestConfirm } from "../utils/utils.js";
 import { resetNewServerForm, browseServerJar, browseServerParentDir, createServer } from "../features/server.js";
 import { isModpackConfirmed } from "./modpacks.js";
 
@@ -324,19 +324,53 @@ export function initCreateServerEvents() {
     });
   }
 
+  if (els.btnMemoryGbInc && els.memoryGb) {
+    els.btnMemoryGbInc.addEventListener("click", () => {
+      const val = parseInt(els.memoryGb.value || 0);
+      els.memoryGb.value = val + 1;
+      els.memoryGb.dispatchEvent(new Event("input"));
+    });
+  }
+
+  if (els.btnMemoryGbDec && els.memoryGb) {
+    els.btnMemoryGbDec.addEventListener("click", () => {
+      const val = parseInt(els.memoryGb.value || 0);
+      els.memoryGb.value = Math.max(1, val - 1);
+      els.memoryGb.dispatchEvent(new Event("input"));
+    });
+  }
+
   if (els.btnCreateBack) {
     els.btnCreateBack.addEventListener("click", () => {
       if (els.btnCreateBack.disabled) {
         return;
       }
 
-      appState.pendingCreateFlow = false;
-      navigateTo("home");
-      showFeedback("Selecciona una opción para continuar.", "info");
+      const savedParentDir = localStorage.getItem("last_server_parent_dir") || "";
+      const isDirty = (els.serverName && els.serverName.value.trim() !== "") ||
+                      (els.serverParentDir && els.serverParentDir.value.trim() !== "" && els.serverParentDir.value.trim() !== savedParentDir) ||
+                      (els.serverJarPath && els.serverJarPath.value.trim() !== "") ||
+                      Boolean(appState.selectedModpackId);
 
-      setTimeout(() => {
-        resetNewServerForm();
-      }, 150);
+      const doBack = () => {
+        appState.pendingCreateFlow = false;
+        navigateTo("home");
+        showFeedback("Selecciona una opción para continuar.", "info");
+
+        setTimeout(() => {
+          resetNewServerForm();
+        }, 150);
+      };
+
+      if (isDirty) {
+        requestConfirm(
+          "¿Salir sin guardar?",
+          "Se perderán la configuración y las opciones seleccionadas para este servidor. ¿Estás seguro de que deseas salir?",
+          doBack
+        );
+      } else {
+        doBack();
+      }
     });
   }
 

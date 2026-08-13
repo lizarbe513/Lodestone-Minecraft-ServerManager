@@ -5,38 +5,29 @@ use zip::ZipArchive;
 use crate::core::models::ExtensionInfo;
 
 pub fn detect_server_engine(server_dir: &Path, jar_name: &str) -> String {
-    let jar_path = server_dir.join(jar_name);
+    let lower_jar = jar_name.to_lowercase();
     
-    // Try to identify from JAR contents
-    if let Ok(file) = fs::File::open(&jar_path) {
-        if let Ok(mut archive) = ZipArchive::new(file) {
-            for i in 0..archive.len() {
-                if let Ok(entry) = archive.by_index(i) {
-                    let name = entry.name();
-                    if name.contains("net/fabricmc/") || name == "fabric.mod.json" {
-                        return "fabric".to_string();
-                    }
-                    if name.contains("org/quiltmc/") || name == "quilt.mod.json" {
-                        return "quilt".to_string();
-                    }
-                    if name.contains("org/purpurmc/") || name == "purpur.yml" {
-                        return "purpur".to_string();
-                    }
-                    if name.contains("com/destroystokyo/") || name.contains("io/papermc/") || name == "paper.yml" {
-                        return "paper".to_string();
-                    }
-                    if name.contains("net/minecraftforge/") {
-                        return "forge".to_string();
-                    }
-                    if name.contains("net/neoforged/") {
-                        return "neoforge".to_string();
-                    }
-                }
-            }
-        }
+    // 1. Detección directa por nombre del archivo JAR
+    if lower_jar.contains("neoforge") {
+        return "neoforge".to_string();
+    }
+    if lower_jar.contains("fabric") {
+        return "fabric".to_string();
+    }
+    if lower_jar.contains("quilt") {
+        return "quilt".to_string();
+    }
+    if lower_jar.contains("purpur") {
+        return "purpur".to_string();
+    }
+    if lower_jar.contains("paper") || lower_jar.contains("spigot") {
+        return "paper".to_string();
+    }
+    if lower_jar.contains("forge") {
+        return "forge".to_string();
     }
 
-    // Fallback based on directory markers
+    // 2. Detección por carpetas y archivos generados por instaladores modernos
     if server_dir.join("libraries/net/neoforged").is_dir() {
         return "neoforge".to_string();
     }
@@ -49,6 +40,80 @@ pub fn detect_server_engine(server_dir: &Path, jar_name: &str) -> String {
     if server_dir.join("spigot.yml").exists() || server_dir.join("paper.yml").exists() || server_dir.join("plugins").is_dir() {
         return "paper".to_string();
     }
+
+    // Comprobar scripts de arranque de instaladores (run.sh, unix_args.txt, etc.)
+    for args_file in &["unix_args.txt", "win_args.txt", "user_jvm_args.txt", "run.sh", "run.bat"] {
+        let args_path = server_dir.join(args_file);
+        if args_path.is_file() {
+            if let Ok(content) = fs::read_to_string(&args_path) {
+                let content_lower = content.to_lowercase();
+                if content_lower.contains("net/neoforged") || content_lower.contains("neoforge") {
+                    return "neoforge".to_string();
+                }
+                if content_lower.contains("net/minecraftforge") || content_lower.contains("forge") {
+                    return "forge".to_string();
+                }
+            }
+        }
+    }
+
+    // 3. Inspeccionar el contenido del JAR (ZIP)
+    let jar_path = server_dir.join(jar_name);
+    if let Ok(file) = fs::File::open(&jar_path) {
+        if let Ok(mut archive) = ZipArchive::new(file) {
+            let mut is_neoforge = false;
+            let mut is_forge = false;
+            let mut is_fabric = false;
+            let mut is_quilt = false;
+            let mut is_purpur = false;
+            let mut is_paper = false;
+
+            for i in 0..archive.len() {
+                if let Ok(entry) = archive.by_index(i) {
+                    let name = entry.name().to_lowercase();
+                    if name.contains("net/neoforged/") || name.contains("neoforge") {
+                        is_neoforge = true;
+                    }
+                    if name.contains("net/minecraftforge/") {
+                        is_forge = true;
+                    }
+                    if name.contains("net/fabricmc/") || name == "fabric.mod.json" {
+                        is_fabric = true;
+                    }
+                    if name.contains("org/quiltmc/") || name == "quilt.mod.json" {
+                        is_quilt = true;
+                    }
+                    if name.contains("org/purpurmc/") || name == "purpur.yml" {
+                        is_purpur = true;
+                    }
+                    if name.contains("com/destroystokyo/") || name.contains("io/papermc/") || name == "paper.yml" {
+                        is_paper = true;
+                    }
+                }
+            }
+
+            // IMPORTANTE: NeoForge debe comprobarse ANTES que Forge
+            if is_neoforge {
+                return "neoforge".to_string();
+            }
+            if is_forge {
+                return "forge".to_string();
+            }
+            if is_fabric {
+                return "fabric".to_string();
+            }
+            if is_quilt {
+                return "quilt".to_string();
+            }
+            if is_purpur {
+                return "purpur".to_string();
+            }
+            if is_paper {
+                return "paper".to_string();
+            }
+        }
+    }
+
     if server_dir.join("mods").is_dir() || server_dir.join(".fabric").is_dir() {
         return "fabric".to_string();
     }
@@ -365,8 +430,12 @@ pub async fn install_extension(server_dir: &Path, download_url: &str, file_name:
 pub fn detect_minecraft_version(server_dir: &Path, jar_name: &str) -> String {
     if let Ok(metadata) = crate::commands::sessions::load_session_metadata(server_dir) {
         if let Some(version) = metadata.minecraft_version {
-            if !version.is_empty() && version != "unknown" {
-                return version;
+            let clean = version.trim();
+            if !clean.is_empty() && clean != "unknown" {
+                if let Some((mc, _)) = clean.split_once('|') {
+                    return mc.trim().to_string();
+                }
+                return clean.to_string();
             }
         }
     }
@@ -407,7 +476,11 @@ pub fn detect_minecraft_version(server_dir: &Path, jar_name: &str) -> String {
                                 if line.starts_with("gameVersion=") || line.starts_with("minecraft_version=") {
                                     let parts: Vec<&str> = line.split('=').collect();
                                     if parts.len() > 1 {
-                                        return parts[1].trim().to_string();
+                                        let ver = parts[1].trim();
+                                        if let Some((mc, _)) = ver.split_once('|') {
+                                            return mc.trim().to_string();
+                                        }
+                                        return ver.to_string();
                                     }
                                 }
                             }
@@ -419,6 +492,52 @@ pub fn detect_minecraft_version(server_dir: &Path, jar_name: &str) -> String {
     }
 
     crate::commands::sessions::detect_version_from_jar_name(jar_name)
+}
+
+pub fn import_local_extensions(server_dir: &Path, file_paths: Vec<String>, extension_type: &str) -> Result<usize, String> {
+    if file_paths.is_empty() {
+        return Err("No se seleccionaron archivos para importar.".to_string());
+    }
+
+    let dest_dir = if extension_type == "datapack" {
+        let active_world = crate::commands::worlds::get_active_world(server_dir);
+        server_dir.join(&active_world).join("datapacks")
+    } else {
+        let folder = if extension_type == "plugin" { "plugins" } else { "mods" };
+        server_dir.join(folder)
+    };
+
+    fs::create_dir_all(&dest_dir).map_err(|e| format!("Error al crear la carpeta de destino: {}", e))?;
+
+    let mut imported_count = 0;
+    for file_path_str in file_paths {
+        let src_path = Path::new(&file_path_str);
+        if !src_path.is_file() {
+            continue;
+        }
+
+        let file_name = match src_path.file_name() {
+            Some(name) => name,
+            None => continue,
+        };
+
+        let target_path = dest_dir.join(file_name);
+        fs::copy(src_path, &target_path).map_err(|e| format!("Error copiando {:?}: {}", file_name, e))?;
+        imported_count += 1;
+    }
+
+    Ok(imported_count)
+}
+
+#[tauri::command]
+pub fn importar_extensiones_locales(
+    state: tauri::State<crate::core::runtime::AppState>,
+    file_paths: Vec<String>,
+    extension_type: String,
+) -> Result<usize, String> {
+    let session = crate::core::runtime::current_session(&state.runtime)?;
+    let path = std::path::PathBuf::from(&session.server_dir);
+    import_local_extensions(&path, file_paths, &extension_type)
 }
 
 #[tauri::command]
@@ -474,5 +593,46 @@ pub fn detectar_version_minecraft(state: tauri::State<crate::core::runtime::AppS
     let session = crate::core::runtime::current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
     Ok(detect_minecraft_version(&path, &session.jar_file_name))
+}
+
+const CLIENT_ONLY_MOD_PATTERNS: &[&str] = &[
+    "xaero", "minimap", "journeymap", "iris", "sodium", "rubidium",
+    "oculus", "embeddium", "entityculling", "notenoughanimations",
+    "appleskin", "modmenu", "controlling", "inventoryhud", "optifine",
+    "zoom", "dynamiclights", "itemphysic", "continuity", "indium",
+    "resourcify", "soundphysics", "skinlayers", "3dskinlayers",
+    "cherishedworlds", "borderless", "smoothboot", "lazydfu",
+    "ferritecore", "reeses-sodium-options"
+];
+
+#[tauri::command]
+pub fn deshabilitar_mods_cliente_en_ruta(server_dir: String) -> Result<usize, String> {
+    let mods_path = std::path::Path::new(&server_dir).join("mods");
+    if !mods_path.is_dir() {
+        return Ok(0);
+    }
+
+    let entries = fs::read_dir(&mods_path).map_err(|e| format!("Error leyendo mods: {e}"))?;
+    let mut count = 0;
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_file() {
+            let name = path.file_name().unwrap_or_default().to_string_lossy().to_lowercase();
+            if (name.ends_with(".jar") || name.ends_with(".zip")) && !name.ends_with(".disabled") {
+                let is_client_only = CLIENT_ONLY_MOD_PATTERNS.iter().any(|p| name.contains(p));
+                if is_client_only {
+                    let file_stem = path.file_name().unwrap().to_string_lossy();
+                    let new_name = format!("{}.disabled", file_stem);
+                    let new_path = mods_path.join(new_name);
+                    if let Ok(_) = fs::rename(&path, &new_path) {
+                        count += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(count)
 }
 

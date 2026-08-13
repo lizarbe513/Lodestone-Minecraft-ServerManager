@@ -4,7 +4,7 @@
                     <div>
                         <h2>Crear nuevo servidor</h2>
                         <p class="hint">
-                            Configura el servidor a tu gusto. Elige la pestaña "Partida" para opciones del juego y "Servidor" para especificaciones técnicas.
+                            Configura el servidor a tu gusto. Los campos con <span style="color: var(--error); font-weight: bold;">*</span> son obligatorios.
                         </p>
                     </div>
                     <button id="btn-create-back" type="button" class="mc-btn-secondary">
@@ -16,7 +16,7 @@
                     <div class="create-basic-panel" style="margin: 0; padding: 8px 0;">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                             <div class="field-group">
-                                <label for="server-name">Nombre del servidor</label>
+                                <label for="server-name">Nombre del servidor <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
                                 <input id="server-name" type="text" placeholder="Ejemplo: survival-amigos" autocomplete="off" />
                                 <p class="hint" style="margin-top: 4px; font-size: 0.8rem;">Se usará para el nombre de la carpeta.</p>
                             </div>
@@ -129,7 +129,7 @@
                                     </div>
 
                                     <div class="field-group full-width" id="section-jar-local" hidden>
-                                        <label for="server-jar-path">Seleccionar archivo (.jar)</label>
+                                        <label for="server-jar-path">Seleccionar archivo (.jar) <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
                                         <div class="row responsive-row">
                                             <input id="server-jar-path" type="text" placeholder="Aún no has seleccionado un archivo .jar" readonly />
                                             <button id="btn-select-server-jar" type="button" class="mc-btn-primary">Seleccionar .jar</button>
@@ -149,7 +149,7 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label for="download-software-version">Versión</label>
+                                            <label for="download-software-version">Versión <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
                                             <select id="download-software-version" class="mc-select" style="width: 100%;">
                                                 <option value="">Cargando versiones...</option>
                                             </select>
@@ -158,7 +158,7 @@
                                     </div>
 
                                     <div class="field-group full-width" style="margin-top: 12px;">
-                                        <label>Versión de Java</label>
+                                        <label>Versión de Java <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
                                         <select id="java-version" style="display: none;"></select>
                                         <button type="button" id="btn-create-java-cycle" class="mc-cycle-btn" style="width: 100%;">Java: Cargando...</button>
                                     </div>
@@ -166,7 +166,7 @@
 
                                 <div class="col-right">
                                     <div class="field-group full-width">
-                                        <label for="server-parent-dir">Directorio base</label>
+                                        <label for="server-parent-dir">Directorio base <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
                                         <div class="row responsive-row">
                                             <input id="server-parent-dir" type="text" placeholder="Selecciona la ruta donde se guardará" readonly />
                                             <button id="btn-select-server-parent-dir" type="button" class="mc-btn-primary">Seleccionar carpeta</button>
@@ -174,7 +174,7 @@
                                     </div>
 
                                     <div class="field-group" style="margin-top: 12px;">
-                                        <label for="memory-gb">RAM asignada (GB)</label>
+                                        <label for="memory-gb">RAM asignada (GB) <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
                                         <div style="display: flex; align-items: center; gap: 4px;">
                                             <button type="button" class="mc-btn-primary btn-small" id="btn-memory-gb-dec" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">-</button>
                                             <input id="memory-gb" type="number" min="1" step="1" value="4" style="width: 100%; text-align: center; margin: 0; padding: 6px;" />

@@ -113,14 +113,46 @@ export async function fetchForgeVersions() {
 }
 
 export async function getForgeDownloadUrl(mcVersion, forgeVersion) {
-  return `https://maven.minecraftforge.net/net/minecraftforge/forge/${mcVersion}-${forgeVersion}/forge-${mcVersion}-${forgeVersion}-installer.jar`;
+  let mc = mcVersion ? mcVersion.trim() : "";
+  let forge = forgeVersion ? forgeVersion.trim() : "";
+
+  if (forge.includes("|")) {
+    const parts = forge.split("|");
+    mc = parts[0];
+    forge = parts[1];
+  }
+
+  if (mc && forge.startsWith(`${mc}-`)) {
+    forge = forge.substring(mc.length + 1);
+  }
+
+  if (!mc && forge.includes("-")) {
+    const dashIdx = forge.indexOf("-");
+    mc = forge.substring(0, dashIdx);
+    forge = forge.substring(dashIdx + 1);
+  }
+
+  const primaryUrl = `https://maven.minecraftforge.net/net/minecraftforge/forge/${mc}-${forge}/forge-${mc}-${forge}-installer.jar`;
+  const fallbackUrl = `https://maven.minecraftforge.net/net/minecraftforge/forge/${mc}-${forge}-${mc}/forge-${mc}-${forge}-${mc}-installer.jar`;
+  return `${primaryUrl},${fallbackUrl}`;
+}
+
+export async function getNeoForgeDownloadUrl(neoVersion) {
+  let ver = neoVersion ? neoVersion.trim() : "";
+  if (ver.includes("|")) {
+    ver = ver.split("|")[1] || ver.split("|")[0];
+  }
+  if (ver.startsWith("neoforge-")) {
+    ver = ver.substring(9);
+  }
+  return `https://maven.neoforged.net/releases/net/neoforged/neoforge/${ver}/neoforge-${ver}-installer.jar`;
 }
 
 export async function fetchNeoForgeVersions() {
   const res = await fetch("https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge");
   const data = await res.json();
   const versions = data.versions || [];
-  
+
   const mapped = versions.map(v => {
     let clean = v.replace(/-(alpha|beta).*/, "");
     let parts = clean.split(".");
@@ -148,10 +180,6 @@ export async function fetchNeoForgeVersions() {
     }
   }
   return unique;
-}
-
-export async function getNeoForgeDownloadUrl(neoVersion) {
-  return `https://maven.neoforged.net/releases/net/neoforged/neoforge/${neoVersion}/neoforge-${neoVersion}-installer.jar`;
 }
 
 // Wrapper utility para invocar a tauri (opcional usar directamente invoke)

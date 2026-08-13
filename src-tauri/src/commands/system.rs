@@ -12,6 +12,7 @@ pub fn detener_servidor(state: tauri::State<AppState>) -> Result<(), String> {
     stop_server(&state.runtime)
 }
 
+
 #[tauri::command]
 pub fn obtener_estadisticas_servidor(state: tauri::State<AppState>) -> Result<ServerStatsPayload, String> {
     let (cpu, ram_bytes) = crate::core::runtime::get_server_stats(&state.runtime);
@@ -72,27 +73,36 @@ pub fn salir_aplicacion(app_handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub async fn descargar_servidor_jar(url: String, destino: String) -> Result<(), String> {
-    let response = reqwest::get(&url)
-        .await
-        .map_err(|e| format!("Error en la petición: {}", e))?;
+    let urls: Vec<&str> = url.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+    let mut last_error = "No se proporcionaron URLs válidas.".to_string();
 
-    if !response.status().is_success() {
-        return Err(format!("El servidor devolvió un error: {}", response.status()));
+    for current_url in urls {
+        match reqwest::get(current_url).await {
+            Ok(response) if response.status().is_success() => {
+                let bytes = response
+                    .bytes()
+                    .await
+                    .map_err(|e| format!("Error al descargar bytes de {}: {}", current_url, e))?;
+
+                let path = PathBuf::from(&destino);
+                if let Some(parent) = path.parent() {
+                    std::fs::create_dir_all(parent)
+                        .map_err(|e| format!("Error creando carpeta destino: {}", e))?;
+                }
+
+                std::fs::write(&path, &bytes)
+                    .map_err(|e| format!("Error guardando archivo: {}", e))?;
+
+                return Ok(());
+            },
+            Ok(response) => {
+                last_error = format!("Error {}: {}", response.status(), current_url);
+            },
+            Err(e) => {
+                last_error = format!("Error {}: {}", e, current_url);
+            }
+        }
     }
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|e| format!("Error al descargar bytes: {}", e))?;
-
-    let path = PathBuf::from(&destino);
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|e| format!("Error creando carpeta destino: {}", e))?;
-    }
-
-    std::fs::write(&path, &bytes)
-        .map_err(|e| format!("Error guardando archivo: {}", e))?;
-
-    Ok(())
+    Err(last_error)
 }

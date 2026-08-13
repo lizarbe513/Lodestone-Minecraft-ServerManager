@@ -1,4 +1,4 @@
-import { invoke } from "../core/api.js";
+import { invoke, open } from "../core/api.js";
 import { els } from "../core/dom.js";
 import { showFeedback, requestConfirm } from "../utils/utils.js";
 
@@ -7,6 +7,18 @@ export let activeEngine = "vanilla";
 export let activeCategory = "datapack"; // "plugin" | "mod" | "datapack"
 export let activeSubTab = "installed"; // "installed" | "search"
 export let activeMcVersion = "unknown";
+
+// Caché en memoria para búsquedas instantáneas (0ms al cambiar pestañas/categorías)
+const searchCache = new Map();
+let currentSearchRequestId = 0;
+
+export function clearSearchCache() {
+  searchCache.clear();
+}
+
+function getSearchCacheKey(provider, category, engine, mcVersion, query, offset) {
+  return `${provider}::${category}::${engine}::${mcVersion}::${query}::${offset}`;
+}
 
 // Cola de cambios de toggle pendientes (se aplican al cambiar pestaña/categoría)
 let pendingToggleChanges = [];
@@ -35,6 +47,56 @@ export function setActiveSubTab(subTab) {
   activeSubTab = subTab;
 }
 
+export function syncCategoryButtons(category) {
+  activeCategory = category;
+  const groups = [
+    { mods: els.tabCategoryMods, plugins: els.tabCategoryPlugins, datapacks: els.tabCategoryDatapacks },
+    { mods: els.tabCategoryModsInst, plugins: els.tabCategoryPluginsInst, datapacks: els.tabCategoryDatapacksInst }
+  ];
+  groups.forEach(g => {
+    if (g.mods) g.mods.classList.toggle("active", category === "mod");
+    if (g.plugins) g.plugins.classList.toggle("active", category === "plugin");
+    if (g.datapacks) g.datapacks.classList.toggle("active", category === "datapack");
+  });
+}
+
+export async function importLocalExtensions() {
+  try {
+    const isDatapack = activeCategory === "datapack";
+    const catLabel = activeCategory === "plugin" ? "Plugins" : activeCategory === "mod" ? "Mods" : "Datapacks";
+    
+    const selectedPaths = await open({
+      directory: false,
+      multiple: true,
+      title: `Selecciona ${catLabel} (.jar o .zip) para importar`,
+      filters: [
+        { name: "Complementos", extensions: ["jar", "zip"] }
+      ]
+    });
+
+    if (!selectedPaths) return;
+    const pathsArray = Array.isArray(selectedPaths) ? selectedPaths : [selectedPaths];
+    if (pathsArray.length === 0) return;
+
+    showFeedback(`Importando ${pathsArray.length} archivo(s)...`, "info");
+    const count = await invoke("importar_extensiones_locales", {
+      filePaths: pathsArray,
+      extensionType: activeCategory
+    });
+
+    showFeedback(`Se importaron ${count} complemento(s) correctamente a ${catLabel}.`, "success");
+    
+    // Cambiar a la pestaña instalados para ver de inmediato los complementos
+    if (els.tabExtInstalled) {
+      els.tabExtInstalled.click();
+    } else {
+      loadInstalledExtensions();
+    }
+  } catch (err) {
+    showFeedback(`Error al importar complementos: ${err.message || err}`, "error");
+  }
+}
+
 export async function initExtensionsPage() {
   try {
     showFeedback("Detectando motor y versión del servidor...", "info");
@@ -42,40 +104,52 @@ export async function initExtensionsPage() {
     activeEngine = engine;
     
     const mcVersion = await invoke("detectar_version_minecraft");
-    activeMcVersion = mcVersion;
+    activeMcVersion = mcVersion && mcVersion.includes('|') ? mcVersion.split('|')[0].trim() : (mcVersion || "unknown");
     
     // Configurar etiqueta del motor y versión
     if (els.extensionsEngineHint) {
-      const versionStr = mcVersion === "unknown" ? "Versión no detectada" : mcVersion;
+      const versionStr = activeMcVersion === "unknown" ? "Versión no detectada" : activeMcVersion;
       els.extensionsEngineHint.textContent = `Motor del servidor: ${ENGINE_LABELS[engine] || engine.toUpperCase()} - Minecraft ${versionStr}`;
     }
 
     const isModsSupported = ["fabric", "forge", "neoforge", "quilt"].includes(engine);
     const isPluginsSupported = ["paper", "purpur"].includes(engine);
+    const isVanilla = engine === "vanilla";
 
-    // Configurar visibilidad de las pestañas de categorías superiores
-    if (els.tabCategoryPlugins) {
-      els.tabCategoryPlugins.style.display = isPluginsSupported ? "inline-block" : "none";
-    }
-    if (els.tabCategoryMods) {
-      els.tabCategoryMods.style.display = isModsSupported ? "inline-block" : "none";
-    }
-    // Datapacks siempre visible
-    if (els.tabCategoryDatapacks) {
-      els.tabCategoryDatapacks.style.display = "inline-block";
-    }
+    const updateCatButtonState = (btn, enabled, tooltip) => {
+      if (!btn) return;
+      btn.disabled = !enabled;
+      btn.title = enabled ? "" : tooltip;
+      if (!enabled) {
+        btn.classList.add("disabled");
+        btn.style.opacity = "0.45";
+        btn.style.cursor = "not-allowed";
+      } else {
+        btn.classList.remove("disabled");
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+      }
+    };
+
+    const modsTooltip = isVanilla ? "Los servidores Vanilla no admiten mods" : "Paper/Purpur no admite mods";
+    const pluginsTooltip = isVanilla ? "Los servidores Vanilla no admiten plugins" : "Los cargadores de mods no admiten plugins";
+
+    updateCatButtonState(els.tabCategoryMods, isModsSupported, modsTooltip);
+    updateCatButtonState(els.tabCategoryModsInst, isModsSupported, modsTooltip);
+    updateCatButtonState(els.tabCategoryPlugins, isPluginsSupported, pluginsTooltip);
+    updateCatButtonState(els.tabCategoryPluginsInst, isPluginsSupported, pluginsTooltip);
+    updateCatButtonState(els.tabCategoryDatapacks, true, "");
+    updateCatButtonState(els.tabCategoryDatapacksInst, true, "");
 
     // Establecer categoría inicial por defecto según el motor
     if (isPluginsSupported) {
       activeCategory = "plugin";
-      selectCategoryTab(els.tabCategoryPlugins);
     } else if (isModsSupported) {
       activeCategory = "mod";
-      selectCategoryTab(els.tabCategoryMods);
     } else {
       activeCategory = "datapack";
-      selectCategoryTab(els.tabCategoryDatapacks);
     }
+    syncCategoryButtons(activeCategory);
 
     // Configurar botones de navegación de galería de capturas
     if (els.btnExtGalleryPrev) {
@@ -103,20 +177,6 @@ export async function initExtensionsPage() {
   } catch (err) {
     showFeedback(`Error al inicializar gestor de extensiones: ${err}`, "error");
   }
-}
-
-function selectCategoryTab(activeButton) {
-  const buttons = [els.tabCategoryPlugins, els.tabCategoryMods, els.tabCategoryDatapacks];
-  buttons.forEach(btn => {
-    if (!btn) return;
-    if (btn === activeButton) {
-      btn.classList.add("active");
-      btn.classList.remove("secondary");
-    } else {
-      btn.classList.remove("active");
-      btn.classList.add("secondary");
-    }
-  });
 }
 
 let selectedInstalledExt = null;
@@ -275,7 +335,7 @@ function updateInstalledDetailPanel(ext) {
 export async function searchModrinth(query) {
   if (!els.listSearchResults) return;
   
-  const cleanQuery = query.trim();
+  const cleanQuery = (query || "").trim();
 
   if (!cleanQuery) {
     await loadRecommendedExtensions();
@@ -298,7 +358,29 @@ let currentSearchProvider = "modrinth";
 let currentTotalHits = 0;
 let selectedSearchProject = null;
 
+let previewRequestId = 0;
+
 async function searchModrinthInternal(query, offsetIndex = 0) {
+  const cleanQuery = (query || "").trim();
+  const cleanVer = activeMcVersion && activeMcVersion.includes('|') ? activeMcVersion.split('|')[0].trim() : activeMcVersion;
+  const cacheKey = getSearchCacheKey("modrinth", activeCategory, activeEngine, cleanVer, cleanQuery, offsetIndex);
+
+  // 1. Revisar caché en memoria (0ms render)
+  if (searchCache.has(cacheKey)) {
+    const cached = searchCache.get(cacheKey);
+    currentTotalHits = cached.totalHits;
+    if (offsetIndex === 0) {
+      currentSearchHits = cached.hits;
+      renderSearchResults(currentSearchHits, 0, cleanQuery, "modrinth");
+    } else {
+      currentSearchHits.push(...cached.hits);
+      renderSearchResults(currentSearchHits, Math.floor(offsetIndex / 12), cleanQuery, "modrinth");
+    }
+    return;
+  }
+
+  const requestId = ++currentSearchRequestId;
+
   try {
     if (offsetIndex === 0) {
       els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Buscando en Modrinth...</p>';
@@ -307,8 +389,8 @@ async function searchModrinthInternal(query, offsetIndex = 0) {
     const searchType = activeCategory === "plugin" ? "plugin" : activeCategory === "mod" ? "mod" : "datapack";
     
     let facets = [[`project_type:${searchType}`]];
-    if (activeMcVersion !== "unknown") {
-      facets.push([`versions:${activeMcVersion}`]);
+    if (cleanVer !== "unknown" && cleanVer !== "") {
+      facets.push([`versions:${cleanVer}`]);
     }
     
     if (activeEngine !== "unknown") {
@@ -317,13 +399,13 @@ async function searchModrinthInternal(query, offsetIndex = 0) {
       } else if (activeCategory === "mod") {
         if (activeEngine === "fabric") facets.push(["categories:fabric"]);
         else if (activeEngine === "forge") facets.push(["categories:forge"]);
-        else if (activeEngine === "neoforge") facets.push(["categories:neoforge", "categories:forge"]);
+        else if (activeEngine === "neoforge") facets.push(["categories:neoforge"]);
         else if (activeEngine === "quilt") facets.push(["categories:quilt", "categories:fabric"]);
       }
     }
     
     const limit = 48;
-    const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&index=downloads&facets=${encodeURIComponent(JSON.stringify(facets))}&limit=${limit}&offset=${offsetIndex}`;
+    const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(cleanQuery)}&index=downloads&facets=${encodeURIComponent(JSON.stringify(facets))}&limit=${limit}&offset=${offsetIndex}`;
     
     const response = await fetch(url, {
         headers: {
@@ -331,14 +413,25 @@ async function searchModrinthInternal(query, offsetIndex = 0) {
         }
     });
 
+    if (requestId !== currentSearchRequestId) return; // Descartar petición obsoleta
+
     if (!response.ok) {
         throw new Error(`Error de Modrinth: ${response.status}`);
     }
 
     const data = await response.json();
+    if (requestId !== currentSearchRequestId) return;
+
     currentTotalHits = data.total_hits || (data.hits ? data.hits.length : 0);
     
-    const newHits = (data.hits || []).map(h => ({
+    // Filtrar complementos que sean exclusivamente de cliente (server_side: unsupported)
+    const rawHits = data.hits || [];
+    const validHits = rawHits.filter(h => {
+      if (h.server_side === "unsupported") return false;
+      return true;
+    });
+
+    const newHits = validHits.map(h => ({
       project_id: h.project_id,
       title: h.title,
       project_type: h.project_type,
@@ -350,18 +443,42 @@ async function searchModrinthInternal(query, offsetIndex = 0) {
       provider: "modrinth"
     }));
 
+    // Guardar en caché
+    searchCache.set(cacheKey, { hits: newHits, totalHits: currentTotalHits });
+
     if (offsetIndex === 0) {
       currentSearchHits = newHits;
-      renderSearchResults(currentSearchHits, 0, query, "modrinth");
+      renderSearchResults(currentSearchHits, 0, cleanQuery, "modrinth");
     } else {
       currentSearchHits.push(...newHits);
     }
   } catch (err) {
+    if (requestId !== currentSearchRequestId) return;
     els.listSearchResults.innerHTML = `<p class="hint" style="color: var(--error); text-align: center; margin: 16px 0;">Error de red: ${err.message || err}</p>`;
   }
 }
 
 async function searchCurseForgeInternal(query, offsetIndex = 0) {
+  const cleanQuery = (query || "").trim();
+  const cleanVer = activeMcVersion && activeMcVersion.includes('|') ? activeMcVersion.split('|')[0].trim() : activeMcVersion;
+  const cacheKey = getSearchCacheKey("curseforge", activeCategory, activeEngine, cleanVer, cleanQuery, offsetIndex);
+
+  // 1. Revisar caché en memoria
+  if (searchCache.has(cacheKey)) {
+    const cached = searchCache.get(cacheKey);
+    currentTotalHits = cached.totalHits;
+    if (offsetIndex === 0) {
+      currentSearchHits = cached.hits;
+      renderSearchResults(currentSearchHits, 0, cleanQuery, "curseforge");
+    } else {
+      currentSearchHits.push(...cached.hits);
+      renderSearchResults(currentSearchHits, Math.floor(offsetIndex / 12), cleanQuery, "curseforge");
+    }
+    return;
+  }
+
+  const requestId = ++currentSearchRequestId;
+
   try {
     if (offsetIndex === 0) {
       els.listSearchResults.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Buscando en CurseForge...</p>';
@@ -373,10 +490,10 @@ async function searchCurseForgeInternal(query, offsetIndex = 0) {
     else if (activeCategory === "datapack") classId = 6945;
 
     const pageSize = 48;
-    let url = `https://api.curse.tools/v1/cf/mods/search?gameId=432&classId=${classId}&searchFilter=${encodeURIComponent(query)}&sortField=2&sortOrder=desc&pageSize=${pageSize}&index=${offsetIndex}`;
+    let url = `https://api.curse.tools/v1/cf/mods/search?gameId=432&classId=${classId}&searchFilter=${encodeURIComponent(cleanQuery)}&sortField=2&sortOrder=desc&pageSize=${pageSize}&index=${offsetIndex}`;
     
-    if (activeMcVersion !== "unknown") {
-      url += `&gameVersion=${activeMcVersion}`;
+    if (cleanVer !== "unknown" && cleanVer !== "") {
+      url += `&gameVersion=${cleanVer}`;
     }
     
     if (activeCategory === "mod" && activeEngine !== "unknown") {
@@ -396,14 +513,32 @@ async function searchCurseForgeInternal(query, offsetIndex = 0) {
         }
     });
 
+    if (requestId !== currentSearchRequestId) return; // Descartar petición obsoleta
+
     if (!response.ok) {
         throw new Error(`Error de CurseForge: ${response.status}`);
     }
 
     const resData = await response.json();
+    if (requestId !== currentSearchRequestId) return;
+
     currentTotalHits = (resData.pagination && resData.pagination.totalCount) ? resData.pagination.totalCount : (resData.data ? resData.data.length : 0);
     
-    const newHits = (resData.data || []).map(h => ({
+    const clientOnlyKeywords = ["minimap", "client-only", "client only", "shaders", "optifine"];
+    const rawData = resData.data || [];
+    const validData = rawData.filter(h => {
+      const summary = (h.summary || "").toLowerCase();
+      const name = (h.name || "").toLowerCase();
+      if (clientOnlyKeywords.some(kw => name.includes(kw) || summary.includes(kw))) {
+        // Permitir solo si explícitamente tiene soporte de servidor
+        if (!summary.includes("server") && !name.includes("server")) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    const newHits = validData.map(h => ({
       project_id: h.id.toString(),
       title: h.name,
       project_type: activeCategory,
@@ -415,13 +550,17 @@ async function searchCurseForgeInternal(query, offsetIndex = 0) {
       provider: "curseforge"
     }));
 
+    // Guardar en caché
+    searchCache.set(cacheKey, { hits: newHits, totalHits: currentTotalHits });
+
     if (offsetIndex === 0) {
       currentSearchHits = newHits;
-      renderSearchResults(currentSearchHits, 0, query, "curseforge");
+      renderSearchResults(currentSearchHits, 0, cleanQuery, "curseforge");
     } else {
       currentSearchHits.push(...newHits);
     }
   } catch (err) {
+    if (requestId !== currentSearchRequestId) return;
     els.listSearchResults.innerHTML = `<p class="hint" style="color: var(--error); text-align: center; margin: 16px 0;">Error de red: ${err.message || err}</p>`;
   }
 }
@@ -448,7 +587,7 @@ function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") 
   els.listSearchResults.innerHTML = "";
 
   if (!hits || hits.length === 0) {
-    els.listSearchResults.innerHTML = '<p class="hint" style="grid-column: span 3; text-align: center; margin: 16px 0;">No se encontraron resultados.</p>';
+    els.listSearchResults.innerHTML = '<p class="hint" style="grid-column: 1 / -1; text-align: center; margin: 16px 0;">No se encontraron resultados.</p>';
     if (els.btnExtPagePrev) els.btnExtPagePrev.disabled = true;
     if (els.btnExtPageNext) els.btnExtPageNext.disabled = true;
     return;
@@ -496,10 +635,11 @@ function renderSearchResults(hits, page = 0, query = "", provider = "modrinth") 
   pageHits.forEach((project, idx) => {
     const card = document.createElement("div");
     card.className = "ext-mod-card";
+    card.title = project.title || "";
     
     const iconUrl = project.icon_url || "assets/images/creeper_head.svg";
     card.innerHTML = `
-      <img src="${iconUrl}" />
+      <img src="${iconUrl}" alt="${project.title}" />
       <div class="ext-mod-card-title">${project.title}</div>
     `;
 
@@ -523,27 +663,38 @@ let extGallery = [];
 let extGalleryIndex = -1;
 
 function updateGalleryUI() {
+  if (!extGallery || extGallery.length === 0) {
+    if (els.extPreviewDesc) els.extPreviewDesc.style.display = "block";
+    if (els.extPreviewGalleryWrapper) els.extPreviewGalleryWrapper.style.display = "none";
+    if (els.extPreviewGalleryTitle) els.extPreviewGalleryTitle.style.display = "none";
+    if (els.extGalleryBar) els.extGalleryBar.style.display = "none";
+    if (els.extPreviewGalleryControls) els.extPreviewGalleryControls.style.display = "none";
+    return;
+  }
+
+  if (els.extPreviewGalleryControls) els.extPreviewGalleryControls.style.display = "flex";
+
   if (extGalleryIndex === -1) {
     if (els.extPreviewDesc) els.extPreviewDesc.style.display = "block";
     if (els.extPreviewGalleryWrapper) els.extPreviewGalleryWrapper.style.display = "none";
+    if (els.extPreviewGalleryTitle) els.extPreviewGalleryTitle.style.display = "none";
     if (els.extGalleryBar) els.extGalleryBar.style.display = "none";
     if (els.btnExtGalleryPrev) els.btnExtGalleryPrev.disabled = true;
+    if (els.btnExtGalleryNext) els.btnExtGalleryNext.disabled = false;
   } else {
     if (els.extPreviewDesc) els.extPreviewDesc.style.display = "none";
-    if (els.extPreviewGalleryWrapper) els.extPreviewGalleryWrapper.style.display = "flex";
-    if (els.extGalleryBar) els.extGalleryBar.style.display = "block";
+    if (els.extPreviewGalleryWrapper) els.extPreviewGalleryWrapper.style.display = "block";
     const item = extGallery[extGalleryIndex];
     if (item && els.extPreviewGalleryImg) {
       els.extPreviewGalleryImg.src = item.url;
     }
     if (els.extPreviewGalleryTitle) {
-      els.extPreviewGalleryTitle.textContent = item.title || `Captura ${extGalleryIndex + 1}/${extGallery.length}`;
+      els.extPreviewGalleryTitle.style.display = item && item.title ? "block" : "none";
+      els.extPreviewGalleryTitle.textContent = item ? item.title : `Captura ${extGalleryIndex + 1}/${extGallery.length}`;
     }
+    if (els.extGalleryBar) els.extGalleryBar.style.display = "block";
     if (els.btnExtGalleryPrev) els.btnExtGalleryPrev.disabled = false;
-  }
-
-  if (els.btnExtGalleryNext) {
-    els.btnExtGalleryNext.disabled = (extGalleryIndex >= extGallery.length - 1);
+    if (els.btnExtGalleryNext) els.btnExtGalleryNext.disabled = (extGalleryIndex >= extGallery.length - 1);
   }
 }
 
@@ -553,27 +704,32 @@ async function loadExtensionGallery(project) {
   updateGalleryUI();
 
   if (!project || !project.project_id) return;
+  const reqId = ++previewRequestId;
 
   try {
     if (project.provider === "modrinth") {
       const res = await fetch(`https://api.modrinth.com/v2/project/${project.project_id}`, {
         headers: { "User-Agent": "norditex/minecraft-server-gui (gemini-agent)" }
       });
+      if (reqId !== previewRequestId) return;
       if (res.ok) {
         const data = await res.json();
+        if (reqId !== previewRequestId) return;
         if (data.gallery && data.gallery.length > 0) {
-          extGallery = data.gallery.map(g => ({ url: g.url, title: g.title || g.description || "" }));
+          extGallery = data.gallery.map((g, idx) => ({ url: g.url, title: g.title || g.description || `Captura ${idx + 1}` }));
         }
       }
     } else if (project.provider === "curseforge") {
       const res = await fetch(`https://api.curse.tools/v1/cf/mods/${project.project_id}`, {
         headers: { "User-Agent": "norditex/minecraft-server-gui (gemini-agent)" }
       });
+      if (reqId !== previewRequestId) return;
       if (res.ok) {
         const data = await res.json();
+        if (reqId !== previewRequestId) return;
         const modData = data.data || data;
         if (modData.screenshots && modData.screenshots.length > 0) {
-          extGallery = modData.screenshots.map(s => ({ url: s.url, title: s.title || s.caption || "" }));
+          extGallery = modData.screenshots.map((s, idx) => ({ url: s.url, title: s.title || s.caption || `Captura ${idx + 1}` }));
         }
       }
     }
@@ -581,7 +737,9 @@ async function loadExtensionGallery(project) {
     console.warn("Error cargando galería de complemento:", err);
   }
 
-  updateGalleryUI();
+  if (reqId === previewRequestId) {
+    updateGalleryUI();
+  }
 }
 
 function resetPreviewPanel() {
@@ -676,7 +834,7 @@ async function showVersionsState(project) {
         if (loader === "plugin") loaders = ["paper", "spigot", "bukkit", "purpur"];
         else if (loader === "fabric") loaders = ["fabric"];
         else if (loader === "forge") loaders = ["forge"];
-        else if (loader === "neoforge") loaders = ["neoforge", "forge"];
+        else if (loader === "neoforge") loaders = ["neoforge"];
         else if (loader === "quilt") loaders = ["quilt", "fabric"];
 
         let url = `https://api.modrinth.com/v2/project/${projectId}/version`;
@@ -937,7 +1095,7 @@ async function loadModrinthVersions(projectId, projectTitle, projectType) {
     } else if (activeCategory === "mod") {
       if (activeEngine === "fabric") loaders = ["fabric"];
       else if (activeEngine === "forge") loaders = ["forge"];
-      else if (activeEngine === "neoforge") loaders = ["neoforge", "forge"];
+      else if (activeEngine === "neoforge") loaders = ["neoforge"];
       else if (activeEngine === "quilt") loaders = ["quilt", "fabric"];
     }
     
@@ -1043,11 +1201,11 @@ function renderVersionsList(versions, provider, projectTitle, projectType) {
       } else if (activeEngine === "forge") {
         if (!v.loaders.includes("forge")) return false;
       } else if (activeEngine === "neoforge") {
-        if (!v.loaders.includes("neoforge") && !v.loaders.includes("forge")) return false;
+        if (!v.loaders.includes("neoforge")) return false;
       } else if (activeEngine === "quilt") {
         if (!v.loaders.includes("quilt") && !v.loaders.includes("fabric")) return false;
       } else {
-        if (!v.loaders.includes("fabric") && !v.loaders.includes("forge")) return false;
+        if (!v.loaders.includes("fabric") && !v.loaders.includes("forge") && !v.loaders.includes("neoforge")) return false;
       }
     }
     
@@ -1151,7 +1309,7 @@ async function resolveAndDownloadDependencies(versionObject, provider) {
       } else if (activeCategory === "mod") {
         if (activeEngine === "fabric") loaders = ["fabric"];
         else if (activeEngine === "forge") loaders = ["forge"];
-        else if (activeEngine === "neoforge") loaders = ["neoforge", "forge"];
+        else if (activeEngine === "neoforge") loaders = ["neoforge"];
         else if (activeEngine === "quilt") loaders = ["quilt", "fabric"];
       }
       
@@ -1175,7 +1333,7 @@ async function resolveAndDownloadDependencies(versionObject, provider) {
         } else if (activeCategory === "mod") {
           if (activeEngine === "fabric") return v.loaders.includes("fabric");
           if (activeEngine === "forge") return v.loaders.includes("forge");
-          if (activeEngine === "neoforge") return v.loaders.includes("neoforge") || v.loaders.includes("forge");
+          if (activeEngine === "neoforge") return v.loaders.includes("neoforge");
           if (activeEngine === "quilt") return v.loaders.includes("quilt") || v.loaders.includes("fabric");
         }
         return true;
@@ -1240,7 +1398,7 @@ async function resolveAndDownloadDependencies(versionObject, provider) {
         } else if (activeCategory === "mod") {
           if (activeEngine === "fabric") return fileLoaders.includes("fabric");
           if (activeEngine === "forge") return fileLoaders.includes("forge");
-          if (activeEngine === "neoforge") return fileLoaders.includes("neoforge") || fileLoaders.includes("forge");
+          if (activeEngine === "neoforge") return fileLoaders.includes("neoforge");
           if (activeEngine === "quilt") return fileLoaders.includes("quilt") || fileLoaders.includes("fabric");
         }
         return true;

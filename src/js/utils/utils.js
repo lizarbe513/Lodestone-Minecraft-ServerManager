@@ -43,6 +43,11 @@ export function appendLog(kind, message) {
   
   line.innerHTML = safeText;
   els.logOutput.appendChild(line);
+
+  while (els.logOutput.children.length > 500) {
+    els.logOutput.removeChild(els.logOutput.firstChild);
+  }
+
   els.logOutput.scrollTop = els.logOutput.scrollHeight;
 }
 
@@ -57,6 +62,22 @@ export function fileNameFromPath(filePath) {
 
 export function suggestedServerName(filePath) {
   return fileNameFromPath(filePath).replace(/\.jar$/i, "");
+}
+
+export function showLoadingOverlay(title = "Cargando...", description = "Por favor, espera un momento.") {
+  const overlay = document.getElementById("loading-overlay");
+  const titleEl = document.getElementById("loading-overlay-title");
+  const descEl = document.getElementById("loading-overlay-desc");
+  if (overlay) {
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = description;
+    overlay.showModal();
+  }
+}
+
+export function hideLoadingOverlay() {
+  const overlay = document.getElementById("loading-overlay");
+  if (overlay) overlay.close();
 }
 
 export function requestConfirm(title, message, command) {

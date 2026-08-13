@@ -1,0 +1,24 @@
+Se puede asignar a un jugador como Operador desde la pestaña de juadores
+conectados, pero estos no aparecen inmediatamente en la lista de operadores
+del panel de la pestaña de gestion de accesos.
+
+Disminuir el espacio que ocupa el encabezado de la aplicacion.
+
+No funcionan los botones para aumentar o disminuir la memoria RAM en el panel de creacion del servidor.
+
+Falta un indicativo de casillas requeridas a rellenar en la creacion del servidor.
+
+El consumo de recursos del servidor no se muestra correctamente cuando este esta basado en un lanzador
+de mods.
+
+Hay que agregar una funcion que deshabilite o no instale los mods de un modpack que se apliquen
+exclusivamente del lado del cliente (como minimaps, algunos de optimizacion, etc).
+
+Error en la descarga de un servidor Forge, NeoForge, error 404.
+
+Hay que realizar un arreglo en la dispocision de los paneles terminal/control en la pagina de control
+del servidor; los botones de configuracion, propiedades y volver deben acomodarse en vertical en un 
+espacio horizontal más corto o pasar el panel a la parte de abajo.
+
+Agregar un ventana emergente de confirmacion al salir de la pagina de creacion del servidor cuando se haya 
+hecho algunas configuraciones.

@@ -175,7 +175,7 @@ export function setStatus(status) {
   
   updateControls();
 
-  if (status === "running") {
+  if (status === "running" || status === "starting") {
     if (!globals.statsInterval) {
       globals.statsInterval = setInterval(async () => {
         try {
@@ -197,7 +197,7 @@ export function setStatus(status) {
     if (els.statCpu) els.statCpu.textContent = "--";
     clearMetrics();
 
-    if (status === "offline" || status === "starting") {
+    if (status === "offline" || status === "waiting_eula") {
       connectedPlayers.clear();
       renderPlayersList();
     }

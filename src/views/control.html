@@ -31,17 +31,6 @@
                                 Gestiona el servidor, revisa la terminal y envía comandos desde aquí.
                             </p>
                         </div>
-                        <div class="row responsive-row">
-                            <button id="btn-toggle-config-panel" type="button" class="mc-btn-secondary btn-small">
-                                Configuración
-                            </button>
-                            <button id="btn-open-properties" type="button" class="mc-btn-secondary btn-small">
-                                Propiedades
-                            </button>
-                            <button id="btn-control-back" type="button" class="mc-btn-secondary btn-small">
-                                Volver
-                            </button>
-                        </div>
                     </div>
 
                     <div class="summary-grid">
@@ -67,22 +56,40 @@
                         </div>
                     </div>
 
-                    <div class="row action-row">
-                        <button id="btn-control-start" type="button" class="mc-btn-primary">
-                            Iniciar
-                        </button>
-                        <button id="btn-control-stop" type="button" class="mc-btn-danger">
-                            Detener
-                        </button>
-                        <button id="btn-control-open-folder" type="button" class="mc-btn-secondary btn-small">
-                            Abrir
-                        </button>
-                        <button id="btn-control-delete-server" type="button" class="mc-btn-secondary btn-small">
-                            Borrar
-                        </button>
-                        <button id="btn-control-eula" type="button" class="mc-btn-warning" hidden>
-                            EULA
-                        </button>
+                    <div style="margin-top: auto; padding-top: 12px;">
+                        <!-- Grupo 1: Acciones del servidor (Cuadrícula 2x2) -->
+                        <div class="tools-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button id="btn-control-start" type="button" class="mc-btn-primary" style="width: 100%;">
+                                Iniciar
+                            </button>
+                            <button id="btn-control-stop" type="button" class="mc-btn-danger" style="width: 100%;">
+                                Detener
+                            </button>
+                            <button id="btn-control-open-folder" type="button" class="mc-btn-secondary btn-small" style="width: 100%;">
+                                Abrir
+                            </button>
+                            <button id="btn-control-delete-server" type="button" class="mc-btn-secondary btn-small" style="width: 100%;">
+                                Borrar
+                            </button>
+                            <button id="btn-control-eula" type="button" class="mc-btn-warning" hidden style="grid-column: span 2; width: 100%;">
+                                Aceptar EULA
+                            </button>
+                        </div>
+
+                        <!-- Grupo 2: Navegación y Gestión (Cuadrícula con Volver 1x2) -->
+                        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button id="btn-toggle-config-panel" type="button" class="mc-btn-secondary btn-small" style="width: 100%;">
+                                    Configuración
+                                </button>
+                                <button id="btn-open-properties" type="button" class="mc-btn-secondary btn-small" style="width: 100%;">
+                                    Propiedades
+                                </button>
+                                <button id="btn-control-back" type="button" class="mc-btn-secondary btn-small" style="grid-column: span 2; width: 100%;">
+                                    Volver
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
