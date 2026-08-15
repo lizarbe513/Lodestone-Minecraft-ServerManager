@@ -246,8 +246,8 @@ const updateGalleryUI = () => {
       els.createModpackGalleryImg.style.cursor = "zoom-in";
       els.createModpackGalleryImg.src = imgData.url;
       els.createModpackGalleryImg.onclick = () => {
-        if (imgData && imgData.url) {
-          openImageLightbox(imgData.url, imgData.title || "Vista Previa de Modpack");
+        if (imgData && (imgData.fullUrl || imgData.url)) {
+          openImageLightbox(imgData.fullUrl || imgData.url, imgData.title || "Vista Previa de Modpack");
         }
       };
     }
@@ -395,8 +395,8 @@ const selectModpack = async (modpack, div) => {
     } else {
       if (modpack.gallery && modpack.gallery.length > 0) {
           appState.modpackGallery = modpack.gallery.map((img, idx) => {
-              if (typeof img === 'string') return { url: img, title: "Imagen " + (idx + 1) };
-              return { url: img.url, title: img.title || "Imagen " + (idx + 1) };
+              if (typeof img === 'string') return { url: img, fullUrl: img, title: "Imagen " + (idx + 1) };
+              return { url: img.url, fullUrl: img.raw_url || img.url, title: img.title || "Imagen " + (idx + 1) };
           }).filter(img => img.url);
           if (appState.modpackGallery.length > 0 && els.createModpackGalleryControls) {
               els.createModpackGalleryControls.style.display = "flex";
@@ -414,6 +414,7 @@ const selectModpack = async (modpack, div) => {
           if (projData.gallery && projData.gallery.length > 0) {
               appState.modpackGallery = projData.gallery.map((img, idx) => ({
                   url: img.url,
+                  fullUrl: img.raw_url || img.url,
                   title: img.title || "Imagen " + (idx + 1)
               })).filter(img => img.url);
               if (appState.modpackGallery.length > 0 && els.createModpackGalleryControls) {

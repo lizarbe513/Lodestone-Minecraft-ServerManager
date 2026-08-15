@@ -4,6 +4,8 @@
     flex-direction: row;
     gap: 20px;
     align-items: stretch;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Panel izquierdo: acciones principales */
@@ -19,18 +21,23 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px 15% 20px;
+    align-items: center;
+    padding: 32px 24px 20px;
+}
+.home-main-content h2, .home-main-content .hint {
+    text-align: center;
 }
 .home-btn-stack {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    width: 100%;
+    max-width: 420px;
 }
 .home-btn-large {
     font-size: 1.2rem;
-    padding: 20px 16px;
+    padding: 18px 16px;
     width: 100%;
-    max-width: none;
     letter-spacing: 1px;
 }
 .home-footer-actions {
@@ -42,7 +49,7 @@
     gap: 10px;
 }
 .home-btn-footer {
-    padding: 14px 28px;
+    padding: 12px 24px;
     font-size: 1.05rem;
     letter-spacing: 1px;
 }
@@ -54,7 +61,7 @@
     flex-direction: column;
     min-width: 0;
     overflow: hidden;
-    margin-top: 50px;
+    margin-top: 0;
 }
 .home-servers-title {
     margin: 0 0 12px;
@@ -142,11 +149,11 @@
 /* Layout Específico: Panel de Control */
 #page-control {
     flex-direction: row;
-    gap: 24px;
+    gap: 20px;
 }
-/* Consola Izquierda (70%) */
+/* Consola Izquierda */
 .console-wrapper {
-    flex: 7;
+    flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -159,13 +166,15 @@
     min-height: 0;
     overflow: hidden;
 }
-/* Acciones Derecha (30%) */
+/* Acciones Derecha */
 .actions-wrapper {
-    flex: 3;
+    width: 360px;
+    max-width: 380px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: 16px;
     overflow-y: auto;
-    padding-right: 8px;
+    padding-right: 4px;
 }
 

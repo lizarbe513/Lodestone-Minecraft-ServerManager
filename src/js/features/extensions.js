@@ -99,7 +99,7 @@ export async function importLocalExtensions() {
 
 export async function initExtensionsPage() {
   try {
-    showFeedback("Detectando motor y versión del servidor...", "info");
+    showFeedback("Agrega complementos para más diversion!", "info");
     const engine = await invoke("detectar_motor_servidor");
     activeEngine = engine;
     
@@ -108,8 +108,7 @@ export async function initExtensionsPage() {
     
     // Configurar etiqueta del motor y versión
     if (els.extensionsEngineHint) {
-      const versionStr = activeMcVersion === "unknown" ? "Versión no detectada" : activeMcVersion;
-      els.extensionsEngineHint.textContent = `Motor del servidor: ${ENGINE_LABELS[engine] || engine.toUpperCase()} - Minecraft ${versionStr}`;
+      els.extensionsEngineHint.textContent = `Motor del servidor: ${ENGINE_LABELS[engine] || engine.toUpperCase()}`;
     }
 
     const isModsSupported = ["fabric", "forge", "neoforge", "quilt"].includes(engine);
@@ -440,7 +439,8 @@ async function searchModrinthInternal(query, offsetIndex = 0) {
       author: h.author || "",
       icon_url: h.icon_url,
       slug: h.slug,
-      provider: "modrinth"
+      provider: "modrinth",
+      gallery: h.gallery || []
     }));
 
     // Guardar en caché
@@ -547,7 +547,8 @@ async function searchCurseForgeInternal(query, offsetIndex = 0) {
       author: h.authors && h.authors[0] ? h.authors[0].name : "",
       icon_url: h.logo ? h.logo.url : null,
       slug: h.slug,
-      provider: "curseforge"
+      provider: "curseforge",
+      screenshots: h.screenshots || (h.raw && h.raw.screenshots) || []
     }));
 
     // Guardar en caché
@@ -689,8 +690,8 @@ function updateGalleryUI() {
       els.extPreviewGalleryImg.src = item.url;
       els.extPreviewGalleryImg.style.cursor = "zoom-in";
       els.extPreviewGalleryImg.onclick = () => {
-        if (item && item.url) {
-          openImageLightbox(item.url, item.title || "Vista Previa de Complemento");
+        if (item && (item.fullUrl || item.url)) {
+          openImageLightbox(item.fullUrl || item.url, item.title || "Vista Previa de Complemento");
         }
       };
     }
@@ -707,6 +708,27 @@ function updateGalleryUI() {
 async function loadExtensionGallery(project) {
   extGallery = [];
   extGalleryIndex = -1;
+
+  // Si el proyecto ya trae capturas precargadas de la búsqueda, inicializar inmediatamente sin esperar al fetch
+  if (project.provider === "modrinth" && project.gallery && project.gallery.length > 0) {
+    extGallery = project.gallery.map((g, idx) => {
+      const url = typeof g === "string" ? g : (g.url || "");
+      const rawUrl = typeof g === "object" ? (g.raw_url || g.url) : url;
+      const title = typeof g === "object" ? (g.title || g.description) : "";
+      return {
+        url: url,
+        fullUrl: rawUrl || url,
+        title: title || `Captura ${idx + 1}`
+      };
+    }).filter(item => item.url);
+  } else if (project.provider === "curseforge" && project.screenshots && project.screenshots.length > 0) {
+    extGallery = project.screenshots.map((s, idx) => ({
+      url: s.url,
+      fullUrl: s.url,
+      title: s.title || s.caption || `Captura ${idx + 1}`
+    })).filter(item => item.url);
+  }
+
   updateGalleryUI();
 
   if (!project || !project.project_id) return;
@@ -722,7 +744,12 @@ async function loadExtensionGallery(project) {
         const data = await res.json();
         if (reqId !== previewRequestId) return;
         if (data.gallery && data.gallery.length > 0) {
-          extGallery = data.gallery.map((g, idx) => ({ url: g.url, title: g.title || g.description || `Captura ${idx + 1}` }));
+          extGallery = data.gallery.map((g, idx) => ({
+            url: g.url,
+            fullUrl: g.raw_url || g.url,
+            title: g.title || g.description || `Captura ${idx + 1}`
+          })).filter(item => item.url);
+          project.gallery = data.gallery;
         }
       }
     } else if (project.provider === "curseforge") {
@@ -735,7 +762,12 @@ async function loadExtensionGallery(project) {
         if (reqId !== previewRequestId) return;
         const modData = data.data || data;
         if (modData.screenshots && modData.screenshots.length > 0) {
-          extGallery = modData.screenshots.map((s, idx) => ({ url: s.url, title: s.title || s.caption || `Captura ${idx + 1}` }));
+          extGallery = modData.screenshots.map((s, idx) => ({
+            url: s.url,
+            fullUrl: s.url,
+            title: s.title || s.caption || `Captura ${idx + 1}`
+          })).filter(item => item.url);
+          project.screenshots = modData.screenshots;
         }
       }
     }

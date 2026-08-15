@@ -372,6 +372,7 @@
     .actions-wrapper {
         flex: none;
         width: 100%;
+        max-width: none;
         overflow-y: visible;
         padding-right: 0;
     }
@@ -424,10 +425,10 @@
 }
 
 .create-config-panel {
-    flex: none;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    height: 480px;
+    min-height: 320px;
 }
 
 #tab-create-game-content,
@@ -505,12 +506,10 @@
 
 #lightbox-img {
     image-rendering: auto;
-    image-rendering: -webkit-optimize-contrast;
 }
 
 #create-modpack-gallery-img,
 #ext-preview-gallery-img {
     image-rendering: auto;
-    image-rendering: -webkit-optimize-contrast;
 }
 
