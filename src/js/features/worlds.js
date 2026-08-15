@@ -100,11 +100,37 @@ export async function loadWorlds() {
       };
       row.appendChild(btnBackup);
 
+      const btnOpenDir = document.createElement("button");
+      btnOpenDir.className = "mc-btn-secondary btn-small";
+      btnOpenDir.style = "padding: 4px 12px; font-size: 0.85rem;";
+      btnOpenDir.textContent = "Abrir";
+      btnOpenDir.onclick = async () => {
+        try {
+          await invoke("abrir_carpeta_servidor");
+        } catch (e) {
+          showFeedback(`Error abriendo carpeta: ${e}`, "error");
+        }
+      };
+      row.appendChild(btnOpenDir);
+
       div.appendChild(nameEl);
       div.appendChild(row);
       els.listWorlds.appendChild(div);
     }
   } catch (err) {
     els.listWorlds.innerHTML = `<p class="hint" style="color: var(--error);">Error: ${err}</p>`;
+  }
+}
+
+export function initWorldsPage() {
+  const btnOpenFolder = document.querySelector("#btn-worlds-open-folder");
+  if (btnOpenFolder) {
+    btnOpenFolder.onclick = async () => {
+      try {
+        await invoke("abrir_carpeta_servidor");
+      } catch (e) {
+        showFeedback(`Error abriendo carpeta del servidor: ${e}`, "error");
+      }
+    };
   }
 }

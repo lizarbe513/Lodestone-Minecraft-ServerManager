@@ -6,14 +6,28 @@ pub fn is_world_directory(path: &Path) -> bool {
     if !path.is_dir() {
         return false;
     }
-    if path.join("level.dat").exists() {
-        return true;
-    }
-    if let Ok(mut entries) = fs::read_dir(path) {
-        if entries.next().is_none() {
-            return true;
+
+    // Lista negra explícita de carpetas del sistema y loaders que nunca son mundos
+    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+        let lower = name.to_lowercase();
+        const EXCLUDED_DIRS: &[&str] = &[
+            "mods", "plugins", "config", "defaultconfigs", "logs", "crash-reports",
+            "libraries", "versions", "datapacks", "cache", "world_backups", "backups",
+            ".fabric", ".quilt", ".forge", ".neoforge", "assets", "natives"
+        ];
+        if EXCLUDED_DIRS.contains(&lower.as_str()) {
+            return false;
         }
     }
+
+    // Comprobación de archivos característicos de un mundo de Minecraft
+    if path.join("level.dat").exists() || path.join("level.dat_old").exists() {
+        return true;
+    }
+    if path.join("region").is_dir() || path.join("DIM-1").is_dir() || path.join("DIM1").is_dir() {
+        return true;
+    }
+
     false
 }
 

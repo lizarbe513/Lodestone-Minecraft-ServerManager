@@ -2,7 +2,10 @@
             <div class="panel extensions-panel-container">
                 <div class="panel-heading" style="margin-bottom: 4px;">
                     <div>
-                        <h2>Complementos</h2>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2>Complementos</h2>
+                            <div class="mc-server-identity-badge" style="display: none;"></div>
+                        </div>
                         <p id="extensions-engine-hint" class="hint" style="margin: 4px 0 0; font-size: 0.9rem; color: #aaa;"></p>
                     </div>
                     <div class="row responsive-row">
@@ -45,80 +48,84 @@
                                     <span id="ext-page-indicator" class="ext-page-badge">Pág. 1 de 1</span>
                                 </div>
 
-                                <!-- Grid de resultados 2x3 con flechas de navegación -->
-                                <div class="ext-grid-nav-wrapper">
-                                    <button id="btn-ext-page-prev" type="button" class="ext-nav-arrow-btn">&lt;</button>
-                                    
-                                    <div id="list-search-results" class="ext-mod-grid-6">
-                                        <p class="hint" style="grid-column: 1 / -1; text-align: center; margin: 16px 0;">Cargando sugerencias...</p>
+                                <!-- Cuerpo de Búsqueda: Resultados a la izquierda y Detalles + Descarga a la derecha -->
+                                <div class="ext-search-body-layout">
+                                    <!-- Columna Izquierda: Grid de Resultados con navegación -->
+                                    <div class="ext-search-left-col">
+                                        <div class="ext-grid-nav-wrapper">
+                                            <button id="btn-ext-page-prev" type="button" class="ext-nav-arrow-btn">&lt;</button>
+                                            
+                                            <div id="list-search-results" class="ext-mod-grid-6">
+                                                <p class="hint" style="grid-column: 1 / -1; text-align: center; margin: 16px 0;">Cargando sugerencias...</p>
+                                            </div>
+
+                                            <button id="btn-ext-page-next" type="button" class="ext-nav-arrow-btn">&gt;</button>
+                                        </div>
                                     </div>
 
-                                    <button id="btn-ext-page-next" type="button" class="ext-nav-arrow-btn">&gt;</button>
-                                </div>
-
-                                <!-- Panel Inferior Dividido (Filtros + Vista Previa) -->
-                                <div class="ext-bottom-split">
-                                    <!-- Caja Izquierda: Selección e Instalación -->
-                                    <div class="ext-bottom-box ext-filters-box">
-                                        <!-- Estado A: Botón "Seleccionar versión" (por defecto) -->
-                                        <div id="ext-select-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 8px;">
-                                            <button id="btn-ext-select-version" type="button" class="mc-btn-primary" style="width: 85%; padding: 12px 16px; font-size: 1rem;" disabled>
-                                                Seleccionar versión
-                                            </button>
-                                            <span id="ext-select-hint" style="font-size: 0.75rem; color: #888; text-align: center;">Elige un complemento de la lista</span>
-                                        </div>
-
-                                        <!-- Estado B: Panel de versiones (oculto por defecto) -->
-                                        <div id="ext-versions-state" style="display: none; flex-direction: column; height: 100%; gap: 6px; padding: 2px 0;">
-                                            <!-- Loader / tipo -->
-                                            <div style="flex-shrink: 0;">
-                                                <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 4px;">MOTOR</label>
-                                                <div id="ext-versions-loader-group" class="mc-btn-group" style="display: flex; flex-wrap: wrap; gap: 0;" data-value="">
-                                                    <button type="button" class="mc-btn-group-item" data-value="plugin" style="font-size: 0.7rem; padding: 5px 8px;">Plugin</button>
-                                                    <button type="button" class="mc-btn-group-item active" data-value="fabric" style="font-size: 0.7rem; padding: 5px 8px;">Fabric</button>
-                                                    <button type="button" class="mc-btn-group-item" data-value="forge" style="font-size: 0.7rem; padding: 5px 8px;">Forge</button>
-                                                    <button type="button" class="mc-btn-group-item" data-value="neoforge" style="font-size: 0.7rem; padding: 5px 8px;">NeoForge</button>
+                                    <!-- Columna Derecha: Panel de Descripción y Descarga Abajito -->
+                                    <div class="ext-search-right-col ext-detail-panel-wrapper">
+                                        <!-- Panel de Vista Previa y Descripción -->
+                                        <div id="ext-preview-panel" class="ext-preview-box-unified">
+                                            <div class="ext-preview-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                                <div style="flex: 1; min-width: 0;">
+                                                    <h3 id="ext-preview-title" class="ext-preview-title">Selecciona un complemento</h3>
+                                                    <span id="ext-preview-author" class="ext-preview-author" style="display:none;"></span>
+                                                </div>
+                                                <div id="ext-preview-gallery-controls" style="display: none; align-items: center; gap: 4px; flex-shrink: 0;">
+                                                    <button id="btn-ext-gallery-prev" type="button" class="mc-btn-primary btn-small" style="margin: 0; padding: 4px 8px; font-family: monospace;" disabled>&lt;</button>
+                                                    <button id="btn-ext-gallery-next" type="button" class="mc-btn-primary btn-small" style="margin: 0; padding: 4px 8px; font-family: monospace;" disabled>&gt;</button>
                                                 </div>
                                             </div>
-                                            <!-- Versión -->
-                                            <div style="flex-shrink: 0;">
-                                                <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 4px;">VERSIÓN</label>
-                                                <select id="ext-versions-select" class="mc-select" style="width: 100%; font-size: 0.8rem; padding: 5px 8px;">
-                                                    <option value="">Cargando versiones...</option>
-                                                </select>
-                                            </div>
-                                            <!-- Hint -->
-                                            <p id="ext-versions-hint" class="hint" style="margin: 0; font-size: 0.72rem; color: #6ee7b7; flex-shrink: 0;"></p>
-                                            <!-- Botones -->
-                                            <div style="display: flex; gap: 6px; margin-top: auto; flex-shrink: 0;">
-                                                <button id="btn-ext-download-version" type="button" class="mc-btn-primary btn-small" style="flex: 1;">Descargar</button>
-                                                <button id="btn-ext-cancel-version" type="button" class="mc-btn-secondary btn-small" style="flex: 0 0 auto;">Cancelar</button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Caja Derecha: Vista Previa y Detalles con Galería -->
-                                    <div id="ext-preview-panel" class="ext-bottom-box ext-preview-box">
-                                        <div class="ext-preview-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                                            <div style="flex: 1; min-width: 0;">
-                                                <h3 id="ext-preview-title" class="ext-preview-title">Selecciona un complemento</h3>
-                                                <span id="ext-preview-author" class="ext-preview-author" style="display:none;"></span>
-                                            </div>
-                                            <div id="ext-preview-gallery-controls" style="display: none; align-items: center; gap: 4px; flex-shrink: 0;">
-                                                <button id="btn-ext-gallery-prev" type="button" class="mc-btn-primary btn-small" style="margin: 0; padding: 4px 8px; font-family: monospace;" disabled>&lt;</button>
-                                                <button id="btn-ext-gallery-next" type="button" class="mc-btn-primary btn-small" style="margin: 0; padding: 4px 8px; font-family: monospace;" disabled>&gt;</button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; min-height: 0; margin-top: 4px;">
-                                            <p id="ext-preview-desc" class="ext-preview-desc">Haz clic en un complemento de la lista para ver sus detalles.</p>
                                             
-                                            <!-- Galería interactiva con visor adaptado -->
-                                            <div id="ext-preview-gallery-wrapper" style="display: none; flex: 1; position: relative; min-height: 0; min-width: 0;">
-                                                <img id="ext-preview-gallery-img" alt="Extension preview gallery" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; border: 2px solid var(--mc-yellow, #ffaa00); box-sizing: border-box; border-radius: 4px; padding: 4px;" />
+                                            <div class="ext-preview-body-content" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; min-height: 0; margin-top: 4px; gap: 4px;">
+                                                <!-- Galería interactiva con visor adaptado (proporción 60%) -->
+                                                <div id="ext-preview-gallery-wrapper" style="display: none; height: 145px; min-height: 145px; position: relative; width: 100%; flex-shrink: 0; background: rgba(0, 0, 0, 0.4); border-radius: 4px;">
+                                                    <img id="ext-preview-gallery-img" alt="Extension preview gallery" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; border: 2px solid var(--mc-yellow, #ffaa00); box-sizing: border-box; border-radius: 4px; padding: 4px;" />
+                                                </div>
+                                                <span id="ext-preview-gallery-title" style="display: none; text-align: center; color: var(--mc-yellow, #ffaa00); font-size: 0.85rem; flex-shrink: 0;"></span>
+                                                <div id="ext-gallery-bar" class="ext-gallery-bar" style="display: none; width: 80%; height: 4px; background-color: var(--mc-green); border-radius: 4px; margin: 2px auto; flex-shrink: 0;"></div>
+                                                <p id="ext-preview-desc" class="ext-preview-desc">Haz clic en un complemento de la lista para ver sus detalles.</p>
                                             </div>
-                                            <span id="ext-preview-gallery-title" style="display: none; text-align: center; color: var(--mc-yellow, #ffaa00); font-size: 0.85rem; margin-top: 4px; flex-shrink: 0;"></span>
-                                            <div id="ext-gallery-bar" class="ext-gallery-bar" style="display: none; width: 80%; height: 4px; background-color: var(--mc-green); border-radius: 4px; margin: 4px auto 0 auto; flex-shrink: 0;"></div>
+                                        </div>
+
+                                        <!-- Sección Inferior: Filtros, Selección y Descarga de Versión (40%) -->
+                                        <div class="ext-filters-box-unified">
+                                            <!-- Estado A: Botón "Seleccionar versión" (por defecto, pegado arriba) -->
+                                            <div id="ext-select-state" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; gap: 6px; padding-top: 4px; box-sizing: border-box;">
+                                                <button id="btn-ext-select-version" type="button" class="mc-btn-primary" style="width: 100%; padding: 10px 14px; font-size: 0.95rem;" disabled>
+                                                    Seleccionar versión
+                                                </button>
+                                                <span id="ext-select-hint" style="font-size: 0.75rem; color: #888; text-align: center;">Elige un complemento de la lista</span>
+                                            </div>
+
+                                            <!-- Estado B: Panel de versiones (oculto por defecto) -->
+                                            <div id="ext-versions-state" style="display: none; flex-direction: column; width: 100%; height: 100%; justify-content: space-between; gap: 4px; padding: 2px 0;">
+                                                <!-- Loader / tipo -->
+                                                <div style="flex-shrink: 0;">
+                                                    <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 2px;">MOTOR</label>
+                                                    <div id="ext-versions-loader-group" class="mc-btn-group" style="display: flex; flex-wrap: wrap; gap: 0;" data-value="">
+                                                        <button type="button" class="mc-btn-group-item" data-value="plugin" style="font-size: 0.7rem; padding: 4px 8px;">Plugin</button>
+                                                        <button type="button" class="mc-btn-group-item active" data-value="fabric" style="font-size: 0.7rem; padding: 4px 8px;">Fabric</button>
+                                                        <button type="button" class="mc-btn-group-item" data-value="forge" style="font-size: 0.7rem; padding: 4px 8px;">Forge</button>
+                                                        <button type="button" class="mc-btn-group-item" data-value="neoforge" style="font-size: 0.7rem; padding: 4px 8px;">NeoForge</button>
+                                                    </div>
+                                                </div>
+                                                <!-- Versión -->
+                                                <div style="flex-shrink: 0;">
+                                                    <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 2px;">VERSIÓN</label>
+                                                    <select id="ext-versions-select" class="mc-select" style="width: 100%; font-size: 0.8rem; padding: 4px 8px;">
+                                                        <option value="">Cargando versiones...</option>
+                                                    </select>
+                                                </div>
+                                                <!-- Hint -->
+                                                <p id="ext-versions-hint" class="hint" style="margin: 0; font-size: 0.72rem; color: #6ee7b7; flex-shrink: 0;"></p>
+                                                <!-- Botones -->
+                                                <div style="display: flex; gap: 6px; margin-top: auto; flex-shrink: 0;">
+                                                    <button id="btn-ext-download-version" type="button" class="mc-btn-primary btn-small" style="flex: 1;">Descargar</button>
+                                                    <button id="btn-ext-cancel-version" type="button" class="mc-btn-secondary btn-small" style="flex: 0 0 auto;">Cancelar</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

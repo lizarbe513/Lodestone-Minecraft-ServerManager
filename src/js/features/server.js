@@ -676,11 +676,48 @@ export async function acceptEulaAndRestart() {
 export async function loadAndShowEula() {
   els.eulaTextContainer.textContent = "Cargando el acuerdo de licencia (EULA) desde internet...";
   els.checkboxAcceptEula.checked = false;
+  els.checkboxAcceptEula.disabled = true;
+  els.checkboxAcceptEula.style.cursor = "not-allowed";
   els.btnEulaAcceptContinue.disabled = true;
+
+  const hint = document.querySelector("#eula-scroll-hint");
+  const label = document.querySelector("#label-accept-eula");
+  if (hint) {
+    hint.innerHTML = '<span>Desplázate hasta el final del texto para habilitar la opción de aceptación.</span>';
+    hint.style.color = "#fbbf24";
+  }
+  if (label) {
+    label.style.cursor = "not-allowed";
+    label.style.color = "#888";
+  }
+
   navigateTo("eula");
   try {
     const text = await invoke("obtener_eula_texto");
     els.eulaTextContainer.textContent = text;
+    els.eulaTextContainer.scrollTop = 0;
+
+    let eulaUnlocked = false;
+    const checkScrollBottom = () => {
+      if (eulaUnlocked) return;
+      const isAtBottom = els.eulaTextContainer.scrollHeight - els.eulaTextContainer.scrollTop - els.eulaTextContainer.clientHeight < 15;
+      if (isAtBottom) {
+        eulaUnlocked = true;
+        els.checkboxAcceptEula.disabled = false;
+        els.checkboxAcceptEula.style.cursor = "pointer";
+        if (label) {
+          label.style.cursor = "pointer";
+          label.style.color = "#ffffff";
+        }
+        if (hint) {
+          hint.innerHTML = '<span style="color: var(--mc-green, #22c55e); font-weight: bold;">Has llegado al final del acuerdo. Ya puedes activar la opción para continuar.</span>';
+        }
+      }
+    };
+
+    els.eulaTextContainer.onscroll = checkScrollBottom;
+    // Si el texto es muy corto y cabe completo en pantalla, desbloquear de inmediato
+    setTimeout(checkScrollBottom, 100);
   } catch (error) {
     const message = normalizeError(error);
     showFeedback(`Error al obtener el EULA: ${message}`, "error");

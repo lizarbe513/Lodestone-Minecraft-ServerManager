@@ -1,6 +1,6 @@
 import { invoke, open } from "../core/api.js";
 import { els } from "../core/dom.js";
-import { showFeedback, requestConfirm } from "../utils/utils.js";
+import { showFeedback, requestConfirm, openImageLightbox } from "../utils/utils.js";
 
 // Variable de estado local para el motor y la categoría activa
 export let activeEngine = "vanilla";
@@ -687,6 +687,12 @@ function updateGalleryUI() {
     const item = extGallery[extGalleryIndex];
     if (item && els.extPreviewGalleryImg) {
       els.extPreviewGalleryImg.src = item.url;
+      els.extPreviewGalleryImg.style.cursor = "zoom-in";
+      els.extPreviewGalleryImg.onclick = () => {
+        if (item && item.url) {
+          openImageLightbox(item.url, item.title || "Vista Previa de Complemento");
+        }
+      };
     }
     if (els.extPreviewGalleryTitle) {
       els.extPreviewGalleryTitle.style.display = item && item.title ? "block" : "none";
@@ -775,7 +781,15 @@ function updatePreviewPanel(project) {
     els.btnExtSelectVersion.disabled = false;
     els.btnExtSelectVersion.onclick = () => showVersionsState(project);
   }
-  if (els.extSelectHint) els.extSelectHint.textContent = project.title || "complemento seleccionado";
+  if (els.extSelectHint) {
+    if (activeEngine === "vanilla" && activeCategory !== "datapack") {
+      els.extSelectHint.textContent = "Servidor Vanilla: Cambia de software para instalar mods/plugins.";
+      els.extSelectHint.style.color = "#fbbf24";
+    } else {
+      els.extSelectHint.textContent = `${project.title || "Complemento"} seleccionado`;
+      els.extSelectHint.style.color = "#888";
+    }
+  }
 }
 
 function hideVersionsState() {
@@ -789,20 +803,23 @@ async function showVersionsState(project) {
   els.extSelectState.style.display = "none";
   els.extVersionsState.style.display = "flex";
 
-  // Inicializar loader seleccionado segun el contexto actual
-  let selectedLoader = activeCategory === "plugin" ? "plugin"
-    : (activeEngine && activeEngine !== "unknown" ? activeEngine : "fabric");
-
   // Determinar loaders disponibles segun el motor del servidor
   const isPluginEngine = ["paper", "purpur"].includes(activeEngine);
   const modEngines = ["fabric", "forge", "neoforge", "quilt"];
   const isModEngine = modEngines.includes(activeEngine);
+  const isVanilla = activeEngine === "vanilla";
 
   const availableLoaders = [];
   if (isPluginEngine) availableLoaders.push("plugin");
   if (isModEngine) availableLoaders.push(activeEngine);
-  // Vanilla solo datapacks, pero puede que aparezcan mods genéricos
-  if (availableLoaders.length === 0) availableLoaders.push("plugin", "fabric", "forge", "neoforge");
+
+  // En servidores Vanilla, no habilitar loaders de mods/plugins incompatibles
+  if (!isVanilla && availableLoaders.length === 0) {
+    availableLoaders.push("plugin", "fabric", "forge", "neoforge");
+  }
+
+  let selectedLoader = activeCategory === "plugin" ? "plugin"
+    : (isModEngine ? activeEngine : (availableLoaders[0] || "fabric"));
 
   // Activar boton de loader correcto y bloquear los no disponibles
   const loaderGroup = els.extVersionsLoaderGroup;
@@ -810,12 +827,25 @@ async function showVersionsState(project) {
     loaderGroup.querySelectorAll(".mc-btn-group-item").forEach(btn => {
       const val = btn.dataset.value;
       const isAvailable = availableLoaders.includes(val);
-      const isActive = val === selectedLoader;
+      const isActive = val === selectedLoader && isAvailable;
       btn.classList.toggle("active", isActive);
       btn.disabled = !isAvailable;
       btn.style.opacity = isAvailable ? "1" : "0.35";
       btn.style.cursor = isAvailable ? "pointer" : "not-allowed";
     });
+  }
+
+  if (isVanilla && activeCategory !== "datapack") {
+    if (els.extVersionsSelect) {
+      els.extVersionsSelect.innerHTML = '<option value="">Incompatible con Vanilla</option>';
+      els.extVersionsSelect.disabled = true;
+    }
+    if (els.extVersionsHint) {
+      els.extVersionsHint.textContent = "Los servidores Vanilla no admiten mods ni plugins. Usa DATAPACKS.";
+      els.extVersionsHint.style.color = "#fbbf24";
+    }
+    if (els.btnExtDownloadVersion) els.btnExtDownloadVersion.disabled = true;
+    return;
   }
 
   // Funcion interna de carga de versiones para el loader seleccionado

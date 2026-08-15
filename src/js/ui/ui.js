@@ -163,6 +163,40 @@ export function renderActiveSession() {
 
   renderHomeHint();
   syncControlConfigForm();
+  updateServerIdentityBadges(session);
+}
+
+export async function updateServerIdentityBadges(session) {
+  const badges = document.querySelectorAll(".mc-server-identity-badge");
+  if (badges.length === 0) return;
+
+  if (!session) {
+    badges.forEach(b => { b.style.display = "none"; });
+    return;
+  }
+
+  let engine = "vanilla";
+  let version = "1.20";
+
+  try {
+    const detectedEngine = await invoke("detectar_motor_servidor");
+    if (detectedEngine && detectedEngine !== "unknown") engine = detectedEngine;
+    const detectedVersion = await invoke("detectar_version_minecraft");
+    if (detectedVersion && detectedVersion !== "unknown") {
+      version = detectedVersion.includes('|') ? detectedVersion.split('|')[0].trim() : detectedVersion;
+    }
+  } catch (_) {
+    const jar = (session.jar_file_name || "").toLowerCase();
+    if (jar.includes("fabric")) engine = "fabric";
+    else if (jar.includes("forge")) engine = "forge";
+    else if (jar.includes("neoforge")) engine = "neoforge";
+    else if (jar.includes("paper") || jar.includes("purpur")) engine = "paper";
+  }
+
+  badges.forEach(b => {
+    b.style.display = "inline-flex";
+    b.innerHTML = `<span class="engine-tag ${engine}">${engine.toUpperCase()}</span><span class="version-tag">${version}</span>`;
+  });
 }
 
 export function setStatus(status) {

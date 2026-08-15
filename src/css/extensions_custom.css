@@ -56,7 +56,8 @@
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
 }
 
-#section-search-extensions .ext-bottom-box {
+#section-search-extensions .ext-bottom-box,
+#section-search-extensions .ext-detail-panel-wrapper {
     background: var(--bg-panel, #252525);
     border: 2px solid var(--border-color, #333333);
     border-radius: var(--border-radius, 0);
@@ -171,27 +172,75 @@
     overflow-x: hidden;
 }
 
-/* Search Bar Row */
-.ext-search-bar-row {
+/* Search Bar Row & Wrapper */
+.ext-search-bar-row,
+.ext-search-bar-wrapper {
     display: flex;
     gap: 8px;
     align-items: center;
     width: 100%;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
-.ext-search-bar-row input {
-    flex: 1;
+.ext-search-bar-row input,
+.ext-search-input {
+    flex: 1 1 auto;
     min-width: 0;
     margin: 0;
     height: 40px;
+    box-sizing: border-box;
 }
 
-.ext-search-bar-row button {
+.ext-search-bar-row button,
+.ext-btn-search {
     height: 40px;
     margin: 0;
     padding: 0 16px;
     flex-shrink: 0;
+}
+
+.ext-provider-cycle-btn,
+#btn-modpack-provider-cycle,
+#btn-search-provider-cycle {
+    width: 145px !important;
+    min-width: 145px !important;
+    max-width: 145px !important;
+    height: 40px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    font-size: 0.95rem !important;
+    box-sizing: border-box !important;
+}
+
+/* Search Body Layout (Resultados Izquierda, Detalles + Descarga Derecha) */
+.ext-search-body-layout {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ext-search-left-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ext-search-right-col {
+    width: 360px;
+    flex: 0 0 360px;
+    display: flex;
+    flex-direction: column;
+    height: 530px !important;
+    max-height: 530px !important;
+    box-sizing: border-box;
 }
 
 /* Grid + Navigation Arrows Container (Descargar) */
@@ -201,18 +250,19 @@
     gap: 8px;
     flex: 1;
     width: 100%;
+    height: 100%;
     box-sizing: border-box;
 }
 
 .ext-nav-arrow-btn {
-    width: 34px;
-    height: 120px;
+    width: 30px;
+    height: 100px;
     background: var(--mc-green);
     border: 2px solid #111111;
     border-bottom: 4px solid var(--mc-green-shadow);
     color: #ffffff;
     font-family: var(--font-title);
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: bold;
     cursor: pointer;
     display: flex;
@@ -238,17 +288,17 @@
     opacity: 0.5;
 }
 
-/* Grid de Descargas (Búsqueda - 6 columnas, 2 filas fijas, 440px de espacio vertical sin scrollbar) */
+/* Grid de Descargas (Búsqueda - 3 columnas, 4 filas = 12 items por página) */
 .ext-mod-grid-6 {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 10px;
-    height: 440px !important;
-    min-height: 440px !important;
-    max-height: 440px !important;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 8px;
+    height: 530px !important;
+    min-height: 530px !important;
+    max-height: 530px !important;
     overflow: hidden; /* Evita scrollbar */
-    padding-right: 4px;
+    padding-right: 2px;
     box-sizing: border-box;
     width: 100%;
 }
@@ -276,9 +326,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 440px !important;
-    min-height: 440px !important;
-    max-height: 440px !important;
+    height: 100% !important;
     margin: 0;
     font-size: 1rem;
     color: #888888;
@@ -291,12 +339,12 @@
     background: rgba(0, 0, 0, 0.45);
     border: 2px solid #111111;
     border-radius: 4px;
-    padding: 8px 6px;
+    padding: 6px 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     color: #ffffff;
     user-select: none;
@@ -318,20 +366,20 @@
 }
 
 .ext-mod-card img {
-    width: 56px;
-    height: 56px;
-    max-width: 50%;
-    max-height: 50%;
+    width: 44px;
+    height: 44px;
+    max-width: 45%;
+    max-height: 45%;
     object-fit: cover;
     border-radius: 4px;
-    box-shadow: 0 3px 0 #111111;
+    box-shadow: 0 2px 0 #111111;
     image-rendering: pixelated;
     flex-shrink: 0;
 }
 
 .ext-mod-card-title {
     font-family: var(--font-title);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: bold;
     text-align: center;
     white-space: nowrap;
@@ -371,7 +419,44 @@
     cursor: not-allowed;
 }
 
-/* Bottom Split Section */
+/* Unified Detail & Download Panel (Right Side - 60% / 40% Split) */
+.ext-detail-panel-wrapper {
+    background: #252525;
+    border: 2px solid #111111;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+}
+
+.ext-preview-box-unified {
+    flex: 0 0 60%;
+    height: 60%;
+    max-height: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.ext-filters-box-unified {
+    flex: 0 0 40%;
+    height: 40%;
+    max-height: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 8px;
+    border-top: 2px solid rgba(255, 255, 255, 0.15);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Bottom Split Section (Legado / Pestaña Instalados) */
 .ext-bottom-split {
     display: flex;
     gap: 10px;
@@ -461,14 +546,15 @@
 }
 
 .ext-preview-desc {
-    margin: 4px 0;
+    margin: 2px 0;
     font-size: 0.82rem;
     color: #cccccc;
     line-height: 1.35;
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: normal;
-    max-height: 125px;
+    flex: 1;
+    min-height: 40px;
     overflow-y: auto;
     padding-right: 4px;
 }
@@ -617,15 +703,31 @@
    RESPONSIVIDAD EXCLUSIVA DE LAS COLUMNAS DE TARJETAS DE COMPLEMENTOS
    ========================================================================== */
 
-/* Conforme el panel se reduce, las tarjetas se adaptan progresivamente en ambos modos */
-@media (max-width: 1000px) {
-    .ext-mod-grid-6, .ext-installed-grid {
-        grid-template-columns: repeat(5, 1fr) !important;
+@media (max-width: 1050px) {
+    .ext-search-right-col {
+        width: 290px;
+        flex: 0 0 290px;
     }
 }
 
-@media (max-width: 850px) {
-    .ext-mod-grid-6, .ext-installed-grid {
+@media (max-width: 900px) {
+    .ext-search-body-layout {
+        flex-direction: column;
+    }
+    .ext-search-right-col {
+        width: 100%;
+        flex: 0 0 auto;
+        height: auto !important;
+        max-height: none !important;
+    }
+    .ext-mod-grid-6 {
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(3, 1fr) !important;
+        height: 380px !important;
+        min-height: 380px !important;
+        max-height: 380px !important;
+    }
+    .ext-installed-grid {
         grid-template-columns: repeat(4, 1fr) !important;
     }
 }
@@ -647,3 +749,4 @@
         grid-template-columns: 1fr !important;
     }
 }
+

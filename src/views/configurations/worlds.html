@@ -2,12 +2,16 @@
             <div class="panel">
                 <div class="panel-heading">
                     <div>
-                        <h2>Gestión de Mundos</h2>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2>Gestión de Mundos</h2>
+                            <div id="worlds-server-badge" class="mc-server-identity-badge"></div>
+                        </div>
                         <p class="hint">Administra los mundos del servidor. Nota: el cambio de mundo activo requiere que reinicies el servidor.</p>
                     </div>
                     <div class="row responsive-row">
+                        <button id="btn-worlds-open-folder" type="button" class="mc-btn-secondary btn-small">Abrir carpeta</button>
                         <button id="btn-import-world" type="button" class="mc-btn-secondary btn-small">Importar (.zip)</button>
-                        <button id="btn-create-world" type="button" class="mc-btn-primary">Crear mundo</button>
+                        <button id="btn-create-world" type="button" class="mc-btn-primary btn-small">Crear mundo</button>
                         <button id="btn-worlds-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
                     </div>
                 </div>

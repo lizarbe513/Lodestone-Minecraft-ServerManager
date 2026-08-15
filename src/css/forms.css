@@ -93,6 +93,17 @@ input[type="checkbox"]:checked:hover::after {
     background-color: var(--mc-gray-hover);
 }
 
+/* Switch Deshabilitado (Bloqueado) */
+input[type="checkbox"]:disabled {
+    opacity: 0.45 !important;
+    filter: grayscale(1) !important;
+    cursor: not-allowed !important;
+}
+
+input[type="checkbox"]:disabled::after {
+    cursor: not-allowed !important;
+}
+
 /* Radio Buttons estilo Minecraft */
 input[type="radio"] {
     appearance: none;

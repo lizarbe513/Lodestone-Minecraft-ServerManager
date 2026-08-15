@@ -1,6 +1,7 @@
 import { els } from "../core/dom.js";
 import { appState } from "../core/state.js";
 import { invoke, open } from "../core/api.js";
+import { openImageLightbox } from "../utils/utils.js";
 import { loadDownloadVersions } from "./create_server.js";
 
 let modpackHits = [];
@@ -217,6 +218,13 @@ export const clearModpackSelection = () => {
       });
     }
     
+    if (els.modpackSelectedTitleLeft) els.modpackSelectedTitleLeft.textContent = "Título del Modpack";
+    if (els.modpackSelectedAuthorLeft) els.modpackSelectedAuthorLeft.textContent = "Por: Creador";
+    if (els.modpackSelectedTitleFinal) els.modpackSelectedTitleFinal.textContent = "Título";
+    if (els.modpackSelectedAuthorFinal) els.modpackSelectedAuthorFinal.textContent = "Creado por: Creador";
+    if (els.modpackSelectedDescFinal) els.modpackSelectedDescFinal.textContent = "Descripción...";
+    if (els.modpackSelectedThumbnailFinal) els.modpackSelectedThumbnailFinal.style.backgroundImage = "none";
+
     syncSoftwareCycleWithModpack();
     updateModpackUIState();
 };
@@ -235,7 +243,13 @@ const updateGalleryUI = () => {
     if (els.createModpackGalleryImgWrapper) els.createModpackGalleryImgWrapper.style.display = "block";
     if (els.createModpackGalleryImg) {
       els.createModpackGalleryImg.style.display = "block";
+      els.createModpackGalleryImg.style.cursor = "zoom-in";
       els.createModpackGalleryImg.src = imgData.url;
+      els.createModpackGalleryImg.onclick = () => {
+        if (imgData && imgData.url) {
+          openImageLightbox(imgData.url, imgData.title || "Vista Previa de Modpack");
+        }
+      };
     }
     if (els.createModpackGalleryTitle) {
       els.createModpackGalleryTitle.style.display = imgData.title ? "block" : "none";
@@ -439,6 +453,29 @@ const selectModpack = async (modpack, div) => {
 };
 
 export function initModpacksEvents() {
+  if (els.groupModpackSource) {
+    els.groupModpackSource.querySelectorAll('.mc-btn-group-item').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.value;
+        els.groupModpackSource.dataset.value = val;
+        els.groupModpackSource.querySelectorAll('.mc-btn-group-item').forEach(b => {
+          b.classList.toggle('active', b === btn);
+        });
+
+        const isLocal = val === "local";
+        if (els.sectionModpackDownloadLeft) {
+          els.sectionModpackDownloadLeft.style.display = isLocal ? "none" : "flex";
+        }
+        if (els.sectionModpackLocalLeft) {
+          els.sectionModpackLocalLeft.style.display = isLocal ? "flex" : "none";
+        }
+        if (els.createModpackSelectedInfo) {
+          els.createModpackSelectedInfo.style.display = isLocal ? "none" : "flex";
+        }
+      });
+    });
+  }
+
   if (els.btnModpackProviderCycle) {
     els.btnModpackProviderCycle.addEventListener("click", () => {
       activeModpackProvider = activeModpackProvider === "modrinth" ? "curseforge" : "modrinth";
@@ -559,7 +596,7 @@ export function initModpacksEvents() {
         els.createModpackLocalPath.value = selected;
         
         if (els.modpackSelectedThumbnailFinal) {
-            els.modpackSelectedThumbnailFinal.style.backgroundImage = "url('assets/images/world_preview.png')";
+            els.modpackSelectedThumbnailFinal.style.backgroundImage = "url('assets/images/pack.webp')";
         }
         
         const fileName = selected.split(/[\/\\]/).pop();
@@ -576,11 +613,15 @@ export function initModpacksEvents() {
             let supportedLoaders = new Set();
             let supportedGameVersions = new Set();
             
-            if (mrpackIndex.dependencies.minecraft) supportedGameVersions.add(mrpackIndex.dependencies.minecraft);
-            if (mrpackIndex.dependencies.fabric) supportedLoaders.add("fabric");
-            if (mrpackIndex.dependencies["fabric-loader"]) supportedLoaders.add("fabric");
-            if (mrpackIndex.dependencies.forge) supportedLoaders.add("forge");
-            if (mrpackIndex.dependencies.neoforge) supportedLoaders.add("neoforge");
+            if (mrpackIndex.dependencies) {
+              if (mrpackIndex.dependencies.minecraft) supportedGameVersions.add(mrpackIndex.dependencies.minecraft);
+              if (mrpackIndex.dependencies.fabric) supportedLoaders.add("fabric");
+              if (mrpackIndex.dependencies["fabric-loader"]) supportedLoaders.add("fabric");
+              if (mrpackIndex.dependencies.forge) supportedLoaders.add("forge");
+              if (mrpackIndex.dependencies.neoforge) supportedLoaders.add("neoforge");
+              if (mrpackIndex.dependencies.quilt) supportedLoaders.add("quilt");
+              if (mrpackIndex.dependencies["quilt-loader"]) supportedLoaders.add("quilt");
+            }
             
             appState.modpackLoaders = Array.from(supportedLoaders);
             appState.modpackGameVersions = Array.from(supportedGameVersions);
@@ -590,6 +631,52 @@ export function initModpacksEvents() {
               mrpackPath: selected,
               files: mrpackIndex.files
             };
+
+            // Título principal (nombre del modpack o nombre del archivo)
+            const modpackName = mrpackIndex.name || fileName;
+            if (els.modpackSelectedTitleFinal) els.modpackSelectedTitleFinal.textContent = modpackName;
+
+            // Determinar lanzador y su versión
+            let loaderName = "Desconocido";
+            let loaderVersion = "";
+            
+            if (mrpackIndex.dependencies) {
+              if (mrpackIndex.dependencies.fabric || mrpackIndex.dependencies["fabric-loader"]) {
+                loaderName = "Fabric";
+                loaderVersion = mrpackIndex.dependencies["fabric-loader"] || mrpackIndex.dependencies.fabric;
+              } else if (mrpackIndex.dependencies.neoforge) {
+                loaderName = "NeoForge";
+                loaderVersion = mrpackIndex.dependencies.neoforge;
+              } else if (mrpackIndex.dependencies.forge) {
+                loaderName = "Forge";
+                loaderVersion = mrpackIndex.dependencies.forge;
+              } else if (mrpackIndex.dependencies.quilt || mrpackIndex.dependencies["quilt-loader"]) {
+                loaderName = "Quilt";
+                loaderVersion = mrpackIndex.dependencies["quilt-loader"] || mrpackIndex.dependencies.quilt;
+              }
+            }
+
+            // 1. Título izquierdo: Nombre del lanzador de mods
+            if (els.modpackSelectedTitleLeft) {
+              els.modpackSelectedTitleLeft.textContent = loaderName !== "Desconocido" ? loaderName : "Lanzador de mods";
+            }
+
+            // 2. Autor izquierdo: Versión del modpack
+            const modpackVersion = mrpackIndex.versionId || mrpackIndex.version_id || mrpackIndex.version || "1.0.0";
+            if (els.modpackSelectedAuthorLeft) {
+              els.modpackSelectedAuthorLeft.textContent = `Versión: ${modpackVersion}`;
+            }
+
+            // 3. Autor principal: Nombre del lanzador
+            if (els.modpackSelectedAuthorFinal) {
+              els.modpackSelectedAuthorFinal.textContent = loaderName !== "Desconocido" ? loaderName : "Lanzador de mods";
+            }
+
+            // 4. Descripción: summary del archivo index.json
+            const summaryText = mrpackIndex.summary || mrpackIndex.description || "Modpack local sin resumen especificado.";
+            if (els.modpackSelectedDescFinal) {
+              els.modpackSelectedDescFinal.textContent = summaryText;
+            }
             
             if (els.btnCreateSoftwareCycle) {
               const buttons = els.btnCreateSoftwareCycle.querySelectorAll('.mc-btn-group-item');
@@ -614,8 +701,6 @@ export function initModpacksEvents() {
                 els.btnCreateSoftwareCycle.dispatchEvent(new Event('change'));
               }
             }
-            
-            if (els.modpackSelectedDescFinal) els.modpackSelectedDescFinal.textContent = `Modpack local cargado. Soportado en: ${appState.modpackLoaders.join(', ')}.\nPulsa "Configurar" para continuar.`;
           } catch (e) {
             console.error(e);
             if (els.modpackSelectedDescFinal) els.modpackSelectedDescFinal.textContent = `Error al leer .mrpack: ${e}. Se intentará instalar de todos modos al crear.`;
@@ -628,6 +713,9 @@ export function initModpacksEvents() {
           appState.mrpackToInstall = null;
           appState.localZipModpackPath = selected; 
           
+          if (els.modpackSelectedTitleLeft) els.modpackSelectedTitleLeft.textContent = "Personalizado";
+          if (els.modpackSelectedAuthorLeft) els.modpackSelectedAuthorLeft.textContent = "Versión: Local";
+          if (els.modpackSelectedAuthorFinal) els.modpackSelectedAuthorFinal.textContent = "Personalizado";
           if (els.modpackSelectedDescFinal) els.modpackSelectedDescFinal.textContent = "Modpack local (.zip). Se extraerá en el servidor al crear.\nPulsa \"Configurar\" para continuar.";
         }
         

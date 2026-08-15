@@ -6,11 +6,12 @@ import { showFeedback, appendLog, normalizeError, requestConfirm } from "../util
 import { startCurrentServer, stopServer, sendCommand, saveServerConfig, acceptEulaAndRestart, loadAndShowEula, openExistingServer, browseServerJar } from "../features/server.js";
 import { parsePropertiesContent, renderPropertiesUI, buildPropertiesPayload } from "../features/properties.js";
 import { loadAllPlayerLists, addItemToList, handleRemoveOp, handleRemoveWhitelist, handleRemoveBannedPlayer, handleRemoveBannedIp } from "../features/players.js";
-import { loadWorlds } from "../features/worlds.js";
+import { loadWorlds, initWorldsPage } from "../features/worlds.js";
 import { loadInstalledExtensions, searchModrinth, initExtensionsPage, setActiveCategory, setActiveSubTab, activeSubTab, syncCategoryButtons, importLocalExtensions } from "../features/extensions.js";
 import { loadBackupsList, loadTasksList, createFullBackup, addNewTask, startScheduler, setActiveAdminTab } from "../features/backups.js";
 
 export function initServerControlEvents() {
+  initWorldsPage();
   if (els.btnConfirmCancel) {
     els.btnConfirmCancel.addEventListener("click", () => {
       globals.pendingConfirmAction = null;
