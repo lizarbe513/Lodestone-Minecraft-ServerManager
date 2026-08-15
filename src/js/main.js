@@ -8,6 +8,7 @@ import { appState } from "./core/state.js";
 import { initAudio } from "./ui/audio.js";
 import { initTheme } from "./ui/theme.js";
 import { initOverscrollGlow } from "./ui/overscroll.js";
+import { setLanguage, getLanguage, translateDOM } from "./i18n/i18n.js";
 
 async function loadInitialState() {
   const snapshot = await invoke("obtener_estado_aplicacion");
@@ -58,6 +59,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   try {
     await registerTauriEvents();
     await loadInitialState();
+    
+    // Configurar idioma y traducir la UI
+    setLanguage(getLanguage());
+    translateDOM();
+    
     appendLog("system", "Aplicación lista.");
   } catch (error) {
     const message = normalizeError(error);

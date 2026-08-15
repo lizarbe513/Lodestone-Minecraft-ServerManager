@@ -3,37 +3,37 @@
                 <div class="panel-heading">
                     <div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <h2>Configuración</h2>
+                            <h2 data-i18n="config.title">Configuración</h2>
                             <div class="mc-server-identity-badge" style="display: none;"></div>
                         </div>
-                        <p class="hint">
+                        <p class="hint" data-i18n="config.hint">
                             Ajusta el nombre, el .jar, Java y la RAM del servidor.
                         </p>
                     </div>
                     <div class="row responsive-row">
-                        <button id="btn-config-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
+                        <button id="btn-config-back" type="button" class="mc-btn-secondary btn-small" data-i18n="common.back">Volver</button>
                     </div>
                 </div>
 
                 <div class="grid-form">
                     <div class="field-group">
-                        <label for="control-server-name">Nombre del servidor</label>
-                        <input id="control-server-name" type="text" placeholder="Nombre del servidor"
+                        <label for="control-server-name" data-i18n="create.server_name_label">Nombre del servidor</label>
+                        <input id="control-server-name" type="text" placeholder="Nombre del servidor" data-i18n-ph="create.server_name_ph"
                             autocomplete="off" />
                     </div>
 
                     <div class="field-group">
-                        <label for="control-java-version">Versión de Java</label>
+                        <label for="control-java-version" data-i18n="create.java_version_label">Versión de Java</label>
                         <select id="control-java-version"></select>
                     </div>
 
                     <div class="field-group">
-                        <label for="control-memory-gb">RAM asignada (GB)</label>
+                        <label for="control-memory-gb" data-i18n="create.ram_label">RAM asignada (GB)</label>
                         <input id="control-memory-gb" type="number" min="1" step="1" value="4" />
                     </div>
 
                     <div class="field-group full-width">
-                        <label>Versión</label>
+                        <label data-i18n="create.version_label">Versión</label>
                         <!-- Inputs radio ocultos para preservar la compatibilidad con el JS actual -->
                         <div style="display: none;">
                             <input type="radio" name="control-software-source" id="control-source-local" value="local" checked>
@@ -41,14 +41,14 @@
                         </div>
                         <!-- Grupo de botones visuales -->
                         <div id="group-control-jar-source" class="mc-btn-group" data-value="local" style="margin-bottom: 12px;">
-                            <button type="button" class="mc-btn-group-item active" data-value="local">Archivo local</button>
-                            <button type="button" class="mc-btn-group-item" data-value="download">Descargar automáticamente</button>
+                            <button type="button" class="mc-btn-group-item active" data-value="local" data-i18n="create.source_local">Archivo local</button>
+                            <button type="button" class="mc-btn-group-item" data-value="download" data-i18n="create.source_download">Descargar automáticamente</button>
                         </div>
 
                         <!-- Local File Selection -->
                         <div id="control-local-container" class="row responsive-row">
-                            <input id="control-server-jar-path" type="text" placeholder="Selecciona un archivo .jar" readonly />
-                            <button id="btn-control-select-jar" type="button" class="mc-btn-primary">
+                            <input id="control-server-jar-path" type="text" placeholder="Selecciona un archivo .jar" data-i18n-ph="config.select_jar_ph" readonly />
+                            <button id="btn-control-select-jar" type="button" class="mc-btn-primary" data-i18n="config.btn_select_different_jar">
                                 Seleccionar un .jar diferente
                             </button>
                         </div>
@@ -56,7 +56,7 @@
                         <!-- Download Version Selection -->
                         <div id="control-download-container" class="grid-form" style="display: none; background: rgba(0,0,0,0.2); padding: 16px; border: 1px solid rgba(255,255,255,0.05); margin-top: 8px;">
                             <div class="field-group">
-                                <label for="control-engine-select">Motor de Servidor</label>
+                                <label for="control-engine-select" data-i18n="config.server_engine_label">Motor de Servidor</label>
                                 <select id="control-engine-select" disabled>
                                     <option value="vanilla">Vanilla (Oficial)</option>
                                     <option value="paper">Paper (Recomendado)</option>
@@ -67,12 +67,12 @@
                                 </select>
                             </div>
                             <div class="field-group">
-                                <label for="control-version-select">Versión</label>
+                                <label for="control-version-select" data-i18n="create.version_label">Versión</label>
                                 <select id="control-version-select" disabled>
-                                    <option value="">Cargando versiones...</option>
+                                    <option value="" data-i18n="config.loading_versions">Cargando versiones...</option>
                                 </select>
                             </div>
-                            <p id="control-download-warning" class="hint" style="color: #ffc2c2; margin-top: 8px; grid-column: 1 / -1;">
+                            <p id="control-download-warning" class="hint" style="color: #ffc2c2; margin-top: 8px; grid-column: 1 / -1;" data-i18n="config.change_version_warning">
                                 ⚠️ Cambiar la versión del software puede corromper los mundos. ¡Haz una copia de seguridad antes de continuar!
                             </p>
                         </div>
@@ -81,7 +81,7 @@
 
 
                 <div class="row action-row top-space">
-                    <button id="btn-control-save-config" type="button" class="mc-btn-primary">
+                    <button id="btn-control-save-config" type="button" class="mc-btn-primary" data-i18n="common.save">
                         Guardar
                     </button>
                 </div>

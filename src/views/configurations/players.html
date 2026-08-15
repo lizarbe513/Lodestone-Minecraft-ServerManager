@@ -3,17 +3,17 @@
                 <div class="panel-heading">
                     <div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <h2>Gestión Avanzada de Jugadores</h2>
+                            <h2 data-i18n="players.title">Gestión Avanzada de Jugadores</h2>
                             <div class="mc-server-identity-badge" style="display: none;"></div>
                         </div>
-                        <p class="hint">Administra operadores, listas blancas y bloqueos en archivos locales.</p>
+                        <p class="hint" data-i18n="players.hint">Administra operadores, listas blancas y bloqueos en archivos locales.</p>
                     </div>
-                    <button id="btn-players-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
+                    <button id="btn-players-back" type="button" class="mc-btn-secondary btn-small" data-i18n="common.back">Volver</button>
                 </div>
 
                     <div id="players-tabs-container" class="tabs">
-                        <button id="tab-view-online-players" type="button" class="tab-btn active">JUGADORES CONECTADOS</button>
-                        <button id="tab-view-access-management" type="button" class="tab-btn">GESTIÓN DE ACCESOS</button>
+                        <button id="tab-view-online-players" type="button" class="tab-btn active" data-i18n="players.tab_online">JUGADORES CONECTADOS</button>
+                        <button id="tab-view-access-management" type="button" class="tab-btn" data-i18n="players.tab_access">GESTIÓN DE ACCESOS</button>
                     </div>
 
                     <!-- Pestaña Jugadores Conectados -->
@@ -30,11 +30,11 @@
                             <!-- Ops -->
                             <div class="list-manager-section">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <h3>Operadores (Ops)</h3>
+                                    <h3 data-i18n="players.ops_title">Operadores (Ops)</h3>
                                     <div class="row" style="gap: 8px;">
-                                        <input type="text" id="input-add-op" placeholder="Nombre de jugador"
+                                        <input type="text" id="input-add-op" placeholder="Nombre de jugador" data-i18n-ph="players.player_name_ph"
                                             style="margin: 0; padding: 6px 12px;" />
-                                        <button id="btn-add-op" type="button" class="mc-btn-primary btn-small">Añadir</button>
+                                        <button id="btn-add-op" type="button" class="mc-btn-primary btn-small" data-i18n="common.add">Añadir</button>
                                     </div>
                                 </div>
                                 <div id="list-ops" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;">
@@ -44,13 +44,13 @@
                             <!-- Whitelist -->
                             <div class="list-manager-section" id="section-whitelist-container">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <h3>Lista Blanca <span id="whitelist-status-badge"
+                                    <h3><span data-i18n="players.whitelist_title">Lista Blanca</span> <span id="whitelist-status-badge"
                                             style="font-size: 0.8rem; font-weight: normal; color: var(--error); margin-left: 8px;"></span>
                                     </h3>
                                     <div class="row" style="gap: 8px;">
-                                        <input type="text" id="input-add-whitelist" placeholder="Nombre de jugador"
+                                        <input type="text" id="input-add-whitelist" placeholder="Nombre de jugador" data-i18n-ph="players.player_name_ph"
                                             style="margin: 0; padding: 6px 12px;" />
-                                        <button id="btn-add-whitelist" type="button" class="mc-btn-primary btn-small">Añadir</button>
+                                        <button id="btn-add-whitelist" type="button" class="mc-btn-primary btn-small" data-i18n="common.add">Añadir</button>
                                     </div>
                                 </div>
                                 <div id="list-whitelist" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;"></div>
@@ -59,11 +59,11 @@
                             <!-- Banned Players -->
                             <div class="list-manager-section">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <h3>Jugadores Baneados</h3>
+                                    <h3 data-i18n="players.banned_players_title">Jugadores Baneados</h3>
                                     <div class="row" style="gap: 8px;">
-                                        <input type="text" id="input-add-banned-player" placeholder="Nombre de jugador"
+                                        <input type="text" id="input-add-banned-player" placeholder="Nombre de jugador" data-i18n-ph="players.player_name_ph"
                                             style="margin: 0; padding: 6px 12px;" />
-                                        <button id="btn-add-banned-player" type="button" class="mc-btn-danger btn-small">Banear</button>
+                                        <button id="btn-add-banned-player" type="button" class="mc-btn-danger btn-small" data-i18n="players.btn_ban">Banear</button>
                                     </div>
                                 </div>
                                 <div id="list-banned-players" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;"></div>
@@ -72,11 +72,11 @@
                             <!-- Banned IPs -->
                             <div class="list-manager-section">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <h3>IPs Baneadas</h3>
+                                    <h3 data-i18n="players.banned_ips_title">IPs Baneadas</h3>
                                     <div class="row" style="gap: 8px;">
-                                        <input type="text" id="input-add-banned-ip" placeholder="Dirección IP"
+                                        <input type="text" id="input-add-banned-ip" placeholder="Dirección IP" data-i18n-ph="players.ip_ph"
                                             style="margin: 0; padding: 6px 12px;" />
-                                        <button id="btn-add-banned-ip" type="button" class="mc-btn-danger btn-small">Banear</button>
+                                        <button id="btn-add-banned-ip" type="button" class="mc-btn-danger btn-small" data-i18n="players.btn_ban">Banear</button>
                                     </div>
                                 </div>
                                 <div id="list-banned-ips" class="minecraft-table" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;"></div>

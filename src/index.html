@@ -35,20 +35,20 @@
     <main class="app-shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">Panel local</p>
-                <h1>Minecraft Server GUI</h1>
-                <p class="subtitle">
+                <p class="eyebrow" data-i18n="header.eyebrow">Panel local</p>
+                <h1 data-i18n="header.title">Minecraft Server GUI</h1>
+                <p class="subtitle" data-i18n="header.subtitle">
                     Crea, abre y administra servidores de Minecraft desde
                     una interfaz por páginas.
                 </p>
             </div>
             <div class="status-card">
-                <span class="status-label">Estado</span>
+                <span class="status-label" data-i18n="header.status_label">Estado</span>
                 <span id="server-status" class="status-badge" data-status="offline">Apagado</span>
             </div>
         </header>
 
-        <p id="app-feedback" class="feedback global-feedback" data-type="info">
+        <p id="app-feedback" class="feedback global-feedback" data-type="info" data-i18n="header.initial_feedback">
             Selecciona una opción para comenzar.
         </p>
 
@@ -60,15 +60,15 @@
         <!-- Barra de Controles Superior -->
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; padding-bottom: 8px; margin-bottom: 8px; flex-shrink: 0;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span id="lightbox-title" style="font-family: var(--font-title); font-size: 1.05rem; color: var(--mc-yellow);">Vista Previa</span>
+                <span id="lightbox-title" style="font-family: var(--font-title); font-size: 1.05rem; color: var(--mc-yellow);" data-i18n="lightbox.preview_title">Vista Previa</span>
             </div>
             <!-- Herramientas de Zoom y Cerrar -->
             <div style="display: flex; align-items: center; gap: 6px;">
-                <button id="btn-lightbox-zoom-out" type="button" class="mc-btn-secondary btn-small" style="padding: 4px 10px; font-family: monospace; font-size: 0.9rem;" title="Alejar">-</button>
+                <button id="btn-lightbox-zoom-out" type="button" class="mc-btn-secondary btn-small" style="padding: 4px 10px; font-family: monospace; font-size: 0.9rem;" data-i18n-title="lightbox.zoom_out" title="Alejar">-</button>
                 <span id="lightbox-zoom-label" style="font-family: var(--font-title); font-size: 0.85rem; min-width: 48px; text-align: center; color: #fff;">100%</span>
-                <button id="btn-lightbox-zoom-in" type="button" class="mc-btn-secondary btn-small" style="padding: 4px 10px; font-family: monospace; font-size: 0.9rem;" title="Acercar">+</button>
+                <button id="btn-lightbox-zoom-in" type="button" class="mc-btn-secondary btn-small" style="padding: 4px 10px; font-family: monospace; font-size: 0.9rem;" data-i18n-title="lightbox.zoom_in" title="Acercar">+</button>
                 <button id="btn-lightbox-reset" type="button" class="mc-btn-secondary btn-small" style="padding: 4px 10px; font-size: 0.8rem;">1:1</button>
-                <button id="btn-lightbox-close" type="button" class="mc-btn-danger btn-small" style="padding: 4px 14px; font-size: 0.85rem; margin-left: 8px;">Cerrar</button>
+                <button id="btn-lightbox-close" type="button" class="mc-btn-danger btn-small" style="padding: 4px 14px; font-size: 0.85rem; margin-left: 8px;" data-i18n="common.close">Cerrar</button>
             </div>
         </div>
         <!-- Contenedor Viewport -->
@@ -79,26 +79,25 @@
 
     <dialog id="confirm-dialog" class="panel"
         style="margin: auto; max-width: 400px; padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
-        <h3 id="confirm-title" style="margin-top: 0; font-size: 1.2rem; font-weight: 600;">Confirmar acción</h3>
-        <p id="confirm-message" style="margin: 16px 0 24px; color: var(--text-secondary); line-height: 1.5;">¿Estás
-            seguro?</p>
+        <h3 id="confirm-title" style="margin-top: 0; font-size: 1.2rem; font-weight: 600;" data-i18n="dialog.confirm_action">Confirmar acción</h3>
+        <p id="confirm-message" style="margin: 16px 0 24px; color: var(--text-secondary); line-height: 1.5;" data-i18n="dialog.are_you_sure">¿Estás seguro?</p>
         <div class="row action-row" style="justify-content: flex-end;">
-            <button id="btn-confirm-cancel" class="mc-btn-danger" type="button">Cancelar</button>
-            <button id="btn-confirm-accept" class="mc-btn-primary" type="button">Aceptar</button>
+            <button id="btn-confirm-cancel" class="mc-btn-danger" type="button" data-i18n="common.cancel">Cancelar</button>
+            <button id="btn-confirm-accept" class="mc-btn-primary" type="button" data-i18n="common.accept">Aceptar</button>
         </div>
     </dialog>
 
     <dialog id="extension-versions-dialog" class="panel"
         style="margin: auto; max-width: 500px; width: 90%; padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
-        <h3 id="ext-dialog-title" style="margin-top: 0; font-size: 1.2rem; font-weight: 600; color: #fff;">Seleccionar Versión</h3>
-        <p id="ext-dialog-desc" style="margin: 8px 0 16px; color: var(--text-secondary); font-size: 0.9rem;">Selecciona la versión compatible con tu servidor para descargar.</p>
+        <h3 id="ext-dialog-title" style="margin-top: 0; font-size: 1.2rem; font-weight: 600; color: #fff;" data-i18n="extensions.select_version_title">Seleccionar Versión</h3>
+        <p id="ext-dialog-desc" style="margin: 8px 0 16px; color: var(--text-secondary); font-size: 0.9rem;" data-i18n="extensions.select_version_desc">Selecciona la versión compatible con tu servidor para descargar.</p>
         
         <div id="ext-versions-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; padding-right: 4px;">
             <!-- Versions list injected by JS -->
         </div>
         
         <div class="row action-row" style="justify-content: flex-end;">
-            <button id="btn-ext-dialog-close" class="secondary" type="button">Cerrar</button>
+            <button id="btn-ext-dialog-close" class="secondary" type="button" data-i18n="common.close">Cerrar</button>
         </div>
     </dialog>
 
@@ -118,7 +117,7 @@
 
         <!-- Gallery -->
         <div id="ext-preview-gallery-container" style="margin-bottom: 20px;" hidden>
-            <h4 style="margin: 0 0 8px; font-size: 0.95rem; color: var(--text-secondary);">Galería / Capturas</h4>
+            <h4 style="margin: 0 0 8px; font-size: 0.95rem; color: var(--text-secondary);" data-i18n="extensions.gallery_title">Galería / Capturas</h4>
             <div id="ext-preview-gallery" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px;">
                 <!-- Screenshots injected here -->
             </div>
@@ -126,12 +125,12 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <button id="tab-preview-desc" type="button" class="tab-btn active">DESCRIPCIÓN</button>
-            <button id="tab-preview-versions" type="button" class="tab-btn">VERSIONES Y DESCARGA</button>
+            <button id="tab-preview-desc" type="button" class="tab-btn active" data-i18n="extensions.tab_desc">DESCRIPCIÓN</button>
+            <button id="tab-preview-versions" type="button" class="tab-btn" data-i18n="extensions.tab_versions">VERSIONES Y DESCARGA</button>
         </div>
 
         <!-- Description Panel -->
-        <div id="panel-preview-desc" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px; max-height: 250px; overflow-y: auto; padding: 12px; background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+        <div id="panel-preview-desc" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px; max-height: 250px; overflow-y: auto; padding: 12px; background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px solid rgba(255,255,0.04);">
             <!-- Body description injected here -->
         </div>
 
@@ -143,52 +142,52 @@
         </div>
 
         <div class="row action-row" style="justify-content: flex-end;">
-            <button id="btn-ext-preview-close" class="secondary" type="button">Cerrar</button>
+            <button id="btn-ext-preview-close" class="secondary" type="button" data-i18n="common.close">Cerrar</button>
         </div>
     </dialog>
 
     <dialog id="new-task-dialog" class="panel"
         style="margin: auto; max-width: 450px; width: 90%; padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
-        <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 600; color: #fff;">Programar Nueva Tarea</h3>
+        <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 600; color: #fff;" data-i18n="tasks.dialog_title">Programar Nueva Tarea</h3>
         
         <div style="display: flex; flex-direction: column; gap: 16px; margin: 16px 0 24px;">
             <div>
-                <label for="task-type" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Acción / Tipo de Tarea</label>
+                <label for="task-type" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);" data-i18n="tasks.task_type_label">Acción / Tipo de Tarea</label>
                 <select id="task-type">
-                    <option value="backup">Copia de Seguridad Completa</option>
-                    <option value="restart">Reinicio de Servidor</option>
-                    <option value="command">Ejecutar Comando en Consola</option>
+                    <option value="backup" data-i18n="tasks.type_backup">Copia de Seguridad Completa</option>
+                    <option value="restart" data-i18n="tasks.type_restart">Reinicio de Servidor</option>
+                    <option value="command" data-i18n="tasks.type_command">Ejecutar Comando en Consola</option>
                 </select>
             </div>
 
             <div id="group-task-command" hidden>
-                <label for="task-command" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Comando a ejecutar</label>
-                <input id="task-command" type="text" placeholder="ej. say Hola a todos!" autocomplete="off" />
+                <label for="task-command" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);" data-i18n="tasks.command_label">Comando a ejecutar</label>
+                <input id="task-command" type="text" placeholder="ej. say Hola a todos!" data-i18n-ph="tasks.command_ph" autocomplete="off" />
             </div>
 
             <div>
-                <label for="task-trigger" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Disparador (Cuándo ejecutar)</label>
+                <label for="task-trigger" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);" data-i18n="tasks.trigger_label">Disparador (Cuándo ejecutar)</label>
                 <select id="task-trigger">
-                    <option value="start">Al iniciar el servidor</option>
-                    <option value="interval">Cada intervalo de minutos</option>
-                    <option value="daily">A una hora fija diaria</option>
+                    <option value="start" data-i18n="tasks.trigger_start">Al iniciar el servidor</option>
+                    <option value="interval" data-i18n="tasks.trigger_interval">Cada intervalo de minutos</option>
+                    <option value="daily" data-i18n="tasks.trigger_daily">A una hora fija diaria</option>
                 </select>
             </div>
 
             <div id="group-task-interval" hidden>
-                <label for="task-interval" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Intervalo (en minutos)</label>
+                <label for="task-interval" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);" data-i18n="tasks.interval_label">Intervalo (en minutos)</label>
                 <input id="task-interval" type="number" min="1" value="60" />
             </div>
 
             <div id="group-task-time" hidden>
-                <label for="task-time" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);">Hora fija diaria (HH:MM)</label>
+                <label for="task-time" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-secondary);" data-i18n="tasks.time_label">Hora fija diaria (HH:MM)</label>
                 <input id="task-time" type="time" value="03:00" />
             </div>
         </div>
 
         <div class="row action-row" style="justify-content: flex-end; gap: 8px;">
-            <button id="btn-new-task-close" class="secondary" type="button">Cancelar</button>
-            <button id="btn-new-task-save" type="button">Guardar Tarea</button>
+            <button id="btn-new-task-close" class="secondary" type="button" data-i18n="common.cancel">Cancelar</button>
+            <button id="btn-new-task-save" type="button" data-i18n="tasks.btn_save">Guardar Tarea</button>
         </div>
     </dialog>
 
@@ -199,8 +198,8 @@
             <style>
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
             </style>
-            <h3 id="loading-overlay-title" style="margin: 0; color: #fff; font-size: 1.1rem; text-align: center;">Cargando...</h3>
-            <p id="loading-overlay-desc" style="margin: 0; color: var(--text-secondary); font-size: 0.9rem; text-align: center; max-width: 250px;">Por favor, espera un momento.</p>
+            <h3 id="loading-overlay-title" style="margin: 0; color: #fff; font-size: 1.1rem; text-align: center;" data-i18n="common.loading">Cargando...</h3>
+            <p id="loading-overlay-desc" style="margin: 0; color: var(--text-secondary); font-size: 0.9rem; text-align: center; max-width: 250px;" data-i18n="common.please_wait">Por favor, espera un momento.</p>
         </div>
     </dialog>
 </body>

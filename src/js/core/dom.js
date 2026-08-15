@@ -28,6 +28,7 @@ export function initDom() {
   els.inputCustomAccentColor = document.querySelector("#input-custom-accent-color");
   els.selectFontStyle = document.querySelector("#select-font-style");
   els.selectFontScale = document.querySelector("#select-font-scale");
+  els.selectAppLanguage = document.querySelector("#select-app-language");
   els.btnHomeOpenLast = document.querySelector("#btn-home-open-last");
   els.btnHomeExit = document.querySelector("#btn-home-exit");
   els.btnHomeOpenDir = document.querySelector("#btn-home-open-dir");

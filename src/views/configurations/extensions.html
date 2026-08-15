@@ -3,22 +3,22 @@
                 <div class="panel-heading" style="margin-bottom: 4px;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <h2>Complementos</h2>
+                            <h2 data-i18n="extensions.title">Complementos</h2>
                             <div class="mc-server-identity-badge" style="display: none;"></div>
                         </div>
                         <p id="extensions-engine-hint" class="hint" style="margin: 4px 0 0; font-size: 0.9rem; color: #aaa;"></p>
                     </div>
                     <div class="row responsive-row">
-                        <button id="btn-import-extension" type="button" class="mc-btn-primary btn-small">Importar Archivo</button>
-                        <button id="btn-disable-client-mods" type="button" class="mc-btn-warning btn-small">Deshabilitar Mods Cliente</button>
-                        <button id="btn-extensions-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
+                        <button id="btn-import-extension" type="button" class="mc-btn-primary btn-small" data-i18n="extensions.btn_import">Importar Archivo</button>
+                        <button id="btn-disable-client-mods" type="button" class="mc-btn-warning btn-small" data-i18n="extensions.btn_disable_client_mods">Deshabilitar Mods Cliente</button>
+                        <button id="btn-extensions-back" type="button" class="mc-btn-secondary btn-small" data-i18n="common.back">Volver</button>
                     </div>
                 </div>
 
                 <!-- Pestañas Principales Superiores (Instalados vs Descargar) -->
                 <div class="create-tabs" style="margin-bottom: 8px;">
-                    <button id="tab-ext-installed" type="button" class="create-tab-btn active">Instalados</button>
-                    <button id="tab-ext-download" type="button" class="create-tab-btn">Descargar</button>
+                    <button id="tab-ext-installed" type="button" class="create-tab-btn active" data-i18n="extensions.tab_installed">Instalados</button>
+                    <button id="tab-ext-download" type="button" class="create-tab-btn" data-i18n="extensions.tab_download">Descargar</button>
                 </div>
 
                 <div class="ext-workspace">
@@ -27,16 +27,16 @@
                         <div class="ext-two-col-layout">
                             <!-- Columna Izquierda (Categorías de Búsqueda) -->
                             <div class="ext-sidebar">
-                                <button id="tab-category-mods" type="button" class="ext-sidebar-btn active">MODS</button>
-                                <button id="tab-category-plugins" type="button" class="ext-sidebar-btn">PLUGINS</button>
-                                <button id="tab-category-datapacks" type="button" class="ext-sidebar-btn">DATAPACKS</button>
+                                <button id="tab-category-mods" type="button" class="ext-sidebar-btn active" data-i18n="extensions.cat_mods">MODS</button>
+                                <button id="tab-category-plugins" type="button" class="ext-sidebar-btn" data-i18n="extensions.cat_plugins">PLUGINS</button>
+                                <button id="tab-category-datapacks" type="button" class="ext-sidebar-btn" data-i18n="extensions.cat_datapacks">DATAPACKS</button>
                             </div>
 
                             <!-- Panel Derecho Principal -->
                             <div class="ext-main-content">
                                 <!-- Barra Superior de Búsqueda -->
                                 <div class="ext-search-bar-wrapper">
-                                    <input id="input-search-extension" type="text" placeholder="Buscar complementos en Modrinth..." class="ext-search-input" />
+                                    <input id="input-search-extension" type="text" placeholder="Buscar complementos en Modrinth..." data-i18n-ph="extensions.search_ph" class="ext-search-input" />
                                     
                                     <button id="btn-search-provider-cycle" type="button" class="mc-cycle-btn ext-provider-cycle-btn">MODRINTH</button>
                                     <select id="select-search-provider" style="display: none;">
@@ -44,7 +44,7 @@
                                         <option value="curseforge">CurseForge</option>
                                     </select>
                                     
-                                    <button id="btn-search-extension" type="button" class="mc-btn-primary ext-btn-search">Buscar</button>
+                                    <button id="btn-search-extension" type="button" class="mc-btn-primary ext-btn-search" data-i18n="common.search">Buscar</button>
                                     <span id="ext-page-indicator" class="ext-page-badge">Pág. 1 de 1</span>
                                 </div>
 
@@ -56,7 +56,7 @@
                                             <button id="btn-ext-page-prev" type="button" class="ext-nav-arrow-btn">&lt;</button>
                                             
                                             <div id="list-search-results" class="ext-mod-grid-6">
-                                                <p class="hint" style="grid-column: 1 / -1; text-align: center; margin: 16px 0;">Cargando sugerencias...</p>
+                                                <p class="hint" style="grid-column: 1 / -1; text-align: center; margin: 16px 0;" data-i18n="extensions.loading_suggestions">Cargando sugerencias...</p>
                                             </div>
 
                                             <button id="btn-ext-page-next" type="button" class="ext-nav-arrow-btn">&gt;</button>
@@ -69,7 +69,7 @@
                                         <div id="ext-preview-panel" class="ext-preview-box-unified">
                                             <div class="ext-preview-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                                                 <div style="flex: 1; min-width: 0;">
-                                                    <h3 id="ext-preview-title" class="ext-preview-title">Selecciona un complemento</h3>
+                                                    <h3 id="ext-preview-title" class="ext-preview-title" data-i18n="extensions.select_extension">Selecciona un complemento</h3>
                                                     <span id="ext-preview-author" class="ext-preview-author" style="display:none;"></span>
                                                 </div>
                                                 <div id="ext-preview-gallery-controls" style="display: none; align-items: center; gap: 4px; flex-shrink: 0;">
@@ -85,7 +85,7 @@
                                                 </div>
                                                 <span id="ext-preview-gallery-title" style="display: none; text-align: center; color: var(--mc-yellow, #ffaa00); font-size: 0.85rem; flex-shrink: 0;"></span>
                                                 <div id="ext-gallery-bar" class="ext-gallery-bar" style="display: none; width: 80%; height: 4px; background-color: var(--mc-green); border-radius: 4px; margin: 2px auto; flex-shrink: 0;"></div>
-                                                <p id="ext-preview-desc" class="ext-preview-desc">Haz clic en un complemento de la lista para ver sus detalles.</p>
+                                                <p id="ext-preview-desc" class="ext-preview-desc" data-i18n="extensions.preview_desc_hint">Haz clic en un complemento de la lista para ver sus detalles.</p>
                                             </div>
                                         </div>
 
@@ -93,17 +93,17 @@
                                         <div class="ext-filters-box-unified">
                                             <!-- Estado A: Botón "Seleccionar versión" (por defecto, pegado arriba) -->
                                             <div id="ext-select-state" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; gap: 6px; padding-top: 4px; box-sizing: border-box;">
-                                                <button id="btn-ext-select-version" type="button" class="mc-btn-primary" style="width: 100%; padding: 10px 14px; font-size: 0.95rem;" disabled>
+                                                <button id="btn-ext-select-version" type="button" class="mc-btn-primary" style="width: 100%; padding: 10px 14px; font-size: 0.95rem;" disabled data-i18n="extensions.btn_select_version">
                                                     Seleccionar versión
                                                 </button>
-                                                <span id="ext-select-hint" style="font-size: 0.75rem; color: #888; text-align: center;">Elige un complemento de la lista</span>
+                                                <span id="ext-select-hint" style="font-size: 0.75rem; color: #888; text-align: center;" data-i18n="extensions.select_hint">Elige un complemento de la lista</span>
                                             </div>
 
                                             <!-- Estado B: Panel de versiones (oculto por defecto) -->
                                             <div id="ext-versions-state" style="display: none; flex-direction: column; width: 100%; height: 100%; justify-content: space-between; gap: 4px; padding: 2px 0;">
                                                 <!-- Loader / tipo -->
                                                 <div style="flex-shrink: 0;">
-                                                    <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 2px;">MOTOR</label>
+                                                    <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 2px;" data-i18n="extensions.engine_label">MOTOR</label>
                                                     <div id="ext-versions-loader-group" class="mc-btn-group" style="display: flex; flex-wrap: wrap; gap: 0;" data-value="">
                                                         <button type="button" class="mc-btn-group-item" data-value="plugin" style="font-size: 0.7rem; padding: 4px 8px;">Plugin</button>
                                                         <button type="button" class="mc-btn-group-item active" data-value="fabric" style="font-size: 0.7rem; padding: 4px 8px;">Fabric</button>
@@ -113,17 +113,17 @@
                                                 </div>
                                                 <!-- Versión -->
                                                 <div style="flex-shrink: 0;">
-                                                    <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 2px;">VERSIÓN</label>
+                                                    <label class="ext-box-label" style="color: #9ca3af; font-size: 0.7rem; margin-bottom: 2px;" data-i18n="create.version_label">VERSIÓN</label>
                                                     <select id="ext-versions-select" class="mc-select" style="width: 100%; font-size: 0.8rem; padding: 4px 8px;">
-                                                        <option value="">Cargando versiones...</option>
+                                                        <option value="" data-i18n="config.loading_versions">Cargando versiones...</option>
                                                     </select>
                                                 </div>
                                                 <!-- Hint -->
                                                 <p id="ext-versions-hint" class="hint" style="margin: 0; font-size: 0.72rem; color: #6ee7b7; flex-shrink: 0;"></p>
                                                 <!-- Botones -->
                                                 <div style="display: flex; gap: 6px; margin-top: auto; flex-shrink: 0;">
-                                                    <button id="btn-ext-download-version" type="button" class="mc-btn-primary btn-small" style="flex: 1;">Descargar</button>
-                                                    <button id="btn-ext-cancel-version" type="button" class="mc-btn-secondary btn-small" style="flex: 0 0 auto;">Cancelar</button>
+                                                    <button id="btn-ext-download-version" type="button" class="mc-btn-primary btn-small" style="flex: 1;" data-i18n="extensions.btn_download">Descargar</button>
+                                                    <button id="btn-ext-cancel-version" type="button" class="mc-btn-secondary btn-small" style="flex: 0 0 auto;" data-i18n="common.cancel">Cancelar</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -139,15 +139,15 @@
                         <div class="ext-two-col-layout">
                             <!-- Columna Izquierda (Sub-pestañas Activados / Desactivados) -->
                             <div class="ext-sidebar">
-                                <button id="tab-view-installed" type="button" class="ext-sidebar-btn active">Activados</button>
-                                <button id="tab-view-disabled" type="button" class="ext-sidebar-btn">Desactivados</button>
+                                <button id="tab-view-installed" type="button" class="ext-sidebar-btn active" data-i18n="extensions.tab_enabled">Activados</button>
+                                <button id="tab-view-disabled" type="button" class="ext-sidebar-btn" data-i18n="extensions.tab_disabled">Desactivados</button>
 
                                 <div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Categoría</label>
+                                    <label style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px;" data-i18n="extensions.category_label">Categoría</label>
                                     <div id="extensions-categories-inst" style="display: flex; flex-direction: column; gap: 4px;">
-                                        <button id="tab-category-mods-inst" type="button" class="ext-sidebar-btn active">MODS</button>
-                                        <button id="tab-category-plugins-inst" type="button" class="ext-sidebar-btn">PLUGINS</button>
-                                        <button id="tab-category-datapacks-inst" type="button" class="ext-sidebar-btn">DATAPACKS</button>
+                                        <button id="tab-category-mods-inst" type="button" class="ext-sidebar-btn active" data-i18n="extensions.cat_mods">MODS</button>
+                                        <button id="tab-category-plugins-inst" type="button" class="ext-sidebar-btn" data-i18n="extensions.cat_plugins">PLUGINS</button>
+                                        <button id="tab-category-datapacks-inst" type="button" class="ext-sidebar-btn" data-i18n="extensions.cat_datapacks">DATAPACKS</button>
                                     </div>
                                 </div>
                             </div>
@@ -156,27 +156,27 @@
                             <div class="ext-main-content">
                                 <!-- Grid de Complementos Instalados (2 filas x 4 columnas con scrollbar) -->
                                 <div id="list-installed-extensions" class="ext-installed-grid">
-                                    <p class="hint" style="grid-column: span 4; text-align: center; margin: 16px 0;">Cargando extensiones...</p>
+                                    <p class="hint" style="grid-column: span 4; text-align: center; margin: 16px 0;" data-i18n="extensions.loading_extensions">Cargando extensiones...</p>
                                 </div>
 
                                 <!-- Panel Inferior: Controles y Detalles del Complemento Instalado Seleccionado -->
                                 <div id="ext-installed-detail-panel" class="ext-bottom-box ext-installed-detail-box">
                                     <div class="ext-installed-info">
-                                        <h3 id="ext-installed-title" class="ext-preview-title">Ningún complemento seleccionado</h3>
+                                        <h3 id="ext-installed-title" class="ext-preview-title" data-i18n="extensions.no_extension_selected">Ningún complemento seleccionado</h3>
                                         <span id="ext-installed-author" class="ext-preview-author" style="display:none;"></span>
-                                        <p id="ext-installed-desc" class="ext-preview-desc">Selecciona un complemento instalado arriba para gestionarlo.</p>
+                                        <p id="ext-installed-desc" class="ext-preview-desc" data-i18n="extensions.installed_desc_hint">Selecciona un complemento instalado arriba para gestionarlo.</p>
                                     </div>
                                     <div class="ext-installed-controls">
                                         <!-- Switch (Desactivar / Activar) -->
                                         <div class="ext-switch-group">
-                                            <span id="label-ext-toggle-state" style="font-weight: bold; font-size: 0.95rem; color: #fff;">Desactivar</span>
+                                            <span id="label-ext-toggle-state" style="font-weight: bold; font-size: 0.95rem; color: #fff;" data-i18n="extensions.state_disable">Desactivar</span>
                                             <label class="mc-switch">
                                                 <input id="switch-ext-toggle" type="checkbox" checked disabled />
                                                 <span class="slider"></span>
                                             </label>
                                         </div>
                                         <!-- Botón Rojo Eliminar -->
-                                        <button id="btn-ext-delete-selected" type="button" class="ext-btn-delete" disabled>Eliminar</button>
+                                        <button id="btn-ext-delete-selected" type="button" class="ext-btn-delete" disabled data-i18n="common.delete">Eliminar</button>
                                     </div>
                                 </div>
 

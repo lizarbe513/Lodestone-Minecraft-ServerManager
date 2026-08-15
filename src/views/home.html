@@ -2,28 +2,28 @@
             <!-- Panel principal: Acciones de inicio -->
             <div class="panel home-panel">
                 <div class="home-main-content">
-                    <h2>Inicio</h2>
-                    <p class="hint">
+                    <h2 data-i18n="home.title">Inicio</h2>
+                    <p class="hint" data-i18n="home.subtitle">
                         Crea, Abre un servidor o entra al abierto más recientemente.
                     </p>
                     <div class="home-btn-stack">
-                        <button id="btn-home-create" type="button" class="mc-btn-primary home-btn-large">
+                        <button id="btn-home-create" type="button" class="mc-btn-primary home-btn-large" data-i18n="home.btn_create">
                             CREAR
                         </button>
-                        <button id="btn-home-open-existing" type="button" class="mc-btn-secondary home-btn-large">
+                        <button id="btn-home-open-existing" type="button" class="mc-btn-secondary home-btn-large" data-i18n="home.btn_open">
                             ABRIR
                         </button>
-                        <button id="btn-home-open-last" type="button" class="mc-btn-primary home-btn-large" hidden>
+                        <button id="btn-home-open-last" type="button" class="mc-btn-primary home-btn-large" data-i18n="home.btn_open_last" hidden>
                             ABRIR ÚLTIMO SERVIDOR
                         </button>
                     </div>
                     <p id="home-session-hint" class="hint" style="margin-top: 12px; text-align: center;" hidden></p>
                 </div>
                 <div class="home-footer-actions" style="justify-content: space-between;">
-                    <button id="btn-home-exit" type="button" class="mc-btn-danger home-btn-footer">
+                    <button id="btn-home-exit" type="button" class="mc-btn-danger home-btn-footer" data-i18n="home.btn_exit">
                         Cerrar
                     </button>
-                    <button id="btn-home-customization" type="button" class="mc-btn-secondary home-btn-footer">
+                    <button id="btn-home-customization" type="button" class="mc-btn-secondary home-btn-footer" data-i18n="home.btn_customization">
                         Personalización
                     </button>
                 </div>
@@ -31,9 +31,9 @@
 
             <!-- Panel secundario: Accesos directos -->
             <div class="panel home-servers-panel">
-                <h3>Accesos rápidos</h3>
+                <h3 data-i18n="home.quick_access">Accesos rápidos</h3>
                 <div id="list-saved-servers" class="home-servers-list">
-                    <p class="hint" style="text-align: center; margin: 20px 0;">Cargando servidores guardados...</p>
+                    <p class="hint" style="text-align: center; margin: 20px 0;" data-i18n="home.loading_servers">Cargando servidores guardados...</p>
                 </div>
             </div>
         </section>

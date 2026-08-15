@@ -3,39 +3,39 @@
                 <div class="panel-heading">
                     <div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <h2>Administración del Servidor</h2>
+                            <h2 data-i18n="backups.title">Administración del Servidor</h2>
                             <div class="mc-server-identity-badge" style="display: none;"></div>
                         </div>
-                        <p class="hint">Gestiona copias de seguridad y automatización de tareas.</p>
+                        <p class="hint" data-i18n="backups.hint">Gestiona copias de seguridad y automatización de tareas.</p>
                     </div>
                     <div class="row responsive-row">
-                        <button id="btn-backups-back" type="button" class="mc-btn-secondary btn-small">Volver</button>
+                        <button id="btn-backups-back" type="button" class="mc-btn-secondary btn-small" data-i18n="common.back">Volver</button>
                     </div>
                 </div>
 
                 <!-- Pestañas Backups vs Tareas -->
                 <div class="tabs">
-                    <button id="tab-backups-list" type="button" class="tab-btn active">COPIAS DE SEGURIDAD</button>
-                    <button id="tab-tasks-list" type="button" class="tab-btn">TAREAS PROGRAMADAS</button>
+                    <button id="tab-backups-list" type="button" class="tab-btn active" data-i18n="backups.tab_backups">COPIAS DE SEGURIDAD</button>
+                    <button id="tab-tasks-list" type="button" class="tab-btn" data-i18n="backups.tab_tasks">TAREAS PROGRAMADAS</button>
                 </div>
 
                 <!-- Sección Copias de Seguridad -->
                 <div id="section-backups-list">
                     <div class="row action-row" style="margin-bottom: 20px;">
-                        <button id="btn-create-backup" type="button" class="mc-btn-primary">Respaldar</button>
+                        <button id="btn-create-backup" type="button" class="mc-btn-primary" data-i18n="backups.btn_backup">Respaldar</button>
                     </div>
                     <div id="list-backups" style="display: flex; flex-direction: column; gap: 8px;">
-                        <p class="hint" style="text-align: center; margin: 16px 0;">Cargando copias de seguridad...</p>
+                        <p class="hint" style="text-align: center; margin: 16px 0;" data-i18n="backups.loading_backups">Cargando copias de seguridad...</p>
                     </div>
                 </div>
 
                 <!-- Sección Tareas Programadas -->
                 <div id="section-tasks-list" hidden>
                     <div class="row action-row" style="margin-bottom: 20px;">
-                        <button id="btn-open-new-task-modal" type="button">Nueva Tarea Programada</button>
+                        <button id="btn-open-new-task-modal" type="button" data-i18n="backups.btn_new_task">Nueva Tarea Programada</button>
                     </div>
                     <div id="list-tasks" style="display: flex; flex-direction: column; gap: 8px;">
-                        <p class="hint" style="text-align: center; margin: 16px 0;">No hay tareas programadas.</p>
+                        <p class="hint" style="text-align: center; margin: 16px 0;" data-i18n="backups.no_tasks">No hay tareas programadas.</p>
                     </div>
                 </div>
             </div>

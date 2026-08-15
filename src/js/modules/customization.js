@@ -13,6 +13,11 @@ import {
 import { getOverscrollEnabled, setOverscrollEnabled } from "../ui/overscroll.js";
 import { showFeedback } from "../utils/utils.js";
 import { navigateTo } from "../ui/ui.js";
+import { populateLanguageSelector, setLanguage, onLanguageChange, t } from "../i18n/i18n.js";
+
+onLanguageChange(() => {
+  renderThemeCards();
+});
 
 export function renderThemeCards() {
   if (!els.themeCardsContainer) return;
@@ -24,7 +29,7 @@ export function renderThemeCards() {
       <div class="minecraft-table theme-card" data-theme-id="${theme.id}" style="width: 230px; min-width: 230px; max-width: 230px; height: 175px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid ${isActive ? 'var(--mc-green)' : 'var(--mc-border)'}; background-color: var(--bg-panel); cursor: pointer; border-radius: 4px; box-sizing: border-box; flex-shrink: 0;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <h4 style="margin: 0; color: var(--mc-yellow); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${theme.name}</h4>
-          ${isActive ? '<span class="status-badge" data-status="running" style="padding: 2px 6px; font-size: 0.75rem; flex-shrink: 0;">ACTIVO</span>' : ''}
+          ${isActive ? `<span class="status-badge" data-status="running" style="padding: 2px 6px; font-size: 0.75rem; flex-shrink: 0;">${t("status.running").toUpperCase()}</span>` : ''}
         </div>
         <p class="hint" style="margin: 4px 0 0 0; font-size: 0.8rem; height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${theme.description}</p>
         
@@ -35,7 +40,7 @@ export function renderThemeCards() {
         </div>
 
         <button type="button" class="${isActive ? 'mc-btn-primary' : 'mc-btn-secondary'} btn-small" style="width: 100%; margin-top: 6px; padding: 4px 8px; font-size: 0.85rem;">
-          ${isActive ? 'ACTIVADO' : 'SELECCIONAR'}
+          ${isActive ? (t("status.running").toUpperCase()) : (t("common.accept").toUpperCase())}
         </button>
       </div>
     `;
@@ -70,6 +75,7 @@ export function initCustomizationEvents() {
     els.btnHomeCustomization.addEventListener("click", () => {
       renderThemeCards();
       initSfxVolumeControl();
+      populateLanguageSelector(els.selectAppLanguage);
       navigateTo("customization");
       showFeedback("Personaliza la paleta de colores y el volumen de efectos de sonido.", "info");
     });
@@ -137,6 +143,13 @@ export function initCustomizationEvents() {
     els.selectFontScale.addEventListener("change", (e) => {
       setFontScale(e.target.value);
       showFeedback(`Escala de texto ajustada a ${e.target.value}.`, "info");
+    });
+  }
+
+  if (els.selectAppLanguage) {
+    els.selectAppLanguage.addEventListener("change", (e) => {
+      setLanguage(e.target.value);
+      showFeedback(`Idioma cambiado / Language changed.`, "success");
     });
   }
 }

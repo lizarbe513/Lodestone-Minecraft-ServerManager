@@ -4,8 +4,11 @@
     flex-direction: row;
     gap: 20px;
     align-items: stretch;
-    flex: 1;
-    min-height: 0;
+    align-self: center;
+    width: 100%;
+    max-height: 540px;
+    min-height: 380px;
+    margin: auto 0;
 }
 
 /* Panel izquierdo: acciones principales */
@@ -15,6 +18,7 @@
     flex-direction: column;
     justify-content: space-between;
     min-width: 0;
+    height: 100%;
 }
 .home-main-content {
     flex: 1;
@@ -22,7 +26,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 32px 24px 20px;
+    padding: 24px 20px 16px;
 }
 .home-main-content h2, .home-main-content .hint {
     text-align: center;
@@ -62,6 +66,7 @@
     min-width: 0;
     overflow: hidden;
     margin-top: 0;
+    height: 100%;
 }
 .home-servers-title {
     margin: 0 0 12px;
