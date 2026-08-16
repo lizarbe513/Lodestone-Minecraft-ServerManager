@@ -231,7 +231,7 @@ export const es = {
   "config.btn_select_different_jar": "Seleccionar un .jar diferente",
   "config.server_engine_label": "Motor de Servidor",
   "config.loading_versions": "Cargando versiones...",
-  "config.change_version_warning": "⚠️ Cambiar la versión del software puede corromper los mundos. ¡Haz una copia de seguridad antes de continuar!",
+  "config.change_version_warning": "Cambiar la versión del software puede corromper los mundos. Haz una copia de seguridad antes de continuar.",
 
   // Extensions
   "extensions.title": "Complementos",
@@ -265,5 +265,24 @@ export const es = {
 
   // Terminal Logs
   "terminal.app_ready": "Aplicación lista.",
-  "terminal.command_sent": "> {cmd}"
+  "terminal.command_sent": "> {cmd}",
+  "terminal.session_created": "Sesión '{name}' creada en '{dir}'.",
+  "terminal.session_opened": "Sesión '{name}' abierta correctamente.",
+  "terminal.config_updated": "Configuración de '{name}' actualizada.",
+  "terminal.server_starting": "Iniciando '{name}'...",
+  "terminal.server_spawned": "Servidor ejecutado dentro de '{dir}'.",
+  "terminal.server_start_failed": "No se pudo iniciar el servidor: {error}",
+  "terminal.server_ready": "Servidor listo para recibir comandos.",
+  "terminal.eula_required": "El servidor requiere aceptar el EULA (Interactivo detectado).",
+  "terminal.eula_missing": "Falta aceptar el EULA para continuar.",
+  "terminal.process_terminated": "El proceso del servidor terminó. Código de salida: {code}",
+  "terminal.diag_java_version": "DIAGNÓSTICO: Incompatibilidad de versión de Java. Esta versión de Minecraft requiere una versión más reciente de Java (ejemplo: Java 17 para MC 1.18 - 1.20.4, o Java 21 para MC 1.20.5+). Selecciona otra versión de Java en la pestaña 'Servidor'.",
+  "terminal.diag_ram": "DIAGNÓSTICO: Memoria RAM insuficiente. El servidor se quedó sin memoria o la asignación (-Xmx) supera la capacidad del sistema. Ajusta la cantidad de RAM en la pestaña 'Servidor'.",
+  "terminal.diag_port": "DIAGNÓSTICO: Conflicto de puertos de red. El puerto del servidor (por defecto 25565) ya está siendo usado por otro proceso. Cambia la opción 'server-port' en la pestaña 'Propiedades'.",
+  "terminal.diag_class_def": "DIAGNÓSTICO: Error de clases o librerías faltantes. Falta una dependencia o hay un Mod/Plugin incompatible con la versión actual de Minecraft.",
+  "terminal.diag_jvm_args": "DIAGNÓSTICO: Parámetro JVM inválido. El valor asignado a la memoria RAM no es soportado por el ejecutable de Java.",
+  "terminal.world_switched": "Mundo activo cambiado a '{name}'.",
+  "terminal.world_created": "Nuevo mundo '{name}' creado.",
+  "terminal.world_deleted": "Mundo '{name}' eliminado.",
+  "terminal.world_imported": "Mundo importado correctamente como '{name}'."
 };

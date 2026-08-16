@@ -231,7 +231,7 @@ export const en = {
   "config.btn_select_different_jar": "Select a different .jar",
   "config.server_engine_label": "Server Engine",
   "config.loading_versions": "Loading versions...",
-  "config.change_version_warning": "⚠️ Changing software version can corrupt worlds. Make a backup before proceeding!",
+  "config.change_version_warning": "Changing software version can corrupt worlds. Make a backup before proceeding!",
 
   // Extensions
   "extensions.title": "Extensions",
@@ -265,5 +265,24 @@ export const en = {
 
   // Terminal Logs
   "terminal.app_ready": "Application ready.",
-  "terminal.command_sent": "> {cmd}"
+  "terminal.command_sent": "> {cmd}",
+  "terminal.session_created": "Session '{name}' created at '{dir}'.",
+  "terminal.session_opened": "Session '{name}' opened successfully.",
+  "terminal.config_updated": "Configuration for '{name}' updated.",
+  "terminal.server_starting": "Starting '{name}'...",
+  "terminal.server_spawned": "Server running inside '{dir}'.",
+  "terminal.server_start_failed": "Could not start server: {error}",
+  "terminal.server_ready": "Server ready to receive commands.",
+  "terminal.eula_required": "The server requires accepting the EULA (Interactive detected).",
+  "terminal.eula_missing": "EULA must be accepted to continue.",
+  "terminal.process_terminated": "Server process terminated. Exit code: {code}",
+  "terminal.diag_java_version": "DIAGNOSTIC: Java version incompatibility. This version of Minecraft requires a newer Java version (e.g. Java 17 for MC 1.18 - 1.20.4, or Java 21 for MC 1.20.5+). Select another Java version in the 'Server' tab.",
+  "terminal.diag_ram": "DIAGNOSTIC: Insufficient RAM. The server ran out of memory or the allocated RAM (-Xmx) exceeds system capacity. Adjust RAM in the 'Server' tab.",
+  "terminal.diag_port": "DIAGNOSTIC: Network port conflict. The server port (default 25565) is already in use by another process. Change 'server-port' in the 'Properties' tab.",
+  "terminal.diag_class_def": "DIAGNOSTIC: Missing class or library error. A dependency is missing or a Mod/Plugin is incompatible with this Minecraft version.",
+  "terminal.diag_jvm_args": "DIAGNOSTIC: Invalid JVM parameter. The allocated RAM value is not supported by the Java executable.",
+  "terminal.world_switched": "Active world switched to '{name}'.",
+  "terminal.world_created": "New world '{name}' created.",
+  "terminal.world_deleted": "World '{name}' deleted.",
+  "terminal.world_imported": "World successfully imported as '{name}'."
 };

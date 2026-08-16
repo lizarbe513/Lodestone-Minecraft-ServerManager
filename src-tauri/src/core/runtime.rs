@@ -56,6 +56,24 @@ fn emit_runtime_log(app_handle: &tauri::AppHandle, kind: LogKind, message: impl 
     }
 }
 
+fn emit_runtime_log_i18n(
+    app_handle: &tauri::AppHandle,
+    kind: LogKind,
+    fallback_message: impl Into<String>,
+    i18n_key: impl Into<String>,
+    i18n_params: Option<serde_json::Value>,
+) {
+    if let Err(error) = crate::core::events::emit_log_i18n(
+        app_handle,
+        kind,
+        fallback_message,
+        i18n_key,
+        i18n_params,
+    ) {
+        eprintln!("No se pudo emitir un log del servidor: {error}");
+    }
+}
+
 pub fn build_snapshot(runtime: &ServerRuntime) -> AppSnapshot {
     AppSnapshot {
         status: runtime.status.clone(),
@@ -231,10 +249,12 @@ fn mark_server_as_running_if_ready(
 
     if should_emit {
         emit_runtime_status(app_handle, ServerStatus::Running);
-        emit_runtime_log(
+        emit_runtime_log_i18n(
             app_handle,
             LogKind::System,
             "Servidor listo para recibir comandos.",
+            "terminal.server_ready",
+            None,
         );
     }
 
@@ -391,10 +411,12 @@ pub fn spawn_server_process(
     }
 
     emit_runtime_status(app_handle, ServerStatus::Starting);
-    emit_runtime_log(
+    emit_runtime_log_i18n(
         app_handle,
         LogKind::System,
         format!("Iniciando `{}`...", session.server_name),
+        "terminal.server_starting",
+        Some(serde_json::json!({ "name": &session.server_name })),
     );
 
     match command.spawn() {
@@ -408,13 +430,15 @@ pub fn spawn_server_process(
                 runtime_guard.eula_pending = false;
             }
 
-            emit_runtime_log(
+            emit_runtime_log_i18n(
                 app_handle,
                 LogKind::System,
                 format!(
                     "Servidor ejecutado dentro de `{}`.",
                     session.server_dir
                 ),
+                "terminal.server_spawned",
+                Some(serde_json::json!({ "dir": &session.server_dir })),
             );
 
             let app_handle_for_task = app_handle.clone();
@@ -434,8 +458,8 @@ pub fn spawn_server_process(
                                 &text,
                             );
                             
-                            if let Some(diag) = crate::core::diagnostics::diagnose_java_log(&text) {
-                                emit_runtime_log(&app_handle_for_task, LogKind::System, diag);
+                            if let Some((i18n_key, fallback)) = crate::core::diagnostics::diagnose_java_log(&text) {
+                                emit_runtime_log_i18n(&app_handle_for_task, LogKind::System, fallback, i18n_key, None);
                             }
 
                             if text.contains("agreement to Minecraft's EULA") || text.contains("EULA:") {
@@ -444,10 +468,12 @@ pub fn spawn_server_process(
                                     rg.eula_pending = true;
                                 }
                                 emit_runtime_status(&app_handle_for_task, ServerStatus::WaitingEula);
-                                emit_runtime_log(
+                                emit_runtime_log_i18n(
                                     &app_handle_for_task,
                                     LogKind::System,
                                     "El servidor requiere aceptar el EULA (Interactivo detectado).",
+                                    "terminal.eula_required",
+                                    None,
                                 );
                             }
                             
@@ -461,8 +487,8 @@ pub fn spawn_server_process(
                                 &text,
                             );
 
-                            if let Some(diag) = crate::core::diagnostics::diagnose_java_log(&text) {
-                                emit_runtime_log(&app_handle_for_task, LogKind::System, diag);
+                            if let Some((i18n_key, fallback)) = crate::core::diagnostics::diagnose_java_log(&text) {
+                                emit_runtime_log_i18n(&app_handle_for_task, LogKind::System, fallback, i18n_key, None);
                             }
 
                             emit_runtime_log(&app_handle_for_task, LogKind::Stderr, text);
@@ -486,10 +512,12 @@ pub fn spawn_server_process(
                                 }
 
                                 emit_runtime_status(&app_handle_for_task, ServerStatus::WaitingEula);
-                                emit_runtime_log(
+                                emit_runtime_log_i18n(
                                     &app_handle_for_task,
                                     LogKind::System,
                                     "Falta aceptar el EULA para continuar.",
+                                    "terminal.eula_missing",
+                                    None,
                                 );
                             } else {
                                 if let Ok(mut runtime_guard) = runtime_for_task.lock() {
@@ -498,13 +526,15 @@ pub fn spawn_server_process(
                                 }
 
                                 emit_runtime_status(&app_handle_for_task, ServerStatus::Offline);
-                                emit_runtime_log(
+                                emit_runtime_log_i18n(
                                     &app_handle_for_task,
                                     LogKind::System,
                                     format!(
                                         "El proceso del servidor terminó. Código de salida: {:?}",
                                         payload.code
                                     ),
+                                    "terminal.process_terminated",
+                                    Some(serde_json::json!({ "code": format!("{:?}", payload.code) })),
                                 );
                             }
                         }
@@ -536,10 +566,12 @@ pub fn spawn_server_process(
             runtime_guard.eula_pending = false;
 
             emit_runtime_status(app_handle, ServerStatus::Offline);
-            emit_runtime_log(
+            emit_runtime_log_i18n(
                 app_handle,
                 LogKind::Stderr,
                 format!("No se pudo iniciar el servidor: {error}"),
+                "terminal.server_start_failed",
+                Some(serde_json::json!({ "error": error.to_string() })),
             );
 
             Err(format!("No se pudo iniciar el servidor: {error}"))

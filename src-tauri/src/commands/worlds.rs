@@ -287,10 +287,12 @@ pub fn cambiar_mundo_activo(
     let session = crate::core::runtime::current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
     set_active_world(&path, &mundo)?;
-    let _ = crate::core::events::emit_log(
+    let _ = crate::core::events::emit_log_i18n(
         &app_handle,
         crate::core::models::LogKind::System,
         format!("Mundo activo cambiado a `{}`.", mundo),
+        "terminal.world_switched",
+        Some(serde_json::json!({ "name": &mundo })),
     );
     Ok(())
 }
@@ -329,10 +331,12 @@ pub fn borrar_mundo(
     let session = crate::core::runtime::current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
     delete_world(&path, &mundo)?;
-    let _ = crate::core::events::emit_log(
+    let _ = crate::core::events::emit_log_i18n(
         &app_handle,
         crate::core::models::LogKind::System,
         format!("Mundo `{}` eliminado.", mundo),
+        "terminal.world_deleted",
+        Some(serde_json::json!({ "name": &mundo })),
     );
     Ok(())
 }
@@ -364,10 +368,12 @@ pub fn crear_mundo_nuevo(
     let session = crate::core::runtime::current_session(&state.runtime)?;
     let path = std::path::PathBuf::from(&session.server_dir);
     create_new_world(&path, &mundo)?;
-    let _ = crate::core::events::emit_log(
+    let _ = crate::core::events::emit_log_i18n(
         &app_handle,
         crate::core::models::LogKind::System,
-        format!("Nuevo mundo vacío `{}` creado.", mundo),
+        format!("Nuevo mundo `{}` creado.", mundo),
+        "terminal.world_created",
+        Some(serde_json::json!({ "name": &mundo })),
     );
     Ok(())
 }
@@ -390,10 +396,12 @@ pub fn importar_mundo_zip(
     
     import_world_zip(&path, &zip_path, &mundo)?;
     
-    let _ = crate::core::events::emit_log(
+    let _ = crate::core::events::emit_log_i18n(
         &app_handle,
         crate::core::models::LogKind::System,
         format!("Mundo `{}` importado correctamente.", mundo),
+        "terminal.world_imported",
+        Some(serde_json::json!({ "name": &mundo })),
     );
     Ok(())
 }

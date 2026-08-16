@@ -129,6 +129,10 @@ pub struct ServerStatusPayload {
 pub struct ServerLogPayload {
     pub kind: LogKind,
     pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub i18n_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub i18n_params: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Serialize, Clone)]

@@ -567,13 +567,15 @@ pub fn crear_e_iniciar_servidor(
     let session = create_server_session(request)?;
     update_active_session(&app_handle, &state.runtime, Some(session.clone()))?;
 
-    let _ = crate::core::events::emit_log(
+    let _ = crate::core::events::emit_log_i18n(
         &app_handle,
         crate::core::models::LogKind::System,
         format!(
             "Sesión `{}` creada en `{}`.",
             session.server_name, session.server_dir
         ),
+        "terminal.session_created",
+        Some(serde_json::json!({ "name": &session.server_name, "dir": &session.server_dir })),
     );
 
     if start_immediately {
@@ -604,10 +606,12 @@ pub fn abrir_servidor_existente(
     validate_existing_session(&session)?;
     update_active_session(&app_handle, &state.runtime, Some(session.clone()))?;
 
-    let _ = crate::core::events::emit_log(
+    let _ = crate::core::events::emit_log_i18n(
         &app_handle,
         crate::core::models::LogKind::System,
         format!("Sesión `{}` abierta correctamente.", session.server_name),
+        "terminal.session_opened",
+        Some(serde_json::json!({ "name": &session.server_name })),
     );
 
     let runtime_guard = state
@@ -679,10 +683,12 @@ pub fn actualizar_configuracion_servidor(
     let updated_session = update_server_session_config(&session, request)?;
     update_active_session(&app_handle, &state.runtime, Some(updated_session.clone()))?;
 
-    let _ = crate::core::events::emit_log(
+    let _ = crate::core::events::emit_log_i18n(
         &app_handle,
         crate::core::models::LogKind::System,
         format!("Configuración de `{}` actualizada.", updated_session.server_name),
+        "terminal.config_updated",
+        Some(serde_json::json!({ "name": &updated_session.server_name })),
     );
 
     let runtime_guard = state

@@ -3,6 +3,7 @@ import { appState } from "./state.js";
 import { setStatus, updateControls } from "../ui/ui.js";
 import { showFeedback, appendLog } from "../utils/utils.js";
 import { handleServerLogLine } from "../features/server.js";
+import { t } from "../i18n/i18n.js";
 
 import { initCreateServerEvents } from "../modules/create_server.js";
 import { initServerControlEvents } from "../modules/server_control.js";
@@ -14,23 +15,24 @@ export async function registerTauriEvents() {
     setStatus(event.payload.status);
 
     if (event.payload.status === "running") {
-      showFeedback("Servidor en ejecución.", "success");
+      showFeedback(t("status.running"), "success");
     } else if (event.payload.status === "offline") {
-      showFeedback("Servidor detenido.", "info");
+      showFeedback(t("status.offline"), "info");
     } else if (event.payload.status === "starting") {
-      showFeedback("Iniciando servidor...", "info");
+      showFeedback(t("status.starting"), "info");
     } else if (event.payload.status === "waiting_eula") {
       appState.eulaPending = true;
-      showFeedback(
-        "El servidor requiere aceptar el EULA. Pulsa `Aceptar EULA y reiniciar` para continuar.",
-        "info",
-      );
+      showFeedback(t("terminal.eula_required"), "info");
       updateControls();
     }
   });
 
   await listen("server-log", (event) => {
-    appendLog(event.payload.kind, event.payload.message);
+    let message = event.payload.message;
+    if (event.payload.i18n_key) {
+      message = t(event.payload.i18n_key, event.payload.i18n_params || {});
+    }
+    appendLog(event.payload.kind, message);
     handleServerLogLine(event.payload.message);
   });
 }
