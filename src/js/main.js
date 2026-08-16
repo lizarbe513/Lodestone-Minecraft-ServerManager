@@ -8,7 +8,7 @@ import { appState } from "./core/state.js";
 import { initAudio } from "./ui/audio.js";
 import { initTheme } from "./ui/theme.js";
 import { initOverscrollGlow } from "./ui/overscroll.js";
-import { setLanguage, getLanguage, translateDOM } from "./i18n/i18n.js";
+import { setLanguage, getLanguage, translateDOM, t } from "./i18n/i18n.js";
 
 async function loadInitialState() {
   const snapshot = await invoke("obtener_estado_aplicacion");
@@ -64,7 +64,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     setLanguage(getLanguage());
     translateDOM();
     
-    appendLog("system", "Aplicación lista.");
+    appendLog("system", t("terminal.app_ready"));
   } catch (error) {
     const message = normalizeError(error);
     showFeedback(`No se pudo inicializar la aplicación: ${message}`, "error");

@@ -261,5 +261,9 @@ export const es = {
   "extensions.select_version_desc": "Selecciona la versión compatible con tu servidor para descargar.",
   "extensions.gallery_title": "Galería / Capturas",
   "extensions.tab_desc": "DESCRIPCIÓN",
-  "extensions.tab_versions": "VERSIONES Y DESCARGA"
+  "extensions.tab_versions": "VERSIONES Y DESCARGA",
+
+  // Terminal Logs
+  "terminal.app_ready": "Aplicación lista.",
+  "terminal.command_sent": "> {cmd}"
 };

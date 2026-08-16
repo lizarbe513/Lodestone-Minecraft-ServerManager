@@ -4,6 +4,7 @@ import { appState, connectedPlayers } from "../core/state.js";
 import { triggerStartTasks } from "./backups.js";
 import { navigateTo, updateControls, applySnapshot, renderJavaOptions, renderPlayersList } from "../ui/ui.js";
 import { showFeedback, clearLogs, suggestedServerName, normalizeError, appendLog, normalizeMessage, showLoadingOverlay, hideLoadingOverlay } from "../utils/utils.js";
+import { t } from "../i18n/i18n.js";
 
 export function collectNewServerPayload() {
   const memoryGb = Number.parseInt(els.memoryGb.value, 10);
@@ -547,7 +548,7 @@ export async function sendCommand() {
   }
 
   await invoke("enviar_comando", { comando });
-  appendLog("system", `> ${comando}`);
+  appendLog("system", t("terminal.command_sent", { cmd: comando }));
   els.inputCommand.value = "";
 }
 
