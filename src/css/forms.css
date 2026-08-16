@@ -23,6 +23,34 @@ input[type="checkbox"]:checked {
     box-shadow: inset 3px 3px 0px rgba(0,0,0,0.4);
 }
 
+/* Indicador de campo obligatorio */
+.required-asterisk {
+    color: var(--error);
+    font-weight: bold;
+}
+
+/* Stepper numérico con botones +/- */
+.mc-stepper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.mc-stepper-btn {
+    margin: 0 !important;
+    padding: 6px 12px !important;
+    flex-shrink: 0;
+    font-family: monospace !important;
+}
+
+.mc-stepper-input {
+    width: 100%;
+    text-align: center;
+    margin: 0 !important;
+    padding: 6px 8px !important;
+}
+
 /* Indicadores "|" y "O" de fondo (Bedrock UI) */
 input[type="checkbox"]::before {
     content: '';

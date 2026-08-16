@@ -1,6 +1,7 @@
 import { invoke, open } from "../core/api.js";
 import { els } from "../core/dom.js";
 import { showFeedback, requestConfirm, openImageLightbox } from "../utils/utils.js";
+import { t, onLanguageChange } from "../i18n/i18n.js";
 
 // Variable de estado local para el motor y la categoría activa
 export let activeEngine = "vanilla";
@@ -108,7 +109,7 @@ export async function initExtensionsPage() {
     
     // Configurar etiqueta del motor y versión
     if (els.extensionsEngineHint) {
-      els.extensionsEngineHint.textContent = `Motor del servidor: ${ENGINE_LABELS[engine] || engine.toUpperCase()}`;
+      els.extensionsEngineHint.textContent = t("extensions.engine_hint", { engine: ENGINE_LABELS[engine] || engine.toUpperCase() });
     }
 
     const isModsSupported = ["fabric", "forge", "neoforge", "quilt"].includes(engine);
@@ -130,8 +131,8 @@ export async function initExtensionsPage() {
       }
     };
 
-    const modsTooltip = isVanilla ? "Los servidores Vanilla no admiten mods" : "Paper/Purpur no admite mods";
-    const pluginsTooltip = isVanilla ? "Los servidores Vanilla no admiten plugins" : "Los cargadores de mods no admiten plugins";
+    const modsTooltip = isVanilla ? t("extensions.tooltip_vanilla_no_mods") : t("extensions.tooltip_paper_no_mods");
+    const pluginsTooltip = isVanilla ? t("extensions.tooltip_vanilla_no_plugins") : t("extensions.tooltip_mods_no_plugins");
 
     updateCatButtonState(els.tabCategoryMods, isModsSupported, modsTooltip);
     updateCatButtonState(els.tabCategoryModsInst, isModsSupported, modsTooltip);

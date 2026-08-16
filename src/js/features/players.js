@@ -1,6 +1,7 @@
 import { invoke } from "../core/api.js";
 import { els } from "../core/dom.js";
 import { showFeedback } from "../utils/utils.js";
+import { t } from "../i18n/i18n.js";
 
 export async function checkWhitelistStatus() {
   try {
@@ -10,7 +11,7 @@ export async function checkWhitelistStatus() {
     if (match && match[1] === "false") {
       if (els.inputAddWhitelist) els.inputAddWhitelist.disabled = true;
       if (els.btnAddWhitelist) els.btnAddWhitelist.disabled = true;
-      if (els.whitelistStatusBadge) els.whitelistStatusBadge.textContent = "(Desactivada en server.properties)";
+      if (els.whitelistStatusBadge) els.whitelistStatusBadge.textContent = t("players.whitelist_disabled_badge");
 
       if (els.listWhitelist) {
         const removeBtns = els.listWhitelist.querySelectorAll("button");

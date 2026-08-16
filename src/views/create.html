@@ -1,190 +1,190 @@
 <section id="page-create" class="page-section" hidden>
-            <div class="panel create-main-container">
-                <div class="panel-heading" style="margin-bottom: 8px;">
-                    <div>
-                        <h2 data-i18n="create.title">Crear nuevo servidor</h2>
-                        <p class="hint" data-i18n="create.hint">
-                            Configura el servidor a tu gusto. Los campos con <span style="color: var(--error); font-weight: bold;">*</span> son obligatorios.
-                        </p>
+    <div class="panel create-main-container">
+        <div class="panel-heading create-header-bar">
+            <div>
+                <h2 data-i18n="create.title">Crear nuevo servidor</h2>
+                <p class="hint" data-i18n="create.hint">
+                    Configura el servidor a tu gusto. Los campos con <span class="required-asterisk">*</span> son obligatorios.
+                </p>
+            </div>
+            <button id="btn-create-back" type="button" class="mc-btn-secondary" data-i18n="common.back">
+                Volver
+            </button>
+        </div>
+        <div class="create-vertical-container">
+            <!-- TOP PANEL: Nombre de servidor y Vista previa (60%) -->
+            <div class="create-basic-panel">
+                <div class="create-top-form">
+                    <div class="field-group">
+                        <label for="server-name"><span data-i18n="create.server_name_label">Nombre del servidor</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
+                        <input id="server-name" type="text" placeholder="Ejemplo: survival-amigos" data-i18n-ph="create.server_name_ph" autocomplete="off" />
+                        <p class="hint field-hint-sm" data-i18n="create.folder_name_hint">Se usará para el nombre de la carpeta.</p>
                     </div>
-                    <button id="btn-create-back" type="button" class="mc-btn-secondary" data-i18n="common.back">
-                        Volver
-                    </button>
+                    <div class="field-group">
+                        <label for="create-world-name" data-i18n="create.world_name_label">Nombre del mundo</label>
+                        <input id="create-world-name" type="text" placeholder="world" value="world" autocomplete="off" />
+                        <p class="hint field-hint-sm" data-i18n="create.world_name_hint">Nombre del mundo (level-name) en el juego.</p>
+                    </div>
+                    <div class="field-group checkbox-group-wrapper create-hardcore-card">
+                        <div class="create-hardcore-text">
+                            <span class="create-hardcore-title" data-i18n="create.hardcore_title">Extremo</span>
+                            <span class="create-hardcore-desc" data-i18n="create.hardcore_desc">No puedes reaparecer si mueres. ¡Buena suerte! ¡La vas a necesitar!</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <input type="checkbox" id="create-hardcore" class="hardcore-switch" />
+                        </div>
+                    </div>
                 </div>
-                <div class="create-vertical-container">
-                    <!-- TOP PANEL: Nombre de servidor y Vista previa (60%) -->
-                    <div class="create-basic-panel" style="margin: 0; padding: 8px 0;">
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
-                            <div class="field-group">
-                                <label for="server-name"><span data-i18n="create.server_name_label">Nombre del servidor</span> <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
-                                <input id="server-name" type="text" placeholder="Ejemplo: survival-amigos" data-i18n-ph="create.server_name_ph" autocomplete="off" />
-                                <p class="hint" style="margin-top: 4px; font-size: 0.8rem;" data-i18n="create.folder_name_hint">Se usará para el nombre de la carpeta.</p>
-                            </div>
-                            <div class="field-group">
-                                <label for="create-world-name" data-i18n="create.world_name_label">Nombre del mundo</label>
-                                <input id="create-world-name" type="text" placeholder="world" value="world" autocomplete="off" />
-                                <p class="hint" style="margin-top: 4px; font-size: 0.8rem;" data-i18n="create.world_name_hint">Nombre del mundo (level-name) en el juego.</p>
-                            </div>
-                            <div class="field-group checkbox-group-wrapper" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); border: 2px solid #555; padding: 12px 16px; margin-top: 16px; box-sizing: border-box; width: 100%;">
-                                <div style="display: flex; flex-direction: column; gap: 4px; max-width: 80%;">
-                                    <span style="font-family: var(--font-title); font-size: 1.3rem; color: var(--text-primary); text-transform: uppercase;" data-i18n="create.hardcore_title">Extremo</span>
-                                    <span style="font-family: var(--font-body); font-size: 0.9rem; color: var(--text-secondary);" data-i18n="create.hardcore_desc">No puedes reaparecer si mueres. ¡Buena suerte! ¡La vas a necesitar!</span>
+                
+                <div class="create-preview-wrapper">
+                    <div id="create-world-preview" class="world-preview-thumbnail"></div>
+                </div>
+            </div>
+
+            <!-- BOTTOM PANEL: Paneles de configuración -->
+            <div class="create-tabs">
+                <button type="button" id="btn-tab-create-game" class="create-tab-btn active" data-i18n="create.tab_game">Partida</button>
+                <button type="button" id="btn-tab-create-server" class="create-tab-btn" data-i18n="create.tab_server">Servidor</button>
+                <button type="button" id="btn-tab-create-modpacks" class="create-tab-btn" data-i18n="create.tab_modpacks">Modpacks</button>
+            </div>
+            <div class="create-config-panel panel-hollow">
+                <!-- Tab Partida (Game Content) -->
+                <div id="tab-create-game-content">
+                    <div class="grid-form two-cols">
+                        <div class="col-left">
+                            <div class="field-group" style="margin-bottom: 12px;">
+                                <label for="create-max-players" data-i18n="create.max_players_label">Máximo de jugadores</label>
+                                <div class="mc-stepper">
+                                    <button type="button" class="mc-btn-primary btn-small mc-stepper-btn" id="btn-create-max-players-dec">-</button>
+                                    <input id="create-max-players" class="mc-stepper-input" type="number" min="1" step="1" value="20" />
+                                    <button type="button" class="mc-btn-primary btn-small mc-stepper-btn" id="btn-create-max-players-inc">+</button>
                                 </div>
-                                <div style="display: flex; align-items: center;">
-                                    <input type="checkbox" id="create-hardcore" class="hardcore-switch" />
-                                </div>
+                            </div>
+                            <div class="field-group full-width checkbox-group-wrapper" style="display: flex; flex-direction: column; gap: 12px;">
+                                <label style="margin:0;">
+                                    <input type="checkbox" id="create-pvp" checked />
+                                    <span data-i18n="create.pvp_label">PVP</span>
+                                </label>
+                                <label style="margin:0;">
+                                    <input type="checkbox" id="create-allow-flight" />
+                                    <span data-i18n="create.flight_label">Volar</span>
+                                </label>
                             </div>
                         </div>
-                        
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <div id="create-world-preview" class="world-preview-thumbnail" style="background-image: url('assets/images/world_preview.png'); width: 480px; height: 270px; margin: 12px 40px;">
+
+                        <div class="col-right flex-2">
+                            <div class="field-group">
+                                <label data-i18n="create.gamemode_label">Modo de juego</label>
+                                <div id="btn-create-gamemode-cycle" class="mc-btn-group" data-value="survival">
+                                    <button type="button" class="mc-btn-group-item active" data-value="survival" data-i18n="create.gamemode_survival">Supervivencia</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="creative" data-i18n="create.gamemode_creative">Creativo</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="adventure" data-i18n="create.gamemode_adventure">Aventura</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="spectator" data-i18n="create.gamemode_spectator">Espectador</button>
+                                </div>
+                                <div id="create-gamemode-desc" class="mc-description" style="margin-top: 8px;">
+                                    Consigue recursos, fabrica herramientas...
+                                </div>
+                            </div>
+
+                            <div class="field-group" style="margin-top: 12px;">
+                                <label data-i18n="create.difficulty_label">Dificultad</label>
+                                <div id="btn-create-difficulty-cycle" class="mc-btn-group" data-value="normal">
+                                    <button type="button" class="mc-btn-group-item" data-value="peaceful" data-i18n="create.diff_peaceful">Pacífico</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="easy" data-i18n="create.diff_easy">Fácil</button>
+                                    <button type="button" class="mc-btn-group-item active" data-value="normal" data-i18n="create.diff_normal">Normal</button>
+                                    <button type="button" class="mc-btn-group-item" data-value="hard" data-i18n="create.diff_hard">Difícil</button>
+                                </div>
+                                <div id="create-difficulty-desc" class="mc-description" style="margin-top: 8px;">
+                                    Aparecen monstruos. Daño estándar.
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- BOTTOM PANEL: Paneles de configuración -->
-                    <div class="create-tabs" style="margin-bottom: 0;">
-                        <button type="button" id="btn-tab-create-game" class="create-tab-btn active" data-i18n="create.tab_game">Partida</button>
-                        <button type="button" id="btn-tab-create-server" class="create-tab-btn" data-i18n="create.tab_server">Servidor</button>
-                        <button type="button" id="btn-tab-create-modpacks" class="create-tab-btn" data-i18n="create.tab_modpacks">Modpacks</button>
+                <!-- Tab Servidor (Server Content) -->
+                <div id="tab-create-server-content" hidden>
+                    <div class="grid-form two-cols">
+                        <div class="col-left">
+                            <div class="field-group full-width">
+                                <label data-i18n="create.software_label">Software (.jar)</label>
+                                <!-- Inputs radio ocultos para preservar la compatibilidad con el JS actual -->
+                                <div style="display: none;">
+                                    <input type="radio" name="jar-source" value="local">
+                                    <input type="radio" name="jar-source" value="download" checked>
+                                </div>
+                                <!-- Grupo de botones visuales -->
+                                <div id="group-jar-source" class="mc-btn-group" data-value="download" style="margin-bottom: 8px;">
+                                    <button type="button" class="mc-btn-group-item" data-value="local" data-i18n="create.source_local">Archivo local</button>
+                                    <button type="button" class="mc-btn-group-item active" data-value="download" data-i18n="create.source_download">Descargar automáticamente</button>
+                                </div>
+                            </div>
+
+                            <div class="field-group full-width" id="section-jar-local" hidden>
+                                <label for="server-jar-path"><span data-i18n="create.select_jar_label">Seleccionar archivo (.jar)</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
+                                <div class="row responsive-row">
+                                    <input id="server-jar-path" type="text" placeholder="Aún no has seleccionado un archivo .jar" data-i18n-ph="create.no_jar_selected" readonly />
+                                    <button id="btn-select-server-jar" type="button" class="mc-btn-primary" data-i18n="create.btn_select_jar">Seleccionar .jar</button>
+                                </div>
+                            </div>
+
+                            <div class="field-group full-width" id="section-jar-download">
+                                <div style="margin-bottom: 12px;">
+                                    <label for="btn-create-software-cycle" data-i18n="create.engine_label">Motor</label>
+                                    <div id="btn-create-software-cycle" class="mc-btn-group" style="display: flex; flex-wrap: wrap;" data-value="vanilla">
+                                        <button type="button" class="mc-btn-group-item active" data-value="vanilla">Vanilla</button>
+                                        <button type="button" class="mc-btn-group-item" data-value="paper">PaperMC</button>
+                                        <button type="button" class="mc-btn-group-item" data-value="purpur">Purpur</button>
+                                        <button type="button" class="mc-btn-group-item" data-value="fabric">Fabric</button>
+                                        <button type="button" class="mc-btn-group-item" data-value="forge">Forge</button>
+                                        <button type="button" class="mc-btn-group-item" data-value="neoforge">NeoForge</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="download-software-version"><span data-i18n="create.version_label">Versión</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
+                                    <select id="download-software-version" class="mc-select" style="width: 100%;">
+                                        <option value="" data-i18n="create.loading_versions">Cargando versiones...</option>
+                                    </select>
+                                </div>
+                                <p id="download-status-hint" class="hint" style="margin-top: 8px;"></p>
+                            </div>
+
+                            <div class="field-group full-width" style="margin-top: 12px;">
+                                <label><span data-i18n="create.java_version_label">Versión de Java</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
+                                <select id="java-version" style="display: none;"></select>
+                                <button type="button" id="btn-create-java-cycle" class="mc-cycle-btn" style="width: 100%;">Java: Cargando...</button>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="field-group full-width">
+                                <label for="server-parent-dir"><span data-i18n="create.base_dir_label">Directorio base</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
+                                <div class="row responsive-row">
+                                    <input id="server-parent-dir" type="text" placeholder="Selecciona la ruta donde se guardará" data-i18n-ph="create.select_folder_ph" readonly />
+                                    <button id="btn-select-server-parent-dir" type="button" class="mc-btn-primary" data-i18n="create.btn_select_dir">Seleccionar carpeta</button>
+                                </div>
+                            </div>
+
+                            <div class="field-group" style="margin-top: 12px;">
+                                <label for="memory-gb"><span data-i18n="create.ram_label">RAM asignada (GB)</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
+                                <div class="mc-stepper">
+                                    <button type="button" class="mc-btn-primary btn-small mc-stepper-btn" id="btn-memory-gb-dec">-</button>
+                                    <input id="memory-gb" class="mc-stepper-input" type="number" min="1" step="1" value="4" />
+                                    <button type="button" class="mc-btn-primary btn-small mc-stepper-btn" id="btn-memory-gb-inc">+</button>
+                                </div>
+                            </div>
+
+                            <div class="field-group full-width checkbox-group-wrapper" style="margin-top: 12px;">
+                                <label style="margin:0;">
+                                    <input type="checkbox" id="create-online-mode" checked />
+                                    <span data-i18n="create.online_mode_label">Online (Premium)</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="create-config-panel panel-hollow">
-                        <!-- Tab Partida (Game Content) -->
-                        <div id="tab-create-game-content">
-                            <div class="grid-form two-cols">
-                                <div class="col-left">
-                                    <div class="field-group" style="margin-bottom: 12px;">
-                                        <label for="create-max-players" data-i18n="create.max_players_label">Máximo de jugadores</label>
-                                        <div style="display: flex; align-items: center; gap: 4px;">
-                                            <button type="button" class="mc-btn-primary btn-small" id="btn-create-max-players-dec" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">-</button>
-                                            <input id="create-max-players" type="number" min="1" step="1" value="20" style="width: 100%; text-align: center; margin: 0; padding: 6px;" />
-                                            <button type="button" class="mc-btn-primary btn-small" id="btn-create-max-players-inc" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">+</button>
-                                        </div>
-                                    </div>
-                                    <div class="field-group full-width checkbox-group-wrapper" style="display: flex; flex-direction: column; gap: 12px;">
-                                        <label style="margin:0;">
-                                            <input type="checkbox" id="create-pvp" checked />
-                                            <span data-i18n="create.pvp_label">PVP</span>
-                                        </label>
-                                        <label style="margin:0;">
-                                            <input type="checkbox" id="create-allow-flight" />
-                                            <span data-i18n="create.flight_label">Volar</span>
-                                        </label>
-                                    </div>
-                                </div>
+                </div>
 
-                                <div class="col-right flex-2">
-                                    <div class="field-group">
-                                        <label data-i18n="create.gamemode_label">Modo de juego</label>
-                                        <div id="btn-create-gamemode-cycle" class="mc-btn-group" data-value="survival">
-                                            <button type="button" class="mc-btn-group-item active" data-value="survival" data-i18n="create.gamemode_survival">Supervivencia</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="creative" data-i18n="create.gamemode_creative">Creativo</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="adventure" data-i18n="create.gamemode_adventure">Aventura</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="spectator" data-i18n="create.gamemode_spectator">Espectador</button>
-                                        </div>
-                                        <div id="create-gamemode-desc" class="mc-description" style="margin-top: 8px;">
-                                            Consigue recursos, fabrica herramientas...
-                                        </div>
-                                    </div>
-
-                                    <div class="field-group" style="margin-top: 12px;">
-                                        <label data-i18n="create.difficulty_label">Dificultad</label>
-                                        <div id="btn-create-difficulty-cycle" class="mc-btn-group" data-value="normal">
-                                            <button type="button" class="mc-btn-group-item" data-value="peaceful" data-i18n="create.diff_peaceful">Pacífico</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="easy" data-i18n="create.diff_easy">Fácil</button>
-                                            <button type="button" class="mc-btn-group-item active" data-value="normal" data-i18n="create.diff_normal">Normal</button>
-                                            <button type="button" class="mc-btn-group-item" data-value="hard" data-i18n="create.diff_hard">Difícil</button>
-                                        </div>
-                                        <div id="create-difficulty-desc" class="mc-description" style="margin-top: 8px;">
-                                            Aparecen monstruos. Daño estándar.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tab Servidor (Server Content) -->
-                        <div id="tab-create-server-content" hidden>
-                            <div class="grid-form two-cols">
-                                <div class="col-left">
-                                    <div class="field-group full-width">
-                                        <label data-i18n="create.software_label">Software (.jar)</label>
-                                        <!-- Inputs radio ocultos para preservar la compatibilidad con el JS actual -->
-                                        <div style="display: none;">
-                                            <input type="radio" name="jar-source" value="local">
-                                            <input type="radio" name="jar-source" value="download" checked>
-                                        </div>
-                                        <!-- Grupo de botones visuales -->
-                                        <div id="group-jar-source" class="mc-btn-group" data-value="download" style="margin-bottom: 8px;">
-                                            <button type="button" class="mc-btn-group-item" data-value="local" data-i18n="create.source_local">Archivo local</button>
-                                            <button type="button" class="mc-btn-group-item active" data-value="download" data-i18n="create.source_download">Descargar automáticamente</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="field-group full-width" id="section-jar-local" hidden>
-                                        <label for="server-jar-path"><span data-i18n="create.select_jar_label">Seleccionar archivo (.jar)</span> <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
-                                        <div class="row responsive-row">
-                                            <input id="server-jar-path" type="text" placeholder="Aún no has seleccionado un archivo .jar" data-i18n-ph="create.no_jar_selected" readonly />
-                                            <button id="btn-select-server-jar" type="button" class="mc-btn-primary" data-i18n="create.btn_select_jar">Seleccionar .jar</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="field-group full-width" id="section-jar-download">
-                                        <div style="margin-bottom: 12px;">
-                                            <label for="btn-create-software-cycle" data-i18n="create.engine_label">Motor</label>
-                                            <div id="btn-create-software-cycle" class="mc-btn-group" style="display: flex; flex-wrap: wrap;" data-value="vanilla">
-                                                <button type="button" class="mc-btn-group-item active" data-value="vanilla">Vanilla</button>
-                                                <button type="button" class="mc-btn-group-item" data-value="paper">PaperMC</button>
-                                                <button type="button" class="mc-btn-group-item" data-value="purpur">Purpur</button>
-                                                <button type="button" class="mc-btn-group-item" data-value="fabric">Fabric</button>
-                                                <button type="button" class="mc-btn-group-item" data-value="forge">Forge</button>
-                                                <button type="button" class="mc-btn-group-item" data-value="neoforge">NeoForge</button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label for="download-software-version"><span data-i18n="create.version_label">Versión</span> <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
-                                            <select id="download-software-version" class="mc-select" style="width: 100%;">
-                                                <option value="" data-i18n="create.loading_versions">Cargando versiones...</option>
-                                            </select>
-                                        </div>
-                                        <p id="download-status-hint" class="hint" style="margin-top: 8px;"></p>
-                                    </div>
-
-                                    <div class="field-group full-width" style="margin-top: 12px;">
-                                        <label><span data-i18n="create.java_version_label">Versión de Java</span> <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
-                                        <select id="java-version" style="display: none;"></select>
-                                        <button type="button" id="btn-create-java-cycle" class="mc-cycle-btn" style="width: 100%;">Java: Cargando...</button>
-                                    </div>
-                                </div>
-
-                                <div class="col-right">
-                                    <div class="field-group full-width">
-                                        <label for="server-parent-dir"><span data-i18n="create.base_dir_label">Directorio base</span> <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
-                                        <div class="row responsive-row">
-                                            <input id="server-parent-dir" type="text" placeholder="Selecciona la ruta donde se guardará" data-i18n-ph="create.select_folder_ph" readonly />
-                                            <button id="btn-select-server-parent-dir" type="button" class="mc-btn-primary" data-i18n="create.btn_select_dir">Seleccionar carpeta</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="field-group" style="margin-top: 12px;">
-                                        <label for="memory-gb"><span data-i18n="create.ram_label">RAM asignada (GB)</span> <span style="color: var(--error); font-weight: bold;" title="Campo obligatorio">*</span></label>
-                                        <div style="display: flex; align-items: center; gap: 4px;">
-                                            <button type="button" class="mc-btn-primary btn-small" id="btn-memory-gb-dec" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">-</button>
-                                            <input id="memory-gb" type="number" min="1" step="1" value="4" style="width: 100%; text-align: center; margin: 0; padding: 6px;" />
-                                            <button type="button" class="mc-btn-primary btn-small" id="btn-memory-gb-inc" style="margin: 0; padding: 6px 12px; flex-shrink: 0; font-family: monospace;">+</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="field-group full-width checkbox-group-wrapper" style="margin-top: 12px;">
-                                        <label style="margin:0;">
-                                            <input type="checkbox" id="create-online-mode" checked />
-                                            <span data-i18n="create.online_mode_label">Online (Premium)</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                                     <!-- Tab Modpacks (Game Content) -->
+                <!-- Tab Modpacks (Game Content) -->
                 <div id="tab-create-modpacks-content" hidden>
                     <!-- Estado A: Exploración -->
                     <div id="state-modpack-explore" class="grid-form two-cols">
@@ -288,10 +288,10 @@
             </div>
         </div>
 
-                <div class="row action-row top-space" style="justify-content: flex-end; margin-top: 16px; width: 100%;">
-                    <button id="btn-create-server" type="button" class="mc-btn-primary" style="padding: 10px 24px;" data-i18n="create.btn_create_server">
-                        Crear servidor
-                    </button>
-                </div>
-            </div>
-        </section>
+        <div class="row action-row top-space create-action-row">
+            <button id="btn-create-server" type="button" class="mc-btn-primary create-action-btn" data-i18n="create.btn_create_server">
+                Crear servidor
+            </button>
+        </div>
+    </div>
+</section>

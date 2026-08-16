@@ -15,7 +15,7 @@ async function loadInitialState() {
   applySnapshot(snapshot);
 
   navigateTo("home");
-  showFeedback("Selecciona una opción para comenzar.", "info");
+  showFeedback(t("header.initial_feedback"), "info");
 }
 async function loadViews() {
   const container = document.getElementById("app-container");
@@ -51,6 +51,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   initTheme();
   await loadViews();
   initDom();
+  
+  // Configurar idioma y traducir toda la interfaz cargada de inmediato
+  setLanguage(getLanguage());
+  translateDOM();
+
   initMetrics();
   initAudio();
   initOverscrollGlow();
@@ -59,10 +64,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   try {
     await registerTauriEvents();
     await loadInitialState();
-    
-    // Configurar idioma y traducir la UI
-    setLanguage(getLanguage());
-    translateDOM();
     
     appendLog("system", t("terminal.app_ready"));
   } catch (error) {

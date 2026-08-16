@@ -1,17 +1,18 @@
 import { invoke } from "../core/api.js";
 import { els } from "../core/dom.js";
 import { showFeedback, requestConfirm } from "../utils/utils.js";
+import { t } from "../i18n/i18n.js";
 
 export async function loadWorlds() {
   if (!els.listWorlds) return;
   try {
-    els.listWorlds.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Cargando mundos...</p>';
+    els.listWorlds.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">${t("worlds.loading")}</p>`;
     const mundos = await invoke("listar_mundos");
     const mundoActivo = await invoke("obtener_mundo_activo");
 
     els.listWorlds.innerHTML = "";
     if (!mundos || mundos.length === 0) {
-      els.listWorlds.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No se encontraron mundos.</p>';
+      els.listWorlds.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">${t("worlds.no_worlds")}</p>`;
       return;
     }
 
@@ -30,18 +31,18 @@ export async function loadWorlds() {
       if (mundo === mundoActivo) {
         const badge = document.createElement("span");
         badge.style = "font-size: 0.8rem; padding: 4px 8px; background: var(--primary); color: #fff; border-radius: 4px; font-weight: bold;";
-        badge.textContent = "ACTIVO";
+        badge.textContent = t("common.active");
         row.appendChild(badge);
       } else {
         const btnActive = document.createElement("button");
         btnActive.className = "mc-btn-secondary btn-small";
         btnActive.style = "padding: 4px 12px; font-size: 0.85rem;";
-        btnActive.textContent = "Hacer Activo";
+        btnActive.textContent = t("worlds.make_active");
         btnActive.onclick = () => {
-          requestConfirm("Cambiar Mundo Activo", `¿Estás seguro de que quieres establecer "${mundo}" como el mundo activo? Requiere reiniciar el servidor.`, async () => {
+          requestConfirm(t("worlds.confirm_switch_title"), t("worlds.confirm_switch_msg", { name: mundo }), async () => {
             try {
               await invoke("cambiar_mundo_activo", { mundo });
-              showFeedback(`El mundo "${mundo}" ahora es el activo.`, "success");
+              showFeedback(t("worlds.switched_feedback", { name: mundo }), "success");
               loadWorlds();
             } catch (e) {
               showFeedback(`Error: ${e}`, "error");
@@ -53,9 +54,9 @@ export async function loadWorlds() {
         const btnRename = document.createElement("button");
         btnRename.className = "mc-btn-secondary btn-small";
         btnRename.style = "padding: 4px 12px; font-size: 0.85rem;";
-        btnRename.textContent = "Renombrar";
+        btnRename.textContent = t("worlds.rename");
         btnRename.onclick = () => {
-          const newName = window.prompt("Introduce el nuevo nombre para el mundo:", mundo);
+          const newName = window.prompt(t("worlds.rename_prompt"), mundo);
           if (newName && newName.trim() !== "" && newName !== mundo) {
             invoke("renombrar_mundo", { oldName: mundo, newName: newName.trim() }).then(() => {
               showFeedback(`El mundo "${mundo}" fue renombrado a "${newName.trim()}".`, "success");

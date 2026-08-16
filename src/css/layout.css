@@ -127,7 +127,7 @@ dialog.panel:not([open]) {
 
 .row {
     display: flex;
-    gap: 12px;
+    gap: 6px;
 }
 .action-row {
     margin-top: auto; /* Empuja las acciones al fondo */
