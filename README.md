@@ -1,9 +1,5 @@
 <div align="center">
 
-![Lodestone Banner](docs/assets/banner.jpg)
-
-<br/>
-
 <img src="docs/assets/icon.png" width="96" height="96" alt="Lodestone Icon" />
 
 # 🧭 Lodestone
