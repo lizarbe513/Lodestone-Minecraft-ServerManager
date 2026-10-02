@@ -2,6 +2,7 @@ import { invoke } from "../core/api.js";
 import { els } from "../core/dom.js";
 import { showFeedback, requestConfirm } from "../utils/utils.js";
 import { appState } from "../core/state.js";
+import { t } from "../i18n/i18n.js";
 
 // Estado local
 export let activeAdminTab = "backups"; // "backups" | "tasks"
@@ -23,20 +24,20 @@ function formatBytes(bytes) {
 
 export async function loadBackupsList() {
   if (!els.listBackups) return;
-  els.listBackups.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Cargando copias de seguridad...</p>';
+  els.listBackups.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">${t("backups.loading_backups")}</p>`;
 
   try {
     const list = await invoke("listar_backups");
     els.listBackups.innerHTML = "";
 
     if (list.length === 0) {
-      els.listBackups.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No hay copias de seguridad disponibles.</p>';
+      els.listBackups.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">${t("backups.no_backups")}</p>`;
       return;
     }
 
     list.forEach(backup => {
       const container = document.createElement("div");
-      container.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; gap: 12px;";
+      container.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(0,0,0,0.3); border: 2px solid #000; border-radius: 0; gap: 12px; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.05);";
 
       const info = document.createElement("div");
       info.style = "display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;";
@@ -49,7 +50,7 @@ export async function loadBackupsList() {
       details.style = "font-size: 0.8rem; color: var(--text-secondary);";
       
       const dateStr = new Date(backup.timestamp * 1000).toLocaleString();
-      details.textContent = `${dateStr} | Tamaño: ${formatBytes(backup.size_bytes)}`;
+      details.textContent = `${dateStr} | ${t("backups.size_label", { size: formatBytes(backup.size_bytes) })}`;
 
       info.appendChild(name);
       info.appendChild(details);
@@ -59,25 +60,28 @@ export async function loadBackupsList() {
 
       // Restaurar
       const btnRestore = document.createElement("button");
-      btnRestore.style = "padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;";
-      btnRestore.textContent = "Restaurar";
       btnRestore.className = "mc-btn-secondary btn-small";
+      btnRestore.textContent = t("backups.btn_restore");
       btnRestore.onclick = () => {
         if (appState.status === "starting" || appState.status === "running") {
-          showFeedback("No puedes restaurar una copia con el servidor encendido.", "error");
+          showFeedback(t("backups.restore_busy_error"), "error");
           return;
         }
 
         requestConfirm(
-          "¿Restaurar copia de seguridad?",
-          "¡ADVERTENCIA! Al restaurar, se sobrescribirán los archivos del servidor con los de esta copia. Asegúrate de tener apagado el servidor.",
-          async () => {
-            showFeedback("Restaurando copia de seguridad... Por favor espera.", "info");
-            try {
-              await invoke("restaurar_backup", { backupName: backup.filename });
-              showFeedback("Servidor restaurado con éxito.", "success");
-            } catch (err) {
-              showFeedback(`Error al restaurar: ${err}`, "error");
+          t("backups.restore_confirm_title"),
+          t("backups.restore_confirm_msg"),
+          {
+            type: "danger",
+            acceptText: t("backups.btn_restore"),
+            action: async () => {
+              showFeedback(t("backups.restoring"), "info");
+              try {
+                await invoke("restaurar_backup", { backupName: backup.filename });
+                showFeedback(t("backups.restore_success"), "success");
+              } catch (err) {
+                showFeedback(`Error: ${err}`, "error");
+              }
             }
           }
         );
@@ -85,20 +89,23 @@ export async function loadBackupsList() {
 
       // Eliminar
       const btnDelete = document.createElement("button");
-      btnDelete.style = "padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;";
-      btnDelete.textContent = "Eliminar";
-      btnDelete.className = "mc-btn-warning btn-small";
+      btnDelete.className = "mc-btn-danger btn-small";
+      btnDelete.textContent = t("common.delete");
       btnDelete.onclick = () => {
         requestConfirm(
-          "¿Eliminar copia de seguridad?",
-          "Esta acción eliminará físicamente el archivo del disco y no se puede deshacer.",
-          async () => {
-            try {
-              await invoke("eliminar_backup", { backupName: backup.filename });
-              showFeedback("Copia de seguridad eliminada.", "success");
-              loadBackupsList();
-            } catch (err) {
-              showFeedback(`Error al eliminar: ${err}`, "error");
+          t("backups.delete_confirm_title"),
+          t("backups.delete_confirm_msg"),
+          {
+            type: "danger",
+            acceptText: t("common.delete"),
+            action: async () => {
+              try {
+                await invoke("eliminar_backup", { backupName: backup.filename });
+                showFeedback(t("backups.delete_success"), "success");
+                loadBackupsList();
+              } catch (err) {
+                showFeedback(`Error: ${err}`, "error");
+              }
             }
           }
         );
@@ -113,28 +120,32 @@ export async function loadBackupsList() {
       els.listBackups.appendChild(container);
     });
   } catch (err) {
-    els.listBackups.innerHTML = `<p class="hint" style="color: var(--error); text-align: center; margin: 16px 0;">Error: ${err}</p>`;
+    els.listBackups.innerHTML = `<p class="hint" style="color: var(--mc-red); text-align: center; margin: 16px 0;">Error: ${err}</p>`;
   }
 }
 
 export function createFullBackup() {
   requestConfirm(
-    "¿Crear copia de seguridad completa?",
-    "Esta operación comprimirá todo el servidor en un archivo ZIP. Puede tardar unos segundos o minutos dependiendo del tamaño del servidor y consumirá recursos de tu procesador. ¿Deseas continuar?",
-    async () => {
-      showFeedback("Creando copia de seguridad en segundo plano... Puedes seguir usando la app.", "info");
-      
-      // Disable the button to prevent multiple clicks
-      if (els.btnCreateBackup) els.btnCreateBackup.disabled = true;
+    t("backups.create_confirm_title"),
+    t("backups.create_confirm_msg"),
+    {
+      type: "primary",
+      acceptText: t("backups.btn_backup"),
+      action: async () => {
+        showFeedback(t("backups.creating"), "info");
+        
+        // Disable the button to prevent multiple clicks
+        if (els.btnCreateBackup) els.btnCreateBackup.disabled = true;
 
-      try {
-        const filename = await invoke("crear_backup_completo");
-        showFeedback(`Copia de seguridad "${filename}" creada correctamente.`, "success");
-        loadBackupsList();
-      } catch (err) {
-        showFeedback(`Error al crear copia de seguridad: ${err}`, "error");
-      } finally {
-        if (els.btnCreateBackup) els.btnCreateBackup.disabled = false;
+        try {
+          const filename = await invoke("crear_backup_completo");
+          showFeedback(t("backups.create_success", { name: filename }), "success");
+          loadBackupsList();
+        } catch (err) {
+          showFeedback(`Error: ${err}`, "error");
+        } finally {
+          if (els.btnCreateBackup) els.btnCreateBackup.disabled = false;
+        }
       }
     }
   );
@@ -146,7 +157,7 @@ export function createFullBackup() {
 
 export async function loadTasksList() {
   if (!els.listTasks) return;
-  els.listTasks.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">Cargando tareas...</p>';
+  els.listTasks.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">${t("common.loading")}</p>`;
 
   try {
     const rawContent = await invoke("leer_archivo_servidor", { archivo: "scheduler.json" });
@@ -159,13 +170,13 @@ export async function loadTasksList() {
     els.listTasks.innerHTML = "";
 
     if (configuredTasks.length === 0) {
-      els.listTasks.innerHTML = '<p class="hint" style="text-align: center; margin: 16px 0;">No hay tareas programadas.</p>';
+      els.listTasks.innerHTML = `<p class="hint" style="text-align: center; margin: 16px 0;">${t("backups.no_tasks")}</p>`;
       return;
     }
 
     configuredTasks.forEach((task, index) => {
       const container = document.createElement("div");
-      container.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; gap: 12px;";
+      container.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(0,0,0,0.3); border: 2px solid #000; border-radius: 0; gap: 12px; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.05);";
 
       const info = document.createElement("div");
       info.style = "display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;";
@@ -174,9 +185,9 @@ export async function loadTasksList() {
       title.style = "font-size: 0.95rem; color: #fff;";
 
       let typeLabel = "";
-      if (task.type === "backup") typeLabel = "Copia de Seguridad Completa";
-      else if (task.type === "restart") typeLabel = "Reinicio de Servidor";
-      else if (task.type === "command") typeLabel = `Consola: "${task.command_text}"`;
+      if (task.type === "backup") typeLabel = t("tasks.type_backup");
+      else if (task.type === "restart") typeLabel = t("tasks.type_restart");
+      else if (task.type === "command") typeLabel = `${t("tasks.type_command")}: "${task.command_text}"`;
 
       title.textContent = typeLabel;
 
@@ -184,30 +195,33 @@ export async function loadTasksList() {
       details.style = "font-size: 0.8rem; color: var(--text-secondary);";
 
       let triggerLabel = "";
-      if (task.trigger === "start") triggerLabel = "Al iniciar el servidor";
-      else if (task.trigger === "interval") triggerLabel = `Cada ${task.interval_minutes} minutos`;
-      else if (task.trigger === "daily") triggerLabel = `A las ${task.daily_time} diariamente`;
+      if (task.trigger === "start") triggerLabel = t("tasks.trigger_start");
+      else if (task.trigger === "interval") triggerLabel = t("tasks.trigger_interval_desc", { min: task.interval_minutes });
+      else if (task.trigger === "daily") triggerLabel = t("tasks.trigger_daily_desc", { time: task.daily_time });
 
-      const lastExec = task.last_executed ? new Date(task.last_executed).toLocaleString() : "Nunca";
-      details.textContent = `Disparador: ${triggerLabel} | Última ejecución: ${lastExec}`;
+      const lastExec = task.last_executed ? new Date(task.last_executed).toLocaleString() : t("tasks.never_executed");
+      details.textContent = `${t("tasks.trigger_label")}: ${triggerLabel} | ${t("tasks.last_exec", { date: lastExec })}`;
 
       info.appendChild(title);
       info.appendChild(details);
 
       // Eliminar tarea
       const btnDelete = document.createElement("button");
-      btnDelete.style = "padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;";
-      btnDelete.textContent = "Eliminar";
-      btnDelete.className = "mc-btn-warning btn-small";
+      btnDelete.className = "mc-btn-danger btn-small";
+      btnDelete.textContent = t("common.delete");
       btnDelete.onclick = () => {
         requestConfirm(
-          "¿Eliminar tarea programada?",
-          "Esta tarea dejará de ejecutarse automáticamente.",
-          async () => {
-            configuredTasks.splice(index, 1);
-            await saveTasks();
-            showFeedback("Tarea programada eliminada.", "success");
-            loadTasksList();
+          t("tasks.delete_title"),
+          t("tasks.delete_msg"),
+          {
+            type: "danger",
+            acceptText: t("common.delete"),
+            action: async () => {
+              configuredTasks.splice(index, 1);
+              await saveTasks();
+              showFeedback(t("tasks.deleted_feedback"), "success");
+              loadTasksList();
+            }
           }
         );
       };
@@ -217,7 +231,7 @@ export async function loadTasksList() {
       els.listTasks.appendChild(container);
     });
   } catch (err) {
-    els.listTasks.innerHTML = `<p class="hint" style="color: var(--error); text-align: center; margin: 16px 0;">Error al leer tareas: ${err}</p>`;
+    els.listTasks.innerHTML = `<p class="hint" style="color: var(--mc-red); text-align: center; margin: 16px 0;">Error: ${err}</p>`;
   }
 }
 

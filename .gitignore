@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Minecraft server runtime & test artifacts
+*.jar
+*.mrpack
+.minecraft-server-gui-session.json
+servers/
+backups/
+server-test/
+eula.txt
+start.sh
+start.bat
+server.properties
+
+# Environment & local config
+.env
+.env.*

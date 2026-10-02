@@ -58,6 +58,22 @@
     box-shadow: inset -4px -4px 0px rgba(0,0,0,0.5), inset 4px 4px 0px rgba(255,255,255,0.15);
 }
 
+dialog.panel {
+    background: var(--bg-slate);
+    border: 2px solid #000;
+    border-radius: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset -4px -4px 0px rgba(0,0,0,0.5), inset 4px 4px 0px rgba(255,255,255,0.15), 0 8px 32px rgba(0, 0, 0, 0.7);
+    color: var(--text-primary);
+}
+
+dialog.panel::backdrop {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+}
+
 dialog.panel:not([open]) {
     display: none !important;
 }
@@ -128,6 +144,25 @@ dialog.panel:not([open]) {
 .row {
     display: flex;
     gap: 6px;
+    align-items: flex-start;
+}
+
+.row > button {
+    height: var(--mc-control-height, 44px);
+    font-size: 1rem;
+    padding: 0 16px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.row > input[type="text"],
+.row > input[type="number"] {
+    flex: 1;
+    min-width: 0;
 }
 .action-row {
     margin-top: auto; /* Empuja las acciones al fondo */

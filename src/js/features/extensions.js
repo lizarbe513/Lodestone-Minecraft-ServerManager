@@ -315,16 +315,20 @@ function updateInstalledDetailPanel(ext) {
     els.btnExtDeleteSelected.disabled = false;
     els.btnExtDeleteSelected.onclick = () => {
       requestConfirm(
-        "Eliminar Complemento",
-        `¿Estás seguro de que quieres eliminar el complemento "${ext.name}"?`,
-        async () => {
-          try {
-            showFeedback(`Eliminando "${ext.name}"...`, "info");
-            await invoke("eliminar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
-            showFeedback(`Complemento "${ext.name}" eliminado correctamente.`, "success");
-            loadInstalledExtensions();
-          } catch (err) {
-            showFeedback(`Error al eliminar: ${err}`, "error");
+        t("extensions.delete_confirm_title"),
+        t("extensions.delete_confirm_msg", { name: ext.name }),
+        {
+          type: "danger",
+          acceptText: t("common.delete"),
+          action: async () => {
+            try {
+              showFeedback(t("extensions.deleting_feedback", { name: ext.name }), "info");
+              await invoke("eliminar_extension", { fileName: ext.file_name, extensionType: ext.extension_type });
+              showFeedback(t("extensions.deleted_feedback", { name: ext.name }), "success");
+              loadInstalledExtensions();
+            } catch (err) {
+              showFeedback(`Error: ${err}`, "error");
+            }
           }
         }
       );

@@ -51,9 +51,30 @@
 
 #tab-create-server-content .col-left, #tab-create-modpacks-content .col-left {
     flex: 7;
+    gap: 12px;
 }
 #tab-create-server-content .col-right, #tab-create-modpacks-content .col-right {
     flex: 3;
+    gap: 12px;
+}
+
+#download-status-hint:empty {
+    display: none;
+}
+
+#section-jar-local,
+#section-jar-download {
+    height: 220px;
+    min-height: 220px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#section-jar-local[hidden],
+#section-jar-download[hidden] {
+    display: none !important;
 }
 
 
@@ -612,5 +633,136 @@
     margin-top: 4px;
     font-size: 0.8rem;
 }
+
+/* ==========================================================================
+   Estudio de Personalización (customization.html)
+   ========================================================================== */
+.customization-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.customization-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 4px solid var(--mc-border);
+    padding-bottom: 12px;
+}
+
+.customization-theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.theme-card {
+    background-color: var(--bg-panel);
+    border: 2px solid var(--mc-border);
+    border-bottom: 4px solid #111;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 0 #111;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    box-sizing: border-box;
+    min-height: 165px;
+    border-radius: 0 !important;
+    position: relative;
+    user-select: none;
+}
+
+.theme-card:hover {
+    border-color: var(--mc-gray-hover);
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.theme-card.active {
+    border-color: var(--mc-green);
+    border-bottom-color: var(--mc-green-shadow);
+    box-shadow: inset 0 0 0 2px var(--mc-green), 0 4px 0 #111;
+}
+
+.theme-card-badge {
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    background-color: var(--mc-green);
+    color: #ffffff;
+    border: 1px solid #111;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.theme-card-bar {
+    display: flex;
+    height: 18px;
+    border: 2px solid #111;
+    box-shadow: inset 1px 1px 0 rgba(0,0,0,0.6);
+    margin: 8px 0;
+    border-radius: 0 !important;
+    overflow: hidden;
+}
+
+.customization-card {
+    background: rgba(0, 0, 0, 0.25);
+    border: 2px solid #111;
+    border-top: 2px solid #0a0a0a;
+    border-left: 2px solid #0a0a0a;
+    border-bottom: 2px solid #4a4a4a;
+    border-right: 2px solid #4a4a4a;
+    box-shadow: inset 3px 3px 0px rgba(0, 0, 0, 0.7), inset -2px -2px 0px rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+}
+
+.customization-card-title {
+    margin: 0;
+    color: var(--mc-yellow);
+    font-family: var(--font-title);
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--mc-border);
+    padding-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.preset-color-grid {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.preset-color-btn {
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    padding: 4px 10px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-sizing: border-box;
+    border-radius: 0 !important;
+}
+
+.preset-color-dot {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #111;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
 
 

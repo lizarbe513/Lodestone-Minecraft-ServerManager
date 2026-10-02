@@ -124,7 +124,7 @@
                                 <label for="server-jar-path"><span data-i18n="create.select_jar_label">Seleccionar archivo (.jar)</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
                                 <div class="row responsive-row">
                                     <input id="server-jar-path" type="text" placeholder="Aún no has seleccionado un archivo .jar" data-i18n-ph="create.no_jar_selected" readonly />
-                                    <button id="btn-select-server-jar" type="button" class="mc-btn-primary" data-i18n="create.btn_select_jar">Seleccionar .jar</button>
+                                    <button id="btn-select-server-jar" type="button" class="mc-btn-primary" data-i18n="create.btn_select_jar">Examinar</button>
                                 </div>
                             </div>
 
@@ -146,10 +146,10 @@
                                         <option value="" data-i18n="create.loading_versions">Cargando versiones...</option>
                                     </select>
                                 </div>
-                                <p id="download-status-hint" class="hint" style="margin-top: 8px;"></p>
+                                <p id="download-status-hint" class="hint field-hint-sm"></p>
                             </div>
 
-                            <div class="field-group full-width" style="margin-top: 12px;">
+                            <div class="field-group full-width">
                                 <label><span data-i18n="create.java_version_label">Versión de Java</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
                                 <select id="java-version" style="display: none;"></select>
                                 <button type="button" id="btn-create-java-cycle" class="mc-cycle-btn" style="width: 100%;">Java: Cargando...</button>
@@ -161,11 +161,11 @@
                                 <label for="server-parent-dir"><span data-i18n="create.base_dir_label">Directorio base</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
                                 <div class="row responsive-row">
                                     <input id="server-parent-dir" type="text" placeholder="Selecciona la ruta donde se guardará" data-i18n-ph="create.select_folder_ph" readonly />
-                                    <button id="btn-select-server-parent-dir" type="button" class="mc-btn-primary" data-i18n="create.btn_select_dir">Seleccionar carpeta</button>
+                                    <button id="btn-select-server-parent-dir" type="button" class="mc-btn-primary" data-i18n="create.btn_select_dir">Examinar</button>
                                 </div>
                             </div>
 
-                            <div class="field-group" style="margin-top: 12px;">
+                            <div class="field-group">
                                 <label for="memory-gb"><span data-i18n="create.ram_label">RAM asignada (GB)</span> <span class="required-asterisk" title="Campo obligatorio">*</span></label>
                                 <div class="mc-stepper">
                                     <button type="button" class="mc-btn-primary btn-small mc-stepper-btn" id="btn-memory-gb-dec">-</button>
@@ -174,7 +174,7 @@
                                 </div>
                             </div>
 
-                            <div class="field-group full-width checkbox-group-wrapper" style="margin-top: 12px;">
+                            <div class="field-group full-width checkbox-group-wrapper">
                                 <label style="margin:0;">
                                     <input type="checkbox" id="create-online-mode" checked />
                                     <span data-i18n="create.online_mode_label">Online (Premium)</span>
@@ -218,7 +218,7 @@
                                 <div class="field-group full-width">
                                     <div class="row responsive-row">
                                         <input id="create-modpack-local-path" type="text" placeholder="Aún no has seleccionado un archivo .zip" data-i18n-ph="create.no_zip_selected" readonly style="flex: 1;" />
-                                        <button id="btn-create-modpack-select-local" type="button" class="mc-btn-primary" data-i18n="create.btn_select_zip">Seleccionar .zip</button>
+                                        <button id="btn-create-modpack-select-local" type="button" class="mc-btn-primary" data-i18n="create.btn_select_zip">Examinar</button>
                                     </div>
                                 </div>
                             </div>

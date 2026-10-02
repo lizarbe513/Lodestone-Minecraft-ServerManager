@@ -32,23 +32,34 @@ input[type="checkbox"]:checked {
 /* Stepper numérico con botones +/- */
 .mc-stepper {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 4px;
     width: 100%;
+    height: var(--mc-control-height, 44px);
+    margin-bottom: 4px;
+    box-sizing: border-box;
 }
 
 .mc-stepper-btn {
+    height: var(--mc-control-height, 44px) !important;
     margin: 0 !important;
-    padding: 6px 12px !important;
+    padding: 0 14px !important;
     flex-shrink: 0;
     font-family: monospace !important;
+    font-size: 1.2rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
 }
 
 .mc-stepper-input {
+    height: var(--mc-control-height, 44px) !important;
     width: 100%;
     text-align: center;
     margin: 0 !important;
-    padding: 6px 8px !important;
+    padding: 0 8px !important;
+    box-sizing: border-box !important;
 }
 
 /* Indicadores "|" y "O" de fondo (Bedrock UI) */
@@ -174,42 +185,33 @@ label.switch-label, label[style*="justify-content: space-between"] {
     width: 100%;
 }
 
-input[type="text"], input[type="number"], select:not(.mc-select) {
-    background-color: var(--mc-gray);
-    border: 2px solid #555;
-    border-top-color: #333;
-    border-left-color: #333;
-    border-bottom-color: #777;
-    border-right-color: #777;
-    color: #ffffff;
-    padding: 8px;
-    font-family: var(--font-body);
-    font-size: 1rem;
-}
-
-/* Selectores divertidos estilo botón 3D Bedrock */
+/* Selectores estilo botón 3D Bedrock */
 select.mc-select {
     appearance: none;
     -webkit-appearance: none;
-    /* background-color: #CFCFCF; */
-    /* color: #000000; */
     background-color: var(--mc-gray);
     color: #ffffff;
     font-family: var(--font-title);
     font-size: 1.1rem;
-    padding: 10px 32px 10px 10px;
+    height: var(--mc-control-height, 44px);
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 32px 0 12px;
     border: 2px solid #111;
     border-bottom-width: 4px;
-    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15), inset 2px 0 0 rgba(255, 255, 255, 0.1);
+    border-bottom-color: var(--mc-gray-shadow);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15), inset 2px 0 0 rgba(255, 255, 255, 0.1), 0 4px 0 #111;
+    margin-bottom: 4px;
     cursor: pointer;
     font-weight: normal;
     background-image: url('data:image/svg+xml;utf8,<svg fill="%23fff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
     background-repeat: no-repeat;
-    background-position: right 8px center;
+    background-position: right 10px center;
+    display: block;
+    line-height: normal;
 }
 
 select.mc-select:hover {
-    /* background-color: #dfdfdf; */
     background-color: var(--mc-gray-hover);
 }
 
@@ -222,15 +224,21 @@ input[type="text"], input[type="number"] {
     font-family: var(--font-body);
     width: 100%;
     min-width: 0;
+    height: var(--mc-control-height, 44px);
     background: #111111;
     border: 2px solid var(--mc-border);
     color: var(--mc-white);
-    padding: 10px 14px;
+    padding: 0 12px;
     font-size: 1.1rem;
     border-radius: 0;
+    box-sizing: border-box;
+    margin-bottom: 4px;
     box-shadow: inset 3px 3px 0px rgba(0,0,0,0.7), inset -3px -3px 0px rgba(255,255,255,0.1);
+    display: inline-flex;
+    align-items: center;
 }
-select {
+
+select:not(.mc-select) {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -240,18 +248,22 @@ select {
     background-size: 12px auto;
     font-family: var(--font-body);
     width: 100%;
+    height: var(--mc-control-height, 44px);
+    box-sizing: border-box;
     background-color: var(--mc-gray);
     color: #ffffff;
     border: 2px solid var(--mc-border);
     border-bottom: 4px solid var(--mc-gray-shadow);
-    padding: 10px 32px 10px 14px;
+    padding: 0 32px 0 14px;
     font-size: 1.1rem;
     font-weight: bold;
     border-radius: 0;
     cursor: pointer;
+    margin-bottom: 4px;
     box-shadow: inset 2px 2px 0px rgba(255,255,255,0.2), inset -2px -2px 0px rgba(0,0,0,0.6);
 }
-select option {
+
+select:not(.mc-select) option {
     background-color: var(--mc-gray);
     color: #ffffff;
     font-weight: normal;
@@ -296,4 +308,78 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
     -moz-appearance: textfield;
 }
+
+/* Sliders de Rango / Volumen Estilo Minecraft */
+input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 18px;
+    background: #111111;
+    border: 2px solid #333;
+    border-bottom-color: #555;
+    border-right-color: #555;
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.8);
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border-radius: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 26px;
+    background-color: var(--mc-gray);
+    border: 2px solid #111;
+    border-bottom: 4px solid var(--mc-gray-shadow);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 2px 0 0 rgba(255, 255, 255, 0.15), 0 2px 0 #111;
+    cursor: pointer;
+    border-radius: 0;
+    transition: none;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background-color: var(--mc-gray-hover);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 26px;
+    background-color: var(--mc-gray);
+    border: 2px solid #111;
+    border-bottom: 4px solid var(--mc-gray-shadow);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 2px 0 0 rgba(255, 255, 255, 0.15), 0 2px 0 #111;
+    cursor: pointer;
+    border-radius: 0;
+    transition: none;
+}
+
+/* Selector de Color Personalizado */
+input[type="color"] {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #111;
+    border-bottom: 4px solid #111;
+    box-shadow: 0 4px 0 #111;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    cursor: pointer;
+    background-color: #111;
+    border-radius: 0;
+    box-sizing: border-box;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 3px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: 2px solid #333;
+    border-radius: 0;
+}
+
 

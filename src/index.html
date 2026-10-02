@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Server GUI</title>
+    <title>Lodestone - Minecraft Server Manager</title>
+    <link rel="icon" type="image/png" href="assets/images/lodestone-icon.png">
     <link rel="stylesheet" href="css/fonts.css">
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/themes.css">
@@ -36,10 +37,9 @@
         <header class="hero">
             <div>
                 <p class="eyebrow" data-i18n="header.eyebrow">Panel local</p>
-                <h1 data-i18n="header.title">Minecraft Server GUI</h1>
+                <h1 data-i18n="header.title">Lodestone</h1>
                 <p class="subtitle" data-i18n="header.subtitle">
-                    Crea, abre y administra servidores de Minecraft desde
-                    una interfaz por páginas.
+                    Minecraft Server Manager
                 </p>
             </div>
             <div class="status-card">
@@ -78,17 +78,17 @@
     </dialog>
 
     <dialog id="confirm-dialog" class="panel"
-        style="margin: auto; max-width: 400px; padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
+        style="margin: auto; max-width: 440px; width: 90%;">
         <h3 id="confirm-title" style="margin-top: 0; font-size: 1.2rem; font-weight: 600;" data-i18n="dialog.confirm_action">Confirmar acción</h3>
         <p id="confirm-message" style="margin: 16px 0 24px; color: var(--text-secondary); line-height: 1.5;" data-i18n="dialog.are_you_sure">¿Estás seguro?</p>
-        <div class="row action-row" style="justify-content: flex-end;">
-            <button id="btn-confirm-cancel" class="mc-btn-danger" type="button" data-i18n="common.cancel">Cancelar</button>
+        <div class="row action-row" style="justify-content: flex-end; gap: 8px;">
+            <button id="btn-confirm-cancel" class="mc-btn-secondary" type="button" data-i18n="common.cancel">Cancelar</button>
             <button id="btn-confirm-accept" class="mc-btn-primary" type="button" data-i18n="common.accept">Aceptar</button>
         </div>
     </dialog>
 
     <dialog id="extension-versions-dialog" class="panel"
-        style="margin: auto; max-width: 500px; width: 90%; padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
+        style="margin: auto; max-width: 500px; width: 90%;">
         <h3 id="ext-dialog-title" style="margin-top: 0; font-size: 1.2rem; font-weight: 600; color: #fff;" data-i18n="extensions.select_version_title">Seleccionar Versión</h3>
         <p id="ext-dialog-desc" style="margin: 8px 0 16px; color: var(--text-secondary); font-size: 0.9rem;" data-i18n="extensions.select_version_desc">Selecciona la versión compatible con tu servidor para descargar.</p>
         
@@ -97,14 +97,14 @@
         </div>
         
         <div class="row action-row" style="justify-content: flex-end;">
-            <button id="btn-ext-dialog-close" class="secondary" type="button" data-i18n="common.close">Cerrar</button>
+            <button id="btn-ext-dialog-close" class="mc-btn-secondary" type="button" data-i18n="common.close">Cerrar</button>
         </div>
     </dialog>
 
     <dialog id="extension-preview-dialog" class="panel"
-        style="margin: auto; max-width: 680px; width: 95%; max-height: 85vh; overflow-y: auto; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
+        style="margin: auto; max-width: 680px; width: 95%; max-height: 85vh; overflow-y: auto;">
         <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px;">
-            <img id="ext-preview-icon" src="https://placehold.co/64x64?text=Mc" alt="Extension icon" style="width: 72px; height: 72px; border-radius: 12px; background: rgba(0,0,0,0.2); object-fit: cover; flex-shrink: 0;" />
+            <img id="ext-preview-icon" src="https://placehold.co/64x64?text=Mc" alt="Extension icon" style="width: 72px; height: 72px; border-radius: 0; border: 2px solid #000; background: rgba(0,0,0,0.2); object-fit: cover; flex-shrink: 0;" />
             <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
                 <h3 id="ext-preview-dialog-title" style="margin: 0; font-size: 1.35rem; font-weight: 600; color: #fff;"></h3>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -142,12 +142,12 @@
         </div>
 
         <div class="row action-row" style="justify-content: flex-end;">
-            <button id="btn-ext-preview-close" class="secondary" type="button" data-i18n="common.close">Cerrar</button>
+            <button id="btn-ext-preview-close" class="mc-btn-secondary" type="button" data-i18n="common.close">Cerrar</button>
         </div>
     </dialog>
 
     <dialog id="new-task-dialog" class="panel"
-        style="margin: auto; max-width: 450px; width: 90%; padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);">
+        style="margin: auto; max-width: 450px; width: 90%;">
         <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 600; color: #fff;" data-i18n="tasks.dialog_title">Programar Nueva Tarea</h3>
         
         <div style="display: flex; flex-direction: column; gap: 16px; margin: 16px 0 24px;">
@@ -186,8 +186,8 @@
         </div>
 
         <div class="row action-row" style="justify-content: flex-end; gap: 8px;">
-            <button id="btn-new-task-close" class="secondary" type="button" data-i18n="common.cancel">Cancelar</button>
-            <button id="btn-new-task-save" type="button" data-i18n="tasks.btn_save">Guardar Tarea</button>
+            <button id="btn-new-task-close" class="mc-btn-secondary" type="button" data-i18n="common.cancel">Cancelar</button>
+            <button id="btn-new-task-save" class="mc-btn-primary" type="button" data-i18n="tasks.btn_save">Guardar Tarea</button>
         </div>
     </dialog>
 

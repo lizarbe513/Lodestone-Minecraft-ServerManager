@@ -25,22 +25,25 @@ export function renderThemeCards() {
   
   els.themeCardsContainer.innerHTML = AVAILABLE_THEMES.map(theme => {
     const isActive = theme.id === currentTheme;
+    const activeLabel = (t("status.active") || "ACTIVO").toUpperCase();
+    const selectLabel = (t("common.accept") || "SELECCIONAR").toUpperCase();
+
     return `
-      <div class="minecraft-table theme-card" data-theme-id="${theme.id}" style="width: 230px; min-width: 230px; max-width: 230px; height: 175px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid ${isActive ? 'var(--mc-green)' : 'var(--mc-border)'}; background-color: var(--bg-panel); cursor: pointer; border-radius: 4px; box-sizing: border-box; flex-shrink: 0;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h4 style="margin: 0; color: var(--mc-yellow); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${theme.name}</h4>
-          ${isActive ? `<span class="status-badge" data-status="running" style="padding: 2px 6px; font-size: 0.75rem; flex-shrink: 0;">${t("status.running").toUpperCase()}</span>` : ''}
+      <div class="theme-card ${isActive ? 'active' : ''}" data-theme-id="${theme.id}">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <h4 style="margin: 0; color: var(--mc-yellow); font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-title);">${theme.name}</h4>
+          ${isActive ? `<span class="theme-card-badge">${activeLabel}</span>` : ''}
         </div>
-        <p class="hint" style="margin: 4px 0 0 0; font-size: 0.8rem; height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${theme.description}</p>
+        <p class="hint" style="margin: 6px 0 0 0; font-size: 0.85rem; line-height: 1.35; flex: 1;">${theme.description}</p>
         
-        <div style="display: flex; height: 24px; border: 2px solid #111; border-radius: 4px; overflow: hidden; margin-top: 4px;">
+        <div class="theme-card-bar">
           <div style="flex: 1; background-color: ${theme.previewBg};" title="Fondo"></div>
           <div style="flex: 1; background-color: ${theme.previewAccent};" title="Acento"></div>
           <div style="flex: 1; background-color: ${theme.previewText};" title="Texto"></div>
         </div>
 
-        <button type="button" class="${isActive ? 'mc-btn-primary' : 'mc-btn-secondary'} btn-small" style="width: 100%; margin-top: 6px; padding: 4px 8px; font-size: 0.85rem;">
-          ${isActive ? (t("status.running").toUpperCase()) : (t("common.accept").toUpperCase())}
+        <button type="button" class="${isActive ? 'mc-btn-primary' : 'mc-btn-secondary'} btn-small" style="width: 100%; margin: 0; font-size: 0.95rem;">
+          ${isActive ? activeLabel : selectLabel}
         </button>
       </div>
     `;
@@ -101,6 +104,18 @@ export function initCustomizationEvents() {
       const pct = parseInt(e.target.value);
       setTypingVolume(pct / 100);
       if (els.labelTypingVolume) els.labelTypingVolume.textContent = `${pct}%`;
+      playTypingSound();
+    });
+  }
+
+  if (els.btnTestSfx) {
+    els.btnTestSfx.addEventListener("click", () => {
+      playClickSound();
+    });
+  }
+
+  if (els.inputTestTyping) {
+    els.inputTestTyping.addEventListener("input", () => {
       playTypingSound();
     });
   }

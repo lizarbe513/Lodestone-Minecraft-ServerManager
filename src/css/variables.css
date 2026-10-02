@@ -35,6 +35,9 @@
     
     --font-title: var(--font-pixel);
     --font-body: var(--font-pixel);
+
+    /* Altura vertical estándar para controles y widgets interactivos */
+    --mc-control-height: 44px;
 }
 
 /* Temas preestablecidos */

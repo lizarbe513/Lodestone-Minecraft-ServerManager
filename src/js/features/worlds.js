@@ -18,7 +18,7 @@ export async function loadWorlds() {
 
     for (const mundo of mundos) {
       const div = document.createElement("div");
-      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border-color);";
+      div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(0,0,0,0.3); border: 2px solid #000; border-radius: 0; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.05);";
 
       const nameEl = document.createElement("strong");
       nameEl.style.fontSize = "1rem";
@@ -30,13 +30,12 @@ export async function loadWorlds() {
 
       if (mundo === mundoActivo) {
         const badge = document.createElement("span");
-        badge.style = "font-size: 0.8rem; padding: 4px 8px; background: var(--primary); color: #fff; border-radius: 4px; font-weight: bold;";
+        badge.style = "font-family: var(--font-title); font-size: 0.85rem; padding: 4px 8px; background: var(--mc-green); color: #fff; border: 1px solid #111; text-shadow: 1px 1px 0 rgba(0,0,0,0.8); border-radius: 0; text-transform: uppercase;";
         badge.textContent = t("common.active");
         row.appendChild(badge);
       } else {
         const btnActive = document.createElement("button");
         btnActive.className = "mc-btn-secondary btn-small";
-        btnActive.style = "padding: 4px 12px; font-size: 0.85rem;";
         btnActive.textContent = t("worlds.make_active");
         btnActive.onclick = () => {
           requestConfirm(t("worlds.confirm_switch_title"), t("worlds.confirm_switch_msg", { name: mundo }), async () => {
@@ -53,7 +52,6 @@ export async function loadWorlds() {
 
         const btnRename = document.createElement("button");
         btnRename.className = "mc-btn-secondary btn-small";
-        btnRename.style = "padding: 4px 12px; font-size: 0.85rem;";
         btnRename.textContent = t("worlds.rename");
         btnRename.onclick = () => {
           const newName = window.prompt(t("worlds.rename_prompt"), mundo);
@@ -69,26 +67,32 @@ export async function loadWorlds() {
         row.appendChild(btnRename);
 
         const btnDelete = document.createElement("button");
-        btnDelete.className = "mc-btn-warning btn-small";
-        btnDelete.style = "padding: 4px 12px; font-size: 0.85rem;";
-        btnDelete.textContent = "Eliminar";
+        btnDelete.className = "mc-btn-danger btn-small";
+        btnDelete.textContent = t("common.delete");
         btnDelete.onclick = () => {
-          requestConfirm("Eliminar Mundo", `¿Estás completamente seguro de eliminar permanentemente el mundo "${mundo}"? Esto no se puede deshacer.`, async () => {
-            try {
-              await invoke("borrar_mundo", { mundo });
-              showFeedback(`El mundo "${mundo}" fue eliminado.`, "success");
-              loadWorlds();
-            } catch (e) {
-              showFeedback(`Error: ${e}`, "error");
+          requestConfirm(
+            t("worlds.delete_title"),
+            t("worlds.delete_msg", { name: mundo }),
+            {
+              type: "danger",
+              acceptText: t("common.delete"),
+              action: async () => {
+                try {
+                  await invoke("borrar_mundo", { mundo });
+                  showFeedback(t("worlds.deleted_feedback", { name: mundo }), "success");
+                  loadWorlds();
+                } catch (e) {
+                  showFeedback(`Error: ${e}`, "error");
+                }
+              }
             }
-          });
+          );
         };
         row.appendChild(btnDelete);
       }
 
       const btnBackup = document.createElement("button");
       btnBackup.className = "mc-btn-secondary btn-small";
-      btnBackup.style = "padding: 4px 12px; font-size: 0.85rem;";
       btnBackup.textContent = "Respaldar (.zip)";
       btnBackup.onclick = async () => {
         try {
@@ -103,8 +107,7 @@ export async function loadWorlds() {
 
       const btnOpenDir = document.createElement("button");
       btnOpenDir.className = "mc-btn-secondary btn-small";
-      btnOpenDir.style = "padding: 4px 12px; font-size: 0.85rem;";
-      btnOpenDir.textContent = "Abrir";
+      btnOpenDir.textContent = t("common.open");
       btnOpenDir.onclick = async () => {
         try {
           await invoke("abrir_carpeta_servidor");

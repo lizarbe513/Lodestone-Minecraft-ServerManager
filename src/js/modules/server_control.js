@@ -3,6 +3,7 @@ import { appState, globals } from "../core/state.js";
 import { invoke, open, fetchForgeVersions, fetchNeoForgeVersions } from "../core/api.js";
 import { updateControls, navigateTo, applySnapshot } from "../ui/ui.js";
 import { showFeedback, appendLog, normalizeError, requestConfirm } from "../utils/utils.js";
+import { t } from "../i18n/i18n.js";
 import { startCurrentServer, stopServer, sendCommand, saveServerConfig, acceptEulaAndRestart, loadAndShowEula, openExistingServer, browseServerJar } from "../features/server.js";
 import { parsePropertiesContent, renderPropertiesUI, buildPropertiesPayload } from "../features/properties.js";
 import { loadAllPlayerLists, addItemToList, handleRemoveOp, handleRemoveWhitelist, handleRemoveBannedPlayer, handleRemoveBannedIp } from "../features/players.js";
@@ -12,6 +13,18 @@ import { loadBackupsList, loadTasksList, createFullBackup, addNewTask, startSche
 
 export function initServerControlEvents() {
   initWorldsPage();
+  if (els.confirmDialog) {
+    els.confirmDialog.addEventListener("close", () => {
+      globals.pendingConfirmAction = null;
+    });
+    els.confirmDialog.addEventListener("click", (e) => {
+      if (e.target === els.confirmDialog) {
+        globals.pendingConfirmAction = null;
+        els.confirmDialog.close();
+      }
+    });
+  }
+
   if (els.btnConfirmCancel) {
     els.btnConfirmCancel.addEventListener("click", () => {
       globals.pendingConfirmAction = null;
@@ -21,16 +34,17 @@ export function initServerControlEvents() {
 
   if (els.btnConfirmAccept) {
     els.btnConfirmAccept.addEventListener("click", async () => {
-      if (typeof globals.pendingConfirmAction === "function") {
-        await globals.pendingConfirmAction();
-      } else if (globals.pendingConfirmAction) {
-        await invoke("enviar_comando", { comando: globals.pendingConfirmAction });
+      const action = globals.pendingConfirmAction;
+      globals.pendingConfirmAction = null;
+      els.confirmDialog.close();
+      if (typeof action === "function") {
+        await action();
+      } else if (action) {
+        await invoke("enviar_comando", { comando: action });
         setTimeout(() => {
           loadAllPlayerLists();
         }, 500);
       }
-      globals.pendingConfirmAction = null;
-      els.confirmDialog.close();
     });
   }
 
@@ -267,20 +281,24 @@ export function initServerControlEvents() {
       const server = appState.activeSession;
       if (!server) return;
       requestConfirm(
-        "Borrar Servidor",
-        `¿Estás seguro de que quieres borrar el servidor "${server.server_name}"?\n\nLa carpeta del servidor y todos sus mundos se moverán a la papelera.`,
-        async () => {
-          try {
-            showFeedback("Borrando servidor (moviendo a papelera)...", "info");
-            const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: true });
-            
-            appState.activeSession = null;
-            navigateTo("home");
-            
-            applySnapshot(snapshot);
-            showFeedback("El servidor ha sido movido a la papelera.", "success");
-          } catch (e) {
-            showFeedback(`Error al borrar: ${e}`, "error");
+        t("control.delete_server_title"),
+        t("control.delete_server_msg", { name: server.server_name }),
+        {
+          type: "danger",
+          acceptText: t("common.delete"),
+          action: async () => {
+            try {
+              showFeedback(t("control.deleting_feedback"), "info");
+              const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: true });
+              
+              appState.activeSession = null;
+              navigateTo("home");
+              
+              applySnapshot(snapshot);
+              showFeedback(t("control.deleted_feedback"), "success");
+            } catch (e) {
+              showFeedback(`Error: ${e}`, "error");
+            }
           }
         }
       );

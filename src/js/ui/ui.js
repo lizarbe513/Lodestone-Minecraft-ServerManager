@@ -269,21 +269,34 @@ export function renderPlayersList() {
 
     const btnKick = document.createElement('button');
     btnKick.className = "mc-btn-secondary btn-small";
-    btnKick.style = "padding: 4px 12px; font-size: 0.85rem;";
-    btnKick.textContent = "Expulsar";
+    btnKick.textContent = t("players.btn_kick");
     btnKick.onclick = () => { invoke("enviar_comando", { comando: `kick ${player}` }); };
 
     const btnOp = document.createElement('button');
     btnOp.className = "mc-btn-secondary btn-small";
-    btnOp.style = "padding: 4px 12px; font-size: 0.85rem;";
-    btnOp.textContent = "Convertir en OP";
-    btnOp.onclick = () => requestConfirm(`Convertir en OP a ${player}`, `¿Estás seguro de que quieres darle permisos de operador a ${player}?`, `op ${player}`);
+    btnOp.textContent = t("players.btn_op");
+    btnOp.onclick = () => requestConfirm(
+      t("players.op_confirm_title", { player }),
+      t("players.op_confirm_msg", { player }),
+      {
+        type: "primary",
+        acceptText: t("common.accept"),
+        action: `op ${player}`
+      }
+    );
 
     const btnBan = document.createElement('button');
-    btnBan.className = "mc-btn-warning btn-small";
-    btnBan.style = "padding: 4px 12px; font-size: 0.85rem;";
-    btnBan.textContent = "Banear";
-    btnBan.onclick = () => requestConfirm(`Banear a ${player}`, `¿Estás seguro de que quieres banear a ${player} del servidor?`, `ban ${player}`);
+    btnBan.className = "mc-btn-danger btn-small";
+    btnBan.textContent = t("players.btn_ban");
+    btnBan.onclick = () => requestConfirm(
+      t("players.ban_confirm_title", { player }),
+      t("players.ban_confirm_msg", { player }),
+      {
+        type: "danger",
+        acceptText: t("players.btn_ban"),
+        action: `ban ${player}`
+      }
+    );
 
     row.appendChild(btnKick);
     row.appendChild(btnOp);
@@ -460,18 +473,22 @@ export function renderSavedServers() {
       requestConfirm(
         t("home.delete_confirm_title"),
         t("home.delete_confirm_msg", { name: server.server_name }),
-        async () => {
-          try {
-            showFeedback(t("home.deleting_server"), "info");
-            const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: true });
-            if (appState.activeSession && appState.activeSession.server_dir === server.server_dir) {
-              appState.activeSession = null;
-              navigateTo("home");
+        {
+          type: "danger",
+          acceptText: t("common.delete"),
+          action: async () => {
+            try {
+              showFeedback(t("home.deleting_server"), "info");
+              const snapshot = await invoke("remover_servidor_guardado", { serverDir: server.server_dir, deleteFiles: true });
+              if (appState.activeSession && appState.activeSession.server_dir === server.server_dir) {
+                appState.activeSession = null;
+                navigateTo("home");
+              }
+              applySnapshot(snapshot);
+              showFeedback(t("home.server_deleted"), "success");
+            } catch (e) {
+              showFeedback(t("home.delete_error", { err: e }), "error");
             }
-            applySnapshot(snapshot);
-            showFeedback(t("home.server_deleted"), "success");
-          } catch (e) {
-            showFeedback(t("home.delete_error", { err: e }), "error");
           }
         }
       );

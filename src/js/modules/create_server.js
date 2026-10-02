@@ -3,6 +3,7 @@ import { appState, globals } from "../core/state.js";
 import { fetchForgeVersions, fetchNeoForgeVersions } from "../core/api.js";
 import { updateControls, navigateTo } from "../ui/ui.js";
 import { showFeedback, appendLog, normalizeError, requestConfirm } from "../utils/utils.js";
+import { t } from "../i18n/i18n.js";
 import { resetNewServerForm, browseServerJar, browseServerParentDir, createServer } from "../features/server.js";
 import { isModpackConfirmed } from "./modpacks.js";
 
@@ -364,9 +365,13 @@ export function initCreateServerEvents() {
 
       if (isDirty) {
         requestConfirm(
-          "¿Salir sin guardar?",
-          "Se perderán la configuración y las opciones seleccionadas para este servidor. ¿Estás seguro de que deseas salir?",
-          doBack
+          t("dialog.discard_changes_title"),
+          t("dialog.discard_changes_msg"),
+          {
+            type: "danger",
+            acceptText: t("common.accept"),
+            action: doBack
+          }
         );
       } else {
         doBack();

@@ -1,5 +1,6 @@
 import { els } from "../core/dom.js";
 import { globals } from "../core/state.js";
+import { t } from "../i18n/i18n.js";
 
 export function showFeedback(message, type = "info") {
   if (!els.feedback) return;
@@ -80,11 +81,51 @@ export function hideLoadingOverlay() {
   if (overlay) overlay.close();
 }
 
-export function requestConfirm(title, message, command) {
+export function requestConfirm(title, message, commandOrOptions, legacyCommand) {
   if (!els.confirmDialog) return;
+
+  let options = {};
+  if (typeof commandOrOptions === "function" || typeof commandOrOptions === "string") {
+    options = {
+      action: commandOrOptions,
+      type: "primary", // "primary" (normal) | "danger" (destructive)
+      acceptText: null,
+      cancelText: null
+    };
+  } else if (typeof commandOrOptions === "object" && commandOrOptions !== null) {
+    options = {
+      action: commandOrOptions.action || legacyCommand,
+      type: commandOrOptions.type || "primary",
+      acceptText: commandOrOptions.acceptText || null,
+      cancelText: commandOrOptions.cancelText || null
+    };
+  }
+
   els.confirmTitle.textContent = title;
   els.confirmMessage.textContent = message;
-  globals.pendingConfirmAction = command;
+  globals.pendingConfirmAction = options.action;
+
+  // Actualizar estilo del botón Aceptar según la severidad de la acción
+  if (els.btnConfirmAccept) {
+    els.btnConfirmAccept.className = options.type === "danger" ? "mc-btn-danger" : "mc-btn-primary";
+    if (options.acceptText) {
+      els.btnConfirmAccept.textContent = options.acceptText;
+    } else {
+      els.btnConfirmAccept.setAttribute("data-i18n", "common.accept");
+      els.btnConfirmAccept.textContent = t("common.accept");
+    }
+  }
+
+  if (els.btnConfirmCancel) {
+    els.btnConfirmCancel.className = "mc-btn-secondary";
+    if (options.cancelText) {
+      els.btnConfirmCancel.textContent = options.cancelText;
+    } else {
+      els.btnConfirmCancel.setAttribute("data-i18n", "common.cancel");
+      els.btnConfirmCancel.textContent = t("common.cancel");
+    }
+  }
+
   els.confirmDialog.showModal();
 }
 

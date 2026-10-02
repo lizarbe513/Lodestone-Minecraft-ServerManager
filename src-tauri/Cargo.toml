@@ -1,9 +1,11 @@
 [package]
-name = "minecraft-server-gui"
-version = "0.1.0"
-description = "A desktop GUI to manage a Minecraft server"
-authors = ["you"]
+name = "lodestone"
+version = "1.0.0-beta.1"
+description = "The modern Minecraft server manager built with Rust & Tauri"
+authors = ["lizarbe513", "Norditeon"]
 edition = "2021"
+license = "GPL-3.0-only"
+repository = "https://github.com/lizarbe513/Lodestone-Minecraft-ServerManager"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,7 +13,7 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "minecraft_server_gui_lib"
+name = "lodestone_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
