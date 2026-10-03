@@ -42,7 +42,7 @@ jobs:
         run: cargo install tauri-cli --version "^2" --locked
 
       - name: Build Tauri Windows Executable & Installer
-        run: cargo tauri build
+        run: cargo tauri build --bundles nsis
 
       - name: Upload Windows Assets to GitHub Release
         env:
@@ -58,13 +58,7 @@ jobs:
             gh release upload $tag $_.FullName --clobber
           }
           
-          # Find and upload MSI installer if exists
-          Get-ChildItem -Path src-tauri/target/release/bundle/msi/*.msi -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "Subiendo instalador MSI: $($_.FullName)"
-            gh release upload $tag $_.FullName --clobber
-          }
-          
-          # Find and upload standalone .exe
+          # Upload standalone .exe binary
           if (Test-Path "src-tauri/target/release/lodestone.exe") {
             Copy-Item "src-tauri/target/release/lodestone.exe" "Lodestone-standalone.exe"
             gh release upload $tag "Lodestone-standalone.exe" --clobber
