@@ -51,31 +51,44 @@ El backend en Rust ha sido completamente estructurado bajo principios SOLID:
 
 ---
 
-## 💻 Instrucciones para Probar y Compilar
+## 📦 Paquetes e Instaladores Disponibles
 
-### Requisitos
-- Linux / Windows / macOS
-- Rust Toolchain instalado (`cargo`)
-- Java 8 / 17 / 21 instalado en el sistema
+### 🐧 Linux
+- **Debian / Ubuntu / Linux Mint (.deb)**:
+  ```bash
+  sudo dpkg -i Lodestone_1.0.0-beta.1_amd64.deb
+  ```
+- **Fedora / RHEL / openSUSE (.rpm)**:
+  ```bash
+  sudo rpm -i Lodestone-1.0.0-beta.1-1.x86_64.rpm
+  ```
+- **Arch Linux / Manjaro / Omarchy (.pkg.tar.zst)**:
+  ```bash
+  sudo pacman -U lodestone-1.0.0-beta.1-1-x86_64.pkg.tar.zst
+  ```
+- **Universal Linux Portable (.AppImage)**:
+  ```bash
+  chmod +x Lodestone_1.0.0-beta.1_amd64.AppImage
+  ./Lodestone_1.0.0-beta.1_amd64.AppImage
+  ```
+- **Script de Instalación Automatizada**:
+  ```bash
+  ./install.sh
+  ```
 
-### Modo Desarrollo
-```bash
-cargo run --manifest-path src-tauri/Cargo.toml
-```
+### 🪟 Windows
+- **Instalador Oficial (.exe)**: Ejecutar el instalador asistido `Lodestone_1.0.0-beta.1_x64-setup.exe` generado para Windows 10/11 x64.
+- **Instalador MSI (.msi)**: Paquete MSI empresarial para instalación en entornos corporativos/educativos.
 
-### Ejecutar Pruebas Unitarias
-```bash
-cargo test --manifest-path src-tauri/Cargo.toml
-```
-
-### Compilar Paquete de Producción (Release)
-```bash
-cargo build --manifest-path src-tauri/Cargo.toml --release
-```
-O usando Tauri CLI:
-```bash
-npx tauri build
-```
+### 🍎 macOS
+- **Soporte e Instalador para macOS**:
+  Descarga el paquete `Lodestone-1.0.0-beta.1-macos-support.tar.gz` o ejecuta directamente el instalador de soporte:
+  ```bash
+  chmod +x install-macos.sh
+  ./install-macos.sh
+  ```
+- **Paquete DMG**: `Lodestone_1.0.0-beta.1.dmg` disponible en los artefactos de la release.
 
 ---
-*Norditeon Minecraft Server GUI - Beta 1.0*
+*Lodestone Minecraft Server GUI - Beta 1.0.0-beta.1*
+

@@ -1,0 +1,124 @@
+name: Release & Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag version for release (e.g. v1.0.0-beta.1)'
+        required: false
+        default: 'v1.0.0-beta.1'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows Installer (.exe)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2" --locked
+
+      - name: Build Tauri Windows Executable & Installer
+        run: cargo tauri build
+
+      - name: Upload Windows Assets to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $tag = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "${{ github.event.inputs.tag_name }}" }
+          if (-not $tag) { $tag = "v1.0.0-beta.1" }
+          
+          # Find and upload NSIS .exe installer
+          Get-ChildItem -Path src-tauri/target/release/bundle/nsis/*.exe -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Subiendo instalador: $($_.FullName)"
+            gh release upload $tag $_.FullName --clobber
+          }
+          
+          # Find and upload MSI installer if exists
+          Get-ChildItem -Path src-tauri/target/release/bundle/msi/*.msi -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Subiendo instalador MSI: $($_.FullName)"
+            gh release upload $tag $_.FullName --clobber
+          }
+          
+          # Find and upload standalone .exe
+          if (Test-Path "src-tauri/target/release/lodestone.exe") {
+            Copy-Item "src-tauri/target/release/lodestone.exe" "Lodestone-standalone.exe"
+            gh release upload $tag "Lodestone-standalone.exe" --clobber
+          }
+
+  build-macos:
+    name: Build macOS Support & Bundle (.dmg)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2" --locked
+
+      - name: Build Tauri macOS Bundle
+        run: cargo tauri build
+
+      - name: Package and Upload macOS Release Assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [ "${{ github.ref_type }}" != "tag" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          fi
+          [ -z "$TAG" ] && TAG="v1.0.0-beta.1"
+
+          # Upload DMG files
+          for dmg in src-tauri/target/release/bundle/dmg/*.dmg; do
+            if [ -f "$dmg" ]; then
+              echo "Subiendo DMG: $dmg"
+              gh release upload "$TAG" "$dmg" --clobber
+            fi
+          done
+
+          # Package .app bundle into zip
+          if [ -d "src-tauri/target/release/bundle/macos/Lodestone.app" ]; then
+            (cd src-tauri/target/release/bundle/macos && zip -r "Lodestone_macOS.app.zip" "Lodestone.app")
+            gh release upload "$TAG" "src-tauri/target/release/bundle/macos/Lodestone_macOS.app.zip" --clobber
+          fi
